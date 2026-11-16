@@ -264,7 +264,7 @@ const Y="https://query1.finance.yahoo.com";
 const yCh=(s,r,i)=>`${Y}/v8/finance/chart/${encodeURIComponent(s)}?range=${r}&interval=${i}&events=div`;
 const ySr=q=>`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=8&newsCount=0`;
 const YM={rev:"TotalRevenue",ni:"NetIncome",eps:"DilutedEPS",fcf:"FreeCashFlow",ocf:"OperatingCashFlow",capex:"CapitalExpenditure",assets:"TotalAssets",equity:"StockholdersEquity",debt:"TotalDebt",cash:"CashCashEquivalentsAndShortTermInvestments",ca:"CurrentAssets",cl:"CurrentLiabilities",inv:"Inventory",op:"OperatingIncome",gross:"GrossProfit",pretax:"PretaxIncome",tax:"TaxProvision",div:"CashDividendsPaid",buy:"RepurchaseOfCapitalStock",shares:"OrdinarySharesNumber",ret:"RetainedEarnings",ppe:"NetPPE",recv:"Receivables",sga:"SellingGeneralAndAdministration",dep:"ReconciledDepreciation",int:"InterestExpense",ebitda:"EBITDA"};
-const YQ=["TotalRevenue","NetIncome","DilutedEPS","FreeCashFlow","OperatingIncome","GrossProfit","TotalDebt","CashCashEquivalentsAndShortTermInvestments","StockholdersEquity","TotalAssets","CurrentAssets","CurrentLiabilities","OrdinarySharesNumber","Inventory"];
+const YQ=["TotalRevenue","NetIncome","DilutedEPS","FreeCashFlow","OperatingCashFlow","CapitalExpenditure","OperatingIncome","GrossProfit","TotalDebt","CashCashEquivalentsAndShortTermInvestments","StockholdersEquity","TotalAssets","CurrentAssets","CurrentLiabilities","OrdinarySharesNumber","Inventory"];
 const YF1=["debt","cash","int","ebitda"];
 const yTS=s=>{const n=Math.floor(Date.now()/1e3);return`${Y}/ws/fundamentals-timeseries/v1/finance/timeseries/${encodeURIComponent(s)}?symbol=${encodeURIComponent(s)}&period1=${n-346e6}&period2=${n}&type=${[...Object.values(YM).map(x=>"annual"+x),...YQ.map(x=>"quarterly"+x)].join(",")}&merge=false`};
 
@@ -394,7 +394,7 @@ async function divTask(sym,g){
  try{const{j}=await cached("yd_"+sym,12*36e5,()=>race(yCh(sym,"10y","3mo"),j=>j.chart&&j.chart.result&&j.chart.result[0]));
   if(g!==S.gen)return;const e=j.chart.result[0].events;S.divs=e&&e.dividends?Object.values(e.dividends).map(d=>({t:d.date*1e3,a:d.amount})).sort((a,b)=>a.t-b.t):[]}catch(e){}soon()}
 async function fundTask(sym,g){
- try{const{j}=await cached("yf3_"+sym,6*36e5,()=>race(yTS(sym),j=>j.timeseries&&j.timeseries.result));
+ try{const{j}=await cached("yf4_"+sym,6*36e5,()=>race(yTS(sym),j=>j.timeseries&&j.timeseries.result));
   if(g!==S.gen)return;const o={};(j.timeseries.result||[]).forEach(it=>{const t=it.meta&&it.meta.type&&it.meta.type[0];if(!t||!Array.isArray(it[t]))return;const m={};it[t].forEach(x=>{if(x&&x.reportedValue&&isN(x.reportedValue.raw)&&x.asOfDate)m[x.asOfDate]={end:x.asOfDate,v:x.reportedValue.raw}});o[t]=Object.values(m).sort((a,b)=>a.end<b.end?-1:1)});S.yf=o}catch(e){}soon()}
 
 /* ---------- Nasdaq: market cap, forward P/E, beta, target, sector, company description ---------- */
@@ -426,10 +426,11 @@ function merge(){
  for(const f in YM)ya(YM[f]).forEach(p=>{const o=row(p.end.slice(0,4));o.end=o.end||p.end;if(o[f]==null||YF1.includes(f))o[f]=p.v});
  const A=Object.values(rows).filter(x=>x.end&&(x.rev!=null||x.ni!=null)).sort((a,b)=>a.end<b.end?-1:1);
  A.forEach(x=>{if(x.capex!=null)x.capex=-Math.abs(x.capex);if(x.div!=null)x.div=-Math.abs(x.div);if(x.buy!=null)x.buy=-Math.abs(x.buy);if(x.int!=null)x.int=Math.abs(x.int);
-  if(x.fcf==null&&x.ocf!=null&&x.capex!=null)x.fcf=x.ocf+x.capex;if(x.ebitda==null&&x.op!=null&&x.dep!=null)x.ebitda=x.op+Math.abs(x.dep)});
+  if(x.ocf!=null&&x.capex!=null){const r=x.ocf+x.capex;if(x.fcf==null||Math.abs(x.fcf-r)>.05*Math.abs(r))x.fcf=r}if(x.ebitda==null&&x.op!=null&&x.dep!=null)x.ebitda=x.op+Math.abs(x.dep)});
  const T={},B={},q=yq("TotalRevenue");
  if(q.length>=4){const l=q.slice(-4),sp=(new Date(last(l).end)-new Date(l[0].end))/864e5;
-  if(sp>240&&sp<300)[["rev","TotalRevenue"],["ni","NetIncome"],["eps","DilutedEPS"],["fcf","FreeCashFlow"],["op","OperatingIncome"],["gross","GrossProfit"]].forEach(([f,n])=>{const z=yq(n).slice(-4);if(z.length===4)T[f]=sum(z.map(p=>p.v))})}
+  if(sp>240&&sp<300)[["rev","TotalRevenue"],["ni","NetIncome"],["eps","DilutedEPS"],["fcf","FreeCashFlow"],["op","OperatingIncome"],["gross","GrossProfit"],["ocf","OperatingCashFlow"],["capex","CapitalExpenditure"]].forEach(([f,n])=>{const z=yq(n).slice(-4);if(z.length===4)T[f]=sum(z.map(p=>p.v))});
+  if(T.ocf!=null&&T.capex!=null){const r=T.ocf-Math.abs(T.capex);if(T.fcf==null||Math.abs(T.fcf-r)>.05*Math.abs(r))T.fcf=r}}
  [["debt","TotalDebt"],["cash","CashCashEquivalentsAndShortTermInvestments"],["equity","StockholdersEquity"],["assets","TotalAssets"],["ca","CurrentAssets"],["cl","CurrentLiabilities"],["shares","OrdinarySharesNumber"],["inv","Inventory"]].forEach(([f,n])=>{const z=last(yq(n));if(z)B[f]=z.v});
  return{A,T,B}}
 
@@ -453,6 +454,10 @@ function tech(){const d=S.closes;if(d.length<60)return{};
 function calc(){
  const V={};S.v=V;const F=S.F||{A:[],T:{},B:{}},A=F.A,T=F.T,B=F.B,L=last(A)||{},P=A.length>1?A[A.length-2]:{};
  const g=f=>T[f]!=null?T[f]:L[f],b=f=>B[f]!=null?B[f]:L[f],nd=S.nd||{},t=tech();
+ /* numerator and denominator from the same period: TTM if both exist there, else the latest fiscal year */
+ const same=(f,base="rev")=>T[f]!=null&&T[base]!=null?[T[f],T[base]]:[L[f],L[base]];
+ /* cash-flow items can lag the income statement by a year: take the latest of the last two fiscal years */
+ const lat=f=>{for(const r of A.slice(-2).reverse())if(r[f]!=null)return r[f];return null};
  const px=S.price!=null?(pence(S.cur)?S.price/100:S.price):null;
  const sh=(S.sec&&S.sec.shares)||B.shares||L.shares,mcap=nd.mcap||(sh&&px?sh*px:null);
  const set=(k,v,o={})=>{const m=RM[k],r={v,s:"nf",...o};if(r.s!=="na"){if(r.force!=null){r.s="ok";r.sc=r.force}else if(isN(v)&&m.st){r.s="ok";r.sc=band(v,m.st)}}r.d=r.dd||(isN(v)?m.f(v):r.s==="na"?"—":"∅");V[k]=r};
@@ -461,15 +466,15 @@ function calc(){
  const debt=b("debt"),cash=b("cash"),eq=b("equity"),as=b("assets"),ca=b("ca"),cl=b("cl"),inv=b("inv")||0;
  set("revCagr5",cg("rev",5));set("revCagr3",cg("rev",3));set("epsCagr5",cg("eps",5));set("fcfCagr5",cg("fcf",5));
  set("revYoY",L.rev!=null&&P.rev>0?(L.rev/P.rev-1)*100:null);set("epsYoY",L.eps!=null&&P.eps>0?(L.eps/P.eps-1)*100:null);
- set("gross",gross!=null&&rev>0?gross/rev*100:null);set("op",op!=null&&rev>0?op/rev*100:null);set("net",ni!=null&&rev>0?ni/rev*100:null);set("fcfM",fcf!=null&&rev>0?fcf/rev*100:null);
+ [["gross","gross"],["op","op"],["net","ni"],["fcfM","fcf"]].forEach(([k,f])=>{const[a,d]=same(f);set(k,a!=null&&d>0?a/d*100:null)});
  const roes=A.filter(x=>x.ni!=null&&x.equity>0).map(x=>x.ni/x.equity*100);
  set("roe",ni!=null&&eq>0?ni/eq*100:last(roes));set("roe5",roes.length>=3?sum(roes.slice(-5))/Math.min(5,roes.length):null);
  const tr=L.pretax>0&&L.tax!=null?clamp(L.tax/L.pretax,0,.4):.25,ic=(debt||0)+(eq||0)-(cash||0),roic=op!=null&&ic>0?op*(1-tr)/ic*100:null;set("roic",roic);
- const beta=nd.beta!=null?nd.beta:1,ke=.042+beta*.046,kd=debt>0&&L.int>0?clamp(L.int/debt,.02,.12):ke,wacc=mcap&&debt!=null?(mcap*ke+debt*kd*(1-tr))/(mcap+debt):ke;
+ const beta=nd.beta!=null?nd.beta:1,ke=.042+beta*.046,kd=debt>0&&lat("int")>0?clamp(lat("int")/debt,.02,.12):ke,wacc=mcap&&debt!=null?(mcap*ke+debt*kd*(1-tr))/(mcap+debt):ke;
  set("spread",roic!=null?roic-wacc*100:null);
  const net=(debt||0)-(cash||0);
  if(ebitda>0&&debt!=null)set("ndEbitda",net/ebitda);else if(debt!=null&&cash>debt)set("ndEbitda",null,{dd:"net cash",force:9});else set("ndEbitda",null);
- if(debt===0)set("intCov",999,{force:10});else if(debt>0&&L.int>0&&op!=null)set("intCov",op/L.int);else set("intCov",null);
+ if(debt===0)set("intCov",999,{force:10});else if(debt>0&&lat("int")>0&&op!=null)set("intCov",op/lat("int"));else set("intCov",null);
  set("de",eq>0&&debt!=null?debt/eq*100:null,eq<=0&&debt>0?{dd:"neg. equity",force:0}:{});
  set("current",ca!=null&&cl>0?ca/cl:null);set("quick",ca!=null&&cl>0?(ca-inv)/cl:null);
  const pe=nd.pe||(eps>0&&px?px/eps:null);
@@ -482,7 +487,7 @@ function calc(){
  fcf!=null&&fcf<=0?set("pfcf",null,{dd:"n/m",force:.5}):set("pfcf",mcap>0&&fcf>0?mcap/fcf:null);
  const ev=mcap!=null?mcap+(debt||0)-(cash||0):null;
  set("evEbitda",ev>0&&ebitda>0?ev/ebitda:null);set("fcfY",mcap>0&&fcf!=null?fcf/mcap*100:null);
- set("shY",mcap>0&&(L.buy!=null||L.div!=null)?(Math.abs(L.buy||0)+Math.abs(L.div||0))/mcap*100:null);
+ {const bb=lat("buy"),dv=lat("div");set("shY",mcap>0&&(bb!=null||dv!=null)?(Math.abs(bb||0)+Math.abs(dv||0))/mcap*100:null)}
  /* quality */
  if(A.length>=2){let f=0,n=0;const ok=c=>{n++;if(c)f++};
   if(L.ni!=null&&as>0)ok(L.ni/as>0);if(L.ocf!=null)ok(L.ocf>0);
@@ -499,12 +504,12 @@ function calc(){
   const m=-4.84+.92*DS+.528*GM+.404*AQ+.892*SG+.115*DP-.172*SA+4.679*TA-.327*LV;set("beneish",isFinite(m)?m:null)}else set("beneish",null);
  const wc=ca!=null&&cl!=null?ca-cl:null,tl=as!=null&&eq!=null?as-eq:null;
  set("altman",as>0&&wc!=null&&L.ret!=null&&op!=null&&tl>0&&mcap>0&&rev!=null?1.2*wc/as+1.4*L.ret/as+3.3*op/as+.6*mcap/tl+rev/as:null);
- ni>0&&fcf!=null?set("conv",fcf/ni*100):set("conv",null,ni<=0?{s:"na"}:{});
+ {const[f_,n_]=same("fcf","ni");n_>0&&f_!=null?set("conv",f_/n_*100):set("conv",null,n_!=null&&n_<=0?{s:"na"}:{})}
  const gm=A.filter(x=>x.gross!=null&&x.rev>0).map(x=>x.gross/x.rev*100);set("gmStab",gm.length>=4?sd(gm.slice(-5)):null);
  /* dividends */
  const D=S.divs||[];let dps=D.filter(d=>d.t>=Date.now()-366*864e5).reduce((a,d)=>a+d.a,0);
  if(!dps&&nd.divRate)dps=nd.divRate;
- if(!dps&&!D.length&&L.div&&sh)dps=Math.abs(L.div)/sh;
+ if(!dps&&!D.length&&lat("div")&&sh)dps=Math.abs(lat("div"))/sh;
  if(!(dps>0)&&!D.length)["divY","payout","divCagr","streak"].forEach(k=>set(k,null,{s:"na"}));
  else{set("divY",px>0?dps/px*100:null);set("payout",eps>0?dps/eps*100:null);
   const dy={};D.forEach(d=>{const y=new Date(d.t).getUTCFullYear();dy[y]=(dy[y]||0)+d.a});
