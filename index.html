@@ -118,10 +118,15 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
 #side{display:flex;flex-direction:column;gap:9px;min-height:0;overflow:auto;padding-right:2px}
 .card{padding:12px 14px;flex:none}
 .card h3{font-size:12px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px}.card h3 .chip{margin-left:auto}
-#vc{display:flex;align-items:center;gap:14px}
+.sc{display:flex;align-items:center;gap:14px}
+.sct{min-width:0;flex:1}
+.snm{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12px;font-weight:800}
+.hz{font-style:normal;font-size:9.5px;font-weight:700;color:var(--info);padding:1px 8px;border-radius:99px;border:1px solid var(--ln)}
+.mean{font-size:10.5px;line-height:1.45;color:var(--ink2);margin-top:5px}
+.parts{font-size:10px;color:var(--ink3);margin-top:4px;line-height:1.4}
 .ring{position:relative;width:92px;height:92px;flex:none}.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring div{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.ring b{font-size:28px;font-weight:800;line-height:1}.ring small{font-size:9px;color:var(--ink3);font-weight:600}
-#sent{display:inline-block;font-size:15px;font-weight:800;padding:5px 16px;border-radius:99px}#cov{margin-top:6px;font-size:10.5px;color:var(--ink3)}
+#sent,#tsent{display:inline-block;font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:10px;line-height:1.3;margin-top:5px}#cov{margin-top:5px;font-size:10px;color:var(--ink3)}
 #gates{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
 .gate{font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;border:1px solid var(--ln)}
 .gate.p{color:var(--good);border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent)}.gate.f{color:var(--bad);border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}.gate.s{color:var(--ink3);border-style:dashed}
@@ -195,10 +200,11 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
  <main id="main">
   <div id="left"><div id="grid"></div></div>
   <aside id="side">
-   <div class="card glass" id="vc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="rg" x1="0" y1="1" x2="1" y2="0"><stop id="r1" offset="0" stop-color="#0c9f6a"/><stop id="r2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="rfg" cx="46" cy="46" r="38" fill="none" stroke="url(#rg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="snum">–</b><small>/ 10</small></div></div><div><span id="sent">…</span><div id="cov"></div></div></div>
+   <div class="card glass sc" id="vc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="rg" x1="0" y1="1" x2="1" y2="0"><stop id="r1" offset="0" stop-color="#0c9f6a"/><stop id="r2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="rfg" cx="46" cy="46" r="38" fill="none" stroke="url(#rg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="snum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Long-term score <i class="hz">1–3 years</i></span><span id="sent">…</span><p class="mean" id="lmean"></p><div id="cov"></div></div></div>
+   <div class="card glass sc" id="tc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="tg" x1="0" y1="1" x2="1" y2="0"><stop id="t1" offset="0" stop-color="#0c9f6a"/><stop id="t2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="tfg" cx="46" cy="46" r="38" fill="none" stroke="url(#tg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="tnum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Entry-timing score <i class="hz">2–12 weeks</i></span><span id="tsent">…</span><p class="mean" id="tmean"></p><div class="parts" id="tparts"></div></div></div>
    
-   <!-- MOVED: Score by group now appears right below Final Score -->
-   <div class="card glass"><h3>Score by group</h3><div class="bars" id="bars"></div></div>
+   <!-- Score by group (long-term weights) -->
+   <div class="card glass"><h3>Score by group <span class="chip">long-term weights</span></h3><div class="bars" id="bars"></div></div>
    
    <div class="card glass"><h3>Verdict note <span class="chip" id="lchip">Balanced</span></h3><div id="gates"></div><p id="note"></p></div>
    <div class="card glass" id="finc"><h3>Revenue, net income &amp; margin <span class="chip" id="funit"></span></h3><div id="fin"></div><div class="lgd"><span><i class="d rev"></i>Revenue</span><span><i class="d ni"></i>Net inc.</span><span><i class="d mar"></i>Margin</span><button id="esttog" title="Show or hide estimates"><i></i>Est.</button></div><div id="estnote"></div></div>
@@ -283,7 +289,7 @@ M("ndEbitda","health","Net debt / EBITDA",xf,[[-2,10],[0,9.5],[1,8],[2,6],[3,4],
 M("intCov","health","Interest cover",v=>v>=999?"no debt":xf(v),[[.5,0],[1,1],[2,2.5],[5,5.5],[10,8],[20,10]],"EBIT / interest expense. Target ≥5×."),
 M("de","health","Debt / equity",v=>pc(v,0),[[0,10],[30,9],[60,8],[100,6.5],[150,4.5],[250,2],[400,0]],"Total debt / equity. Target ≤100%."),
 M("current","health","Current ratio",v=>xf(v,2),[[.6,.5],[.8,2],[1,3.5],[1.2,5],[1.5,7],[2,8.5],[3,10]],"Current assets / current liabilities."),
-M("quick","health","Quick ratio",v=>xf(v,2),[[.3,.5],[.5,1.5],[.8,3.5],[1,5.5],[1.5,7.5],[2,9],[3,10]],"(Current assets − inventory) / current liabilities; gate > 1.5."),
+M("quick","health","Quick ratio",v=>xf(v,2),[[.3,.5],[.5,1.5],[.8,3.5],[1,5.5],[1.5,7.5],[2,9],[3,10]],"(Current assets − inventory) / current liabilities; gate > 1.0."),
 M("pe","value","P/E trailing",xf,[[5,9.5],[8,9],[12,8.5],[18,7.5],[25,6],[35,4],[50,2],[80,.5]],"Price / trailing EPS; gate < 25."),
 M("peFwd","value","P/E forward",xf,[[5,9.5],[8,9],[12,8.5],[17,7.5],[23,6],[32,4],[45,2],[70,.5]],"Price / next-year EPS (Nasdaq consensus, else model)."),
 M("peg","value","PEG",v=>xf(v,2),[[.3,10],[.5,9.5],[1,8.5],[1.5,7],[2,5.5],[3,3],[5,1]],"P/E ÷ 5y EPS growth; gate < 2."),
@@ -317,6 +323,34 @@ M("dilut","mkt","Share count Δ / yr",pc,[[-5,10],[-2,8.5],[0,6],[2,3.5],[5,1]],
 ];
 const RM=Object.fromEntries(REG.map(m=>[m.k,m]));
 const GR=[["growth","Growth","#3ddc97"],["profit","Profitability","#b794ff"],["health","Financial health","#5db3ff"],["value","Valuation","#4fd8e8"],["quality","Quality","#ffc04d"],["div","Dividend","#ff9f5a"],["tech","Technicals","#ff7a8a"],["mkt","Market & sentiment","#9ab8e6"]];
+/* Per-indicator weights [long-term, entry-timing]. Within a group the score is a weighted mean of the
+   indicators found, so overlapping or noisy indicators count less (e.g. P/FCF and FCF yield carry the same
+   information; ROE is distorted by buybacks; RSI/MACD/Bollinger matter for weeks, not years). */
+const WI={revCagr5:[1,0],revCagr3:[1,0],epsCagr5:[1,0],fcfCagr5:[.75,0],revYoY:[.5,0],epsYoY:[.5,0],
+ gross:[.75,0],op:[1,0],net:[.5,0],fcfM:[1,0],roe:[.5,0],roe5:[.5,0],roic:[1.5,0],
+ ndEbitda:[1.5,0],intCov:[1,0],de:[.75,0],current:[.5,0],quick:[.5,0],
+ pe:[1,.75],peFwd:[1,1.25],peg:[.75,.75],ps:[.5,.25],pfcf:[.5,.5],evEbitda:[1.25,1],fcfY:[.75,.75],shY:[.5,.5],
+ piotroski:[1,0],beneish:[.5,0],altman:[.5,0],conv:[1,0],gmStab:[.75,0],spread:[1.25,0],
+ divY:[1,0],payout:[1,0],divCagr:[.75,0],streak:[.75,0],
+ rsi:[.25,1],macd:[.25,1.25],adx:[.5,1.25],boll:[.25,.75],e200:[1.25,1],stack:[1,1.25],mom:[1.5,.75],vol:[1,.75],
+ upside:[.5,1],hi52:[.5,1],beta:[.75,.5],dilut:[1.25,.25]};
+/* Entry timing (2–12 weeks): price action dominates; valuation acts as a margin-of-safety / downside-risk factor */
+const TIMING={tech:55,value:30,mkt:15};
+/* Banks and insurers: these ratios are not meaningful (deposits are liabilities, no gross margin, no EBITDA) */
+const FIN_RX=/\b(bank|banks|banking|insurance|insurer|reinsurance|savings institution|thrift)/i;
+const FIN_NA=["gross","fcfM","conv","ndEbitda","intCov","de","current","quick","evEbitda","pfcf","fcfY","altman","beneish"];
+const LT_T=[[7.5,"Strong long-term profile","Business quality, growth and balance sheet are strong, and the price is reasonable for them.","#3ddc97","#0e8a57"],
+ [6.2,"Favourable long-term profile","The business case is sound; one or two areas (often valuation) hold the score back.","#a6e22e","#5d8a00"],
+ [4.5,"Mixed long-term profile","Strengths and weaknesses roughly offset; the long-term case depends on which of them improves.","#ffb84a","#a86a00"],
+ [3,"Weak long-term profile","Fundamentals or valuation are weak enough that a long-term case is hard to make.","#ff8a5c","#c4521f"],
+ [-1,"Poor long-term profile","Most fundamental areas score poorly.","#ff6b81","#d62c48"]];
+const TM_T=[[7.5,"Favourable entry conditions","Trend and momentum support the price now, and valuation does not add unusual downside risk.","#3ddc97","#0e8a57"],
+ [6.2,"Mostly favourable entry conditions","The setup leans positive, but one factor (stretch, weak trend or a rich price) argues for patience.","#a6e22e","#5d8a00"],
+ [4.5,"Neutral entry conditions","Price action and valuation do not line up: one is supportive, the other is not.","#ffb84a","#a86a00"],
+ [3,"Unfavourable entry conditions","The trend is against the price, or the price is rich with weakening momentum.","#ff8a5c","#c4521f"],
+ [-1,"Poor entry conditions","Downtrend with no valuation support.","#ff6b81","#d62c48"]];
+const tierOf=(sc,T)=>sc==null?null:T.find(t=>sc>=t[0]);
+const ringPair=sc=>sc==null?["#9aaac0","#9aaac0"]:sc>=7.5?["#0c9f6a","#19b6e6"]:sc>=6.2?["#7fb800","#0c9f6a"]:sc>=4.5?["#f5b400","#e08a00"]:["#e08a00","#e0344a"];
 const W={balanced:{growth:17,profit:19,health:14,value:21,quality:12,div:4,tech:9,mkt:4},value:{growth:7,profit:14,health:17,value:34,quality:14,div:5,tech:4,mkt:5},growth:{growth:30,profit:21,health:9,value:10,quality:10,div:0,tech:15,mkt:5},dividend:{growth:3,profit:14,health:19,value:15,quality:15,div:29,tech:2,mkt:3}};
 
 /* ---------- state ---------- */
@@ -370,7 +404,7 @@ async function nasdaqTask(sym,g){
  try{const{j,via}=await race(`https://api.nasdaq.com/api/quote/${sym}/summary?assetclass=stocks`,j=>j&&j.data&&(j.data.summaryData||j.data.SummaryData),{t:10000});
   if(g!==S.gen)return;const d=j.data.summaryData||j.data.SummaryData,v=k=>nn(d[k]&&d[k].value);
   S.nd={mcap:v("MarketCap"),pe:v("PERatio"),fpe:v("ForwardPE1Yr"),divRate:v("AnnualizedDividend")??v("DividendRate"),beta:v("Beta"),target:v("OneYrTarget")};
-  if(d.Sector&&d.Sector.value)S.sector=d.Sector.value;if(!S.sector&&d.Industry&&d.Industry.value)S.sector=d.Industry.value;
+  if(d.Sector&&d.Sector.value)S.sector=d.Sector.value;if(d.Industry&&d.Industry.value)S.industry=d.Industry.value;if(!S.sector&&S.industry)S.sector=S.industry;
   S.via.nasdaq=via;stat("nasdaq").className="st ok"}catch(e){if(g===S.gen)stat("nasdaq").className="st nf"}
  try{const{j}=await race(`https://api.nasdaq.com/api/company/${sym}/company-profile`,j=>j&&j.data,{t:10000});
   if(g!==S.gen)return;const d=j.data,t=(d.CompanyDescription||d.companyDescription||{}).value;if(t&&t.length>60)S.desc=t}catch(e){}
@@ -487,11 +521,25 @@ function calc(){
  set("upside",nd.target>0&&px>0&&S.cur==="USD"?(nd.target/px-1)*100:null);
  const hi=S.hi52||t.hi;set("hi52",hi>0&&S.price?(S.price/hi-1)*100:null);
  set("beta",nd.beta!=null?nd.beta:null);set("dilut",cg("shares",3));
- /* score, verdict */
- const w=W[S.lens];S.groups={};let ws=0,ac=0,ok=0,nf=0,na=0;
- GR.forEach(([k])=>{let s=0,n=0;REG.filter(m=>m.g===k).forEach(m=>{const v=V[m.k];if(v.s==="ok"){s+=v.sc;n++}else v.s==="na"?na++:nf++});ok+=n;const gs=n?s/n:null;S.groups[k]={s:gs,n,tot:REG.filter(m=>m.g===k).length};if(gs!=null&&w[k]>0){ac+=gs*w[k];ws+=w[k]}});
- S.cov={ok,nf,na};S.score=ws&&ok>=12?Math.round(ac/ws*10)/10:null;
- const sc=S.score;S.sent=sc==null?null:sc>=7.5?["Strong Buy","#3ddc97"]:sc>=6.2?["Buy","#a6e22e"]:sc>=4.5?["Hold","#ffb84a"]:sc>=3?["Avoid","#ff8a5c"]:["Strong Avoid","#ff6b81"];
+ /* sector fit: ratios that mean nothing for banks and insurers are marked n/a instead of scored */
+ S.isFin=FIN_RX.test((S.industry||"")+" "+(S.sector||""));
+ if(S.isFin)FIN_NA.forEach(k=>{V[k]={v:null,s:"na",d:"n/m",src:"not meaningful for banks and insurers"}});
+ /* groups: weighted mean of available indicators; coverage = share of the group's indicator weight found */
+ const gscore=(k,j)=>{let sw=0,ws=0,tw=0,n=0;REG.filter(m=>m.g===k).forEach(m=>{const w=WI[m.k][j];if(!w)return;const v=V[m.k];if(v.s==="na")return;tw+=w;if(v.s==="ok"){sw+=w*v.sc;ws+=w;n++}});return{s:ws?sw/ws:null,cov:tw?ws/tw:0,n}};
+ S.groups={};let ok=0,nf=0,na=0;
+ GR.forEach(([k])=>{const ms=REG.filter(m=>m.g===k);ms.forEach(m=>{const v=V[m.k];v.s==="ok"?ok++:v.s==="na"?na++:nf++});
+  const a=gscore(k,0),b=gscore(k,1);S.groups[k]={s:a.s,cov:a.cov,sT:b.s,covT:b.cov,n:a.n,tot:ms.length}});
+ S.cov={ok,nf,na};
+ /* long-term: lens weight × coverage, so a half-empty group counts half */
+ const w=W[S.lens];let ac=0,ws=0;
+ GR.forEach(([k])=>{const G=S.groups[k];if(G.s!=null&&w[k]>0){const e=w[k]*G.cov;ac+=G.s*e;ws+=e}});
+ S.score=ws&&ok>=12?Math.round(ac/ws*10)/10:null;
+ /* entry timing: needs at least half of the technical weight and two valuation indicators */
+ let ta=0,tw=0;Object.entries(TIMING).forEach(([k,wt])=>{const G=S.groups[k];if(G.sT!=null){const e=wt*G.covT;ta+=G.sT*e;tw+=e}});
+ const tOK=S.groups.tech.covT>=.5&&REG.filter(m=>m.g==="value"&&V[m.k].s==="ok").length>=2;
+ S.tscore=tw&&tOK?Math.round(ta/tw*10)/10:null;
+ const lt=tierOf(S.score,LT_T),tm=tierOf(S.tscore,TM_T);
+ const tc=t=>isLight()?t[4]:t[3];S.sent=lt?[lt[1],tc(lt),lt[2]]:null;S.tsent=tm?[tm[1],tc(tm),tm[2]]:null;
 }
 
 /* ---------- rendering ---------- */
@@ -511,16 +559,19 @@ function render(){
  $("asof").textContent="updated "+new Date().toLocaleTimeString();
  $("grid").innerHTML=GR.map(([k,name,c])=>{const G=S.groups[k]||{},gc=G.s!=null?col(G.s):"var(--ink3)";
   const rows=REG.filter(m=>m.g===k).map(m=>{const v=S.v[m.k];const cc=v.s==="ok"?col(v.sc):"var(--ink3)";
-   const tip=`${m.l}: ${m.tip}${v.src?" Source: "+v.src+".":""} ${v.s==="ok"?"Score "+v.sc.toFixed(1)+"/10.":v.s==="na"?"Not applicable, excluded.":"Not found, excluded."}`;
+   const wi=WI[m.k],tip=`${m.l}: ${m.tip}${v.src?" Source: "+v.src+".":""} ${v.s==="ok"?"Score "+v.sc.toFixed(1)+"/10.":v.s==="na"?"Not applicable, excluded.":"Not found, excluded."} Weight: long-term ×${wi[0]}${wi[1]?", entry timing ×"+wi[1]:""}.`;
    return`<div class="m ${v.s}" style="--c:${cc}" title="${esc(tip)}"><i></i><span>${esc(m.l)}</span><b>${esc(v.d)}</b></div>`}).join("");
   return`<section class="grp glass"><div class="gh"><h3 style="--gc:${c}">${name}</h3><span class="gs" style="color:${gc};background:color-mix(in srgb,${gc} 12%,transparent)">${G.s!=null?G.s.toFixed(1):"∅"}</span></div><div class="rows">${rows}</div><div class="src">${G.n||0}/${G.tot||0} scored</div></section>`}).join("");
- const C=2*Math.PI*38,fg=$("rfg");fg.style.strokeDasharray=C;fg.style.strokeDashoffset=S.score!=null?C*(1-S.score/10):C;
- const sc=S.score,pr=sc==null?["#9aaac0","#9aaac0"]:sc>=7.5?["#0c9f6a","#19b6e6"]:sc>=6.2?["#7fb800","#0c9f6a"]:sc>=4.5?["#f5b400","#e08a00"]:["#e08a00","#e0344a"];
- $("r1").setAttribute("stop-color",pr[0]);$("r2").setAttribute("stop-color",pr[1]);$("snum").textContent=sc!=null?sc.toFixed(1):"∅";
- const se=$("sent");if(S.sent){se.textContent=S.sent[0];se.style.color=S.sent[1];se.style.background=`color-mix(in srgb,${S.sent[1]} 14%,transparent)`}else{se.textContent="not enough data";se.style.color="var(--ink3)";se.style.background="var(--field)"}
- $("cov").textContent=`${S.cov.ok}/${REG.length} indicators scored · ${S.cov.nf} missing · ${S.cov.na} n/a`;
+ const C=2*Math.PI*38;
+ const ringSet=(fgId,a,b,numId,sc)=>{const fg=$(fgId);fg.style.strokeDasharray=C;fg.style.strokeDashoffset=sc!=null?C*(1-sc/10):C;const p=ringPair(sc);$(a).setAttribute("stop-color",p[0]);$(b).setAttribute("stop-color",p[1]);$(numId).textContent=sc!=null?sc.toFixed(1):"∅"};
+ const pill=(id,t)=>{const e=$(id);if(t){e.textContent=t[0];e.style.color=t[1];e.style.background=`color-mix(in srgb,${t[1]} 14%,transparent)`}else{e.textContent="not enough data";e.style.color="var(--ink3)";e.style.background="var(--field)"}};
+ ringSet("rfg","r1","r2","snum",S.score);pill("sent",S.sent);$("lmean").textContent=S.sent?S.sent[2]+` (${S.lens} lens)`:"";
+ ringSet("tfg","t1","t2","tnum",S.tscore);pill("tsent",S.tsent);$("tmean").textContent=S.tsent?S.tsent[2]:"Needs at least half of the technical indicators and two valuation ratios.";
+ const gp=k=>{const v=S.groups[k]&&S.groups[k].sT;return v!=null?v.toFixed(1):"∅"};
+ $("tparts").textContent=`Technicals ${gp("tech")} (55%) · Valuation ${gp("value")} (30%) · Market ${gp("mkt")} (15%)`;
+ $("cov").textContent=`${S.cov.ok}/${REG.length} indicators scored · ${S.cov.nf} missing · ${S.cov.na} n/a${S.isFin?" · bank/insurer ratios excluded":""}`;
  $("lchip").textContent=S.lens[0].toUpperCase()+S.lens.slice(1);
- const V=S.v,gates=[["Rev CAGR ≥10%",V.revCagr5,v=>v>=10],["P/E <25",V.pe,v=>v>0&&v<25],["PEG <2",V.peg,v=>v>0&&v<2],["ROE 5y >5%",V.roe5,v=>v>5],["Quick >1.5",V.quick,v=>v>1.5]];
+ const V=S.v,gates=[["Rev CAGR ≥10%",V.revCagr5,v=>v>=10],["P/E <25",V.pe,v=>v>0&&v<25],["PEG <2",V.peg,v=>v>0&&v<2],["ROE 5y >5%",V.roe5,v=>v>5],["Quick >1.0",V.quick,v=>v>1]];
  let pass=0,tot=0;$("gates").innerHTML=gates.map(([l,v,f])=>{const ok=v.s==="ok"&&isN(v.v)||(v.s==="ok"&&v.force!=null&&l==="P/E <25"),p=ok?f(v.v):null;if(ok){tot++;if(p)pass++}return`<span class="gate ${ok?(p?"p":"f"):"s"}">${l} ${ok?(p?"✓":"✗"):"∅"}</span>`}).join("");
  $("note").textContent=note(pass,tot);
  $("bars").innerHTML=GR.map(([k,n])=>{const s=(S.groups[k]||{}).s,c=s!=null?col(s):"var(--ink3)";return`<div class="br"><span>${n.split(" ")[0]}</span><u><i style="width:${s!=null?s*10:0}%;background:${c}"></i></u><b style="color:${c}">${s!=null?s.toFixed(1):"∅"}</b></div>`}).join("");
@@ -529,13 +580,15 @@ function render(){
 }
 function note(pass,tot){
  if(S.score==null)return`${S.name||S.sym}: not enough reliable data for a verdict. Missing values are excluded, never guessed.`;
- const ok=REG.filter(m=>S.v[m.k].s==="ok").map(m=>({m,v:S.v[m.k]})),top=[...ok].sort((a,b)=>b.v.sc-a.v.sc).slice(0,2),low=[...ok].sort((a,b)=>a.v.sc-b.v.sc).filter(x=>x.v.sc<5).slice(0,2);
- let t=`${S.name} scores ${S.score.toFixed(1)}/10 (${S.sent[0]}, ${S.lens} lens).`;
+ const ok=REG.filter(m=>S.v[m.k].s==="ok"&&WI[m.k][0]>=.75).map(m=>({m,v:S.v[m.k]})),top=[...ok].sort((a,b)=>b.v.sc-a.v.sc).slice(0,2),low=[...ok].sort((a,b)=>a.v.sc-b.v.sc).filter(x=>x.v.sc<5).slice(0,2);
+ let t=`${S.name}: long-term ${S.score.toFixed(1)}/10 (${S.sent[0].toLowerCase()}, 1–3 years)`+(S.tscore!=null?`; entry timing ${S.tscore.toFixed(1)}/10 (${S.tsent[0].toLowerCase()}, 2–12 weeks).`:".");
  if(top.length)t+=` Strongest: ${top.map(x=>x.m.l+" "+x.v.d).join(", ")}.`;
  if(low.length)t+=` Weakest: ${low.map(x=>x.m.l+" "+x.v.d).join(", ")}.`;
  if(tot)t+=` Passes ${pass} of ${tot} screening gates.`;
  const q=S.groups.quality&&S.groups.quality.s,v=S.groups.value&&S.groups.value.s;
  if(q>=7&&v!=null&&v<4.5)t+=" High-quality business, but the price already reflects it.";
+ const lti=LT_T.findIndex(x=>x[1]===S.sent[0]),tti=S.tsent?TM_T.findIndex(x=>x[1]===S.tsent[0]):-1;
+ if(tti>=0&&Math.abs(lti-tti)>=1){const tg=S.groups.tech.sT,vg=S.groups.value.sT;t+=tti>lti?` Timing lags the long-term case: ${tg!=null&&vg!=null&&vg<tg?"valuation":"price action"} is the weaker side.`:" Price action is currently stronger than the long-term case."}
  if(S.cov.ok<REG.length*.6)t+=` Only ${S.cov.ok}/${REG.length} indicators available: treat as provisional.`;
  return t}
 
@@ -570,7 +623,7 @@ function chart(){
 async function load(sym,fresh){
  sym=sym.trim().toUpperCase();if(!sym)return;const g=++S.gen;
  if(fresh)Object.keys(localStorage).forEach(k=>k.startsWith("sg_")&&k.includes(sym)&&localStorage.removeItem(k));
- Object.assign(S,{sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,F:null,v:{},groups:{},score:null,sent:null,via:{}});
+ Object.assign(S,{sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",industry:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,F:null,v:{},groups:{},score:null,sent:null,tscore:null,tsent:null,via:{}});
  $("srcs").innerHTML=[["sec","SEC EDGAR"],["yahoo","Yahoo"],["nasdaq","Nasdaq"],["est","Consensus EPS"],["wiki","Wikipedia"]].map(([k,l])=>`<span class="st" data-k="${k}">${l}</span>`).join("");
  store("sg_last",sym);$("banner").classList.remove("show");$("cname").textContent="Loading "+sym+"…";
  await Promise.allSettled([secTask(sym,g),yahooTask(sym,g),fundTask(sym,g),divTask(sym,g),nasdaqTask(sym,g)]);
