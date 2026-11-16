@@ -18,7 +18,6 @@
   --ink:#eef1f5; --ink2:#b6bec9; --ink3:#828b96;
   --ln:rgba(255,255,255,.13);
   
-  /* Panels made slightly lighter */
   --glass-a:rgba(255,255,255,.16); 
   --glass-b:rgba(255,255,255,.06); 
   --glass-brd:rgba(255,255,255,.22); 
@@ -42,7 +41,6 @@ html[data-theme="light"]{
   --ink:#171c22; --ink2:#48525e; --ink3:#77818d;
   --ln:rgba(20,30,45,.13);
   
-  /* Panels made slightly lighter */
   --glass-a:rgba(255,255,255,.88); 
   --glass-b:rgba(255,255,255,.55); 
   --glass-brd:rgba(255,255,255,.95); 
@@ -151,8 +149,33 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
 .seg{display:inline-flex;gap:2px;padding:2px;margin-top:6px;border-radius:99px;background:var(--field);border:1px solid var(--ln)}
 .seg button{border:0;background:none;padding:2px 9px;border-radius:99px;font-size:10.5px;font-weight:700;color:var(--ink2)}.seg button:hover{color:var(--ink)}
 .seg button.on{background:var(--ink);color:var(--bg1);box-shadow:0 2px 8px rgba(0,0,0,.28)}
-@media(max-width:1180px){body{overflow:auto}#app{height:auto;min-height:100dvh}#main{grid-template-columns:1fr}#left{overflow:visible}#grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none}.rows{gap:3px}#side{overflow:visible}#fin{height:150px}}
-@media(max-width:620px){.brand b{display:none}#id{flex-wrap:wrap}.pr{text-align:left}#grid{grid-template-columns:1fr}}
+
+/* ---------- Responsive Adjustments ---------- */
+@media(max-width:1180px){
+  body{overflow:auto}
+  #app{height:auto;min-height:100dvh}
+  #main{display:flex;flex-direction:column;gap:10px}
+  #side{order:-1;overflow:visible} /* Moves Sidebar (Score + Verdict) to the TOP on mobile */
+  #left{overflow:visible}
+  #grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none}
+  .rows{gap:3px}
+  #fin{height:150px}
+}
+
+@media(max-width:768px){
+  #top{flex-wrap:wrap;justify-content:space-between;padding:8px 10px}
+  .brand{order:1}
+  .tools{order:2}
+  .searchwrap{order:3;width:100%;max-width:none;margin-top:6px}
+  #q{font-size:16px} /* Prevents iOS auto-zoom */
+}
+
+@media(max-width:620px){
+  .brand b{display:none}
+  #id{flex-wrap:wrap}
+  .pr{text-align:left;flex:1 1 100%;margin-top:10px}
+  #grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -173,9 +196,12 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
   <div id="left"><div id="grid"></div></div>
   <aside id="side">
    <div class="card glass" id="vc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="rg" x1="0" y1="1" x2="1" y2="0"><stop id="r1" offset="0" stop-color="#0c9f6a"/><stop id="r2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="rfg" cx="46" cy="46" r="38" fill="none" stroke="url(#rg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="snum">–</b><small>/ 10</small></div></div><div><span id="sent">…</span><div id="cov"></div></div></div>
+   
+   <!-- MOVED: Score by group now appears right below Final Score -->
+   <div class="card glass"><h3>Score by group</h3><div class="bars" id="bars"></div></div>
+   
    <div class="card glass"><h3>Verdict note <span class="chip" id="lchip">Balanced</span></h3><div id="gates"></div><p id="note"></p></div>
    <div class="card glass" id="finc"><h3>Revenue, net income &amp; margin <span class="chip" id="funit"></span></h3><div id="fin"></div><div class="lgd"><span><i class="d rev"></i>Revenue</span><span><i class="d ni"></i>Net inc.</span><span><i class="d mar"></i>Margin</span><button id="esttog" title="Show or hide estimates"><i></i>Est.</button></div><div id="estnote"></div></div>
-   <div class="card glass"><h3>Score by group</h3><div class="bars" id="bars"></div></div>
    <div class="card glass"><h3>Sources</h3><div id="srcs"></div></div>
    <p id="disc">Rule-based screen on public data, not investment advice. Missing values (∅) are excluded from the score, never guessed.</p>
   </aside>
