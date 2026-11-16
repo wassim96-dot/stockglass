@@ -184,7 +184,7 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
  <header id="top" class="glass">
   <div class="brand"><span class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M6 4v3M6 15v4M4 7h4v8H4zM12 2v4M12 16v5M10 6h4v10h-4zM18 5v3M18 17v3M16 8h4v9h-4z"/></svg></span><b>StockGlass Lite</b></div>
   <div class="searchwrap"><div class="sbox"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".55"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Ticker or name — AAPL, MSFT, ASML.AS…" autocomplete="off" spellcheck="false" aria-label="Search stocks"><div id="spin"></div></div><div id="drop" class="glass" role="listbox"></div></div>
-  <div class="tools"><select class="btn" id="lens" aria-label="Scoring lens"><option value="balanced">Balanced</option><option value="value">Value</option><option value="growth">Growth</option><option value="dividend">Dividend</option></select><button class="btn" id="refresh" title="Reload live data" aria-label="Reload">⟳</button><button class="btn" id="copy" title="Copy verdict">Copy</button><button class="btn" id="theme" title="Toggle light / dark" aria-label="Toggle theme"></button></div>
+  <div class="tools"><select class="btn" id="lens" aria-label="Scoring lens"><option value="balanced">Balanced</option><option value="value">Value</option><option value="growth">Growth</option><option value="dividend">Dividend</option></select><button class="btn" id="refresh" title="Reload live data" aria-label="Reload">⟳</button><button class="btn" id="copy" title="Copy indices">Copy</button><button class="btn" id="theme" title="Toggle light / dark" aria-label="Toggle theme"></button></div>
  </header>
  <div id="banner">Live sources unreachable. Retry, or set MY_PROXY in the script (see top of code).<button class="btn" id="retry">Retry</button></div>
  <section id="id" class="glass">
@@ -602,7 +602,36 @@ function init(){
  $("lens").value=S.lens;
  $("lens").onchange=()=>{S.lens=$("lens").value;store("sg_lens",S.lens);if(S.sym)draw()};
  $("refresh").onclick=()=>S.sym&&load(S.sym,true);$("retry").onclick=()=>load(S.sym||"AAPL",true);
- $("copy").onclick=()=>{if(!S.sym||S.score==null)return;const t=`${S.sym} ${S.score.toFixed(1)}/10 ${S.sent[0]}. ${$("note").textContent} (StockGlass Lite, ${new Date().toLocaleString()})`;navigator.clipboard?navigator.clipboard.writeText(t).then(()=>toast("Verdict copied")).catch(()=>toast("Copy blocked by browser")):toast("Clipboard unavailable")};
+ 
+ // UPDATED COPY FUNCTION - ONLY ROW INDICES
+ $("copy").onclick=()=>{
+    if(!S.sym||S.score==null)return;
+    
+    let text = "";
+    
+    // Loop through groups (Growth, Profitability, etc.)
+    GR.forEach(([k, name]) => {
+        let groupText = "";
+        // Find all metrics for this group
+        REG.filter(m => m.g === k).forEach(m => {
+            const v = S.v[m.k];
+            // Only include if status is not 'nf' (not found) or 'na' (not applicable), and value is not "∅"
+            if (v && v.s !== "nf" && v.s !== "na" && v.d !== "∅") {
+                groupText += `- ${m.l}: ${v.d}\n`;
+            }
+        });
+        // If this group has any valid metrics, add it to the text
+        if (groupText) {
+            text += `[${name}]\n${groupText}\n`;
+        }
+    });
+    
+    // Remove trailing newlines
+    text = text.trim();
+    
+    navigator.clipboard ? navigator.clipboard.writeText(text).then(()=>toast("Indices copied")).catch(()=>toast("Copy blocked by browser")) : toast("Clipboard unavailable");
+ };
+
  $("cdesc").onclick=e=>e.currentTarget.classList.toggle("open");
  document.addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();$("q").focus()}else if(e.key==="/"&&!/INPUT|SELECT/.test(document.activeElement.tagName)){e.preventDefault();$("q").focus()}});
  $("per").onclick=e=>{const b=e.target.closest("[data-p]");if(b){S.per=b.dataset.p;store("sg_per",S.per);if(S.sym)render()}};
