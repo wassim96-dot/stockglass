@@ -125,6 +125,7 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
 .hz{font-style:normal;font-size:9.5px;font-weight:700;color:var(--info);padding:1px 8px;border-radius:99px;border:1px solid var(--ln)}
 .mean{font-size:10.5px;line-height:1.45;color:var(--ink2);margin-top:5px}
 .parts{font-size:10px;color:var(--ink3);margin-top:4px;line-height:1.4}
+.tevt{font-size:10px;line-height:1.45;color:var(--ink2);margin-top:6px}.tevt.in{color:var(--warn);padding:5px 8px;border-radius:9px;border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);background:color-mix(in srgb,var(--warn) 10%,transparent)}
 .mreg{font-size:10px;color:var(--ink2);margin-top:6px;line-height:1.4}.mreg b{font-weight:800;padding:1px 7px;border-radius:99px;border:1px solid currentColor;margin-right:5px}
 .ring{position:relative;width:92px;height:92px;flex:none}.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring div{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.ring b{font-size:28px;font-weight:800;line-height:1}.ring small{font-size:9px;color:var(--ink3);font-weight:600}
@@ -203,7 +204,7 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
   <div id="left"><div id="grid"></div></div>
   <aside id="side">
    <div class="card glass sc" id="vc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="rg" x1="0" y1="1" x2="1" y2="0"><stop id="r1" offset="0" stop-color="#0c9f6a"/><stop id="r2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="rfg" cx="46" cy="46" r="38" fill="none" stroke="url(#rg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="snum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Long-term score <i class="hz">1–3 years</i></span><span id="sent">…</span><p class="mean" id="lmean"></p><div id="cov"></div></div></div>
-   <div class="card glass sc" id="tc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="tg" x1="0" y1="1" x2="1" y2="0"><stop id="t1" offset="0" stop-color="#0c9f6a"/><stop id="t2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="tfg" cx="46" cy="46" r="38" fill="none" stroke="url(#tg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="tnum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Entry-timing score <i class="hz">2–12 weeks</i></span><span id="tsent">…</span><p class="mean" id="tmean"></p><div class="parts" id="tparts"></div><div class="mreg" id="mreg"></div></div></div>
+   <div class="card glass sc" id="tc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="tg" x1="0" y1="1" x2="1" y2="0"><stop id="t1" offset="0" stop-color="#0c9f6a"/><stop id="t2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="tfg" cx="46" cy="46" r="38" fill="none" stroke="url(#tg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="tnum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Entry-timing score <i class="hz">2–12 weeks</i></span><span id="tsent">…</span><p class="mean" id="tmean"></p><div class="parts" id="tparts"></div><div class="tevt" id="tevt"></div><div class="mreg" id="mreg"></div></div></div>
    
    <!-- Score by group (long-term weights) -->
    <div class="card glass"><h3>Score by group <span class="chip">long-term weights</span></h3><div class="bars" id="bars"></div></div>
@@ -352,6 +353,10 @@ const RF=4.94,ERP=4.41;      /* Damodaran, 1 Nov 2026: US T-bond rate and implie
 const LW={growth:10,profit:20,health:11,value:22,quality:14,div:3,tech:12,mkt:8};   /* long-term group weights */
 /* Entry timing (2–12 weeks): price action, then earnings news; valuation acts as a downside-risk factor */
 const TIMING={tech:55,mkt:25,value:20};
+/* Weak valuation weighs more in both scores: below 4/10 its weight × (1 + 2·(4 − v)/4), up to ×3 at 0.
+   Stocks priced for high growth fall much harder on disappointments than they rise on beats (Skinner & Sloan 2002). */
+const VAL_T=4,VAL_K=2,vmult=v=>v==null||v>=VAL_T?1:1+VAL_K*(VAL_T-Math.max(v,0))/VAL_T;
+const EVENT_DAYS=84;          /* earnings within 12 weeks fall inside the entry-timing horizon */
 /* Banks and insurers: these ratios are not meaningful (deposits are liabilities, no gross margin, no EBITDA) */
 const FIN_RX=/\b(bank|banks|banking|insurance|insurer|reinsurance|savings institution|thrift)/i;
 const FIN_NA=["gross","fcfM","conv","ndEbitda","intCov","de","current","quick","evEbitda","pfcf","fcfY","altman","beneish"];
@@ -428,7 +433,13 @@ async function nasdaqTask(sym,g){
   stat("est").className=S.est.length?"st ok":"st nf"}catch(e){if(g===S.gen)stat("est").className="st nf"}
  try{const{j}=await race(`https://api.nasdaq.com/api/company/${sym}/earnings-surprise`,j=>j&&j.data&&j.data.earningsSurpriseTable,{t:10000});
   if(g!==S.gen)return;const rs=((j.data.earningsSurpriseTable.rows)||[]).map(r=>nn(r.percentageSurprise)).filter(isN).slice(0,2);
-  if(rs.length)S.surp=sum(rs)/rs.length;stat("surp").className=rs.length?"st ok":"st nf"}catch(e){if(g===S.gen)stat("surp").className="st nf"}soon()}
+  if(rs.length)S.surp=sum(rs)/rs.length;stat("surp").className=rs.length?"st ok":"st nf"}catch(e){if(g===S.gen)stat("surp").className="st nf"}
+ /* next earnings date (Nasdaq): "…estimated to report earnings on 01/20/2026…" or "…: Jan 20, 2026" */
+ try{const{j}=await race(`https://api.nasdaq.com/api/analyst/${sym}/earnings-date`,j=>j&&j.data&&(j.data.reportText||j.data.announcement),{t:10000});
+  if(g!==S.gen)return;const tx=`${j.data.reportText||""} ${j.data.announcement||""}`;let t=null;
+  const m1=tx.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/),m2=tx.match(/([A-Z][a-z]{2,8}\.? \d{1,2}, \d{4})/);
+  if(m1)t=new Date(+m1[3],+m1[1]-1,+m1[2]).getTime();else if(m2)t=Date.parse(m2[1].replace(".",""));
+  if(isN(t))S.nextEarn={t,confirmed:!/estimat|project|expect/i.test(tx)}}catch(e){}soon()}
 
 /* ---------- benchmark for relative strength: US sector ETF, else STOXX Europe 600 ---------- */
 const SECTOR_ETF=[[/health|pharma|biotech|medical/i,"XLV"],[/tech|software|semicond|computer|electronic/i,"XLK"],[/communic|telecom|media|internet|entertain/i,"XLC"],
@@ -583,12 +594,12 @@ function calc(){
   const a=gscore(k,0),b=gscore(k,1);S.groups[k]={s:a.s,cov:a.cov,sT:b.s,covT:b.cov,n:a.n,tot:ms.length}});
  S.cov={ok,nf,na};
  /* long-term: group weight × coverage (a half-empty group counts half; under 40% coverage it is left out) */
- const w=LW;let ac=0,ws=0;
- GR.forEach(([k])=>{const G=S.groups[k];if(G.s!=null&&w[k]>0&&G.cov>=MIN_COV){const e=w[k]*G.cov;ac+=G.s*e;ws+=e}});
+ const w=LW;let ac=0,ws=0;S.vmL=vmult(S.groups.value.s);S.vmT=vmult(S.groups.value.sT);
+ GR.forEach(([k])=>{const G=S.groups[k];if(G.s!=null&&w[k]>0&&G.cov>=MIN_COV){const e=w[k]*G.cov*(k==="value"?S.vmL:1);ac+=G.s*e;ws+=e}});
  const clab=c=>c>=.8?"high":c>=.6?"medium":"low";
  S.score=ws&&ok>=12?Math.round(ac/ws*10)/10:null;
  /* entry timing: needs at least half of the technical weight and two valuation indicators */
- let ta=0,tw=0;Object.entries(TIMING).forEach(([k,wt])=>{const G=S.groups[k];if(G.sT!=null&&G.covT>=MIN_COV){const e=wt*G.covT;ta+=G.sT*e;tw+=e}});
+ let ta=0,tw=0;Object.entries(TIMING).forEach(([k,wt])=>{const G=S.groups[k];if(G.sT!=null&&G.covT>=MIN_COV){const e=wt*G.covT*(k==="value"?S.vmT:1);ta+=G.sT*e;tw+=e}});
  const tOK=S.groups.tech.covT>=.5&&REG.filter(m=>m.g==="value"&&V[m.k].s==="ok").length>=2;
  S.tscore=tw&&tOK?Math.round(ta/tw*10)/10:null;
  S.conf=clab(GR.reduce((a,[k])=>a+(S.groups[k].cov>=MIN_COV?LW[k]*S.groups[k].cov:0),0)/100);
@@ -620,12 +631,18 @@ function render(){
  const C=2*Math.PI*38;
  const ringSet=(fgId,a,b,numId,sc)=>{const fg=$(fgId);fg.style.strokeDasharray=C;fg.style.strokeDashoffset=sc!=null?C*(1-sc/10):C;const p=ringPair(sc);$(a).setAttribute("stop-color",p[0]);$(b).setAttribute("stop-color",p[1]);$(numId).textContent=sc!=null?sc.toFixed(1):"∅"};
  const pill=(id,t)=>{const e=$(id);if(t){e.textContent=t[0];e.style.color=t[1];e.style.background=`color-mix(in srgb,${t[1]} 14%,transparent)`}else{e.textContent="not enough data";e.style.color="var(--ink3)";e.style.background="var(--field)"}};
- ringSet("rfg","r1","r2","snum",S.score);pill("sent",S.sent);$("lmean").textContent=S.sent?S.sent[2]+` Data confidence: ${S.conf}.`:"";
+ ringSet("rfg","r1","r2","snum",S.score);pill("sent",S.sent);const ltot=Object.values(LW).reduce((a,b)=>a+b,0),vsL=Math.round(100*LW.value*S.vmL/(ltot-LW.value+LW.value*S.vmL));
+ $("lmean").textContent=S.sent?S.sent[2]+(S.vmL>1?` Valuation is weak (${S.groups.value.s.toFixed(1)}), so its weight rises from ${Math.round(100*LW.value/ltot)}% to about ${vsL}%.`:"")+` Data confidence: ${S.conf}.`:"";
  ringSet("tfg","t1","t2","tnum",S.tscore);pill("tsent",S.tsent);$("tmean").textContent=S.tsent?S.tsent[2]+` Data confidence: ${S.tconf}.`:"Needs at least half of the technical indicators and two valuation ratios.";
  const gp=k=>{const v=S.groups[k]&&S.groups[k].sT;return v!=null?v.toFixed(1):"∅"};
  {const M_=S.mkt,el=$("mreg");if(M_){const cc=M_.lab==="Supportive"?"var(--good)":M_.lab==="Hostile"?"var(--bad)":"var(--warn)";
   el.innerHTML=`<b style="color:${cc}">Market: ${M_.lab}</b>${esc(M_.n)} ${M_.iv>=0?"+":""}${M_.iv.toFixed(1)}% vs its 200-day, 50-day ${M_.up?"above":"below"} 200-day. Not scored.`}else el.textContent=""}
- $("tparts").textContent=`Technicals ${gp("tech")} (55%) · Market & earnings ${gp("mkt")} (25%) · Valuation ${gp("value")} (20%)`;
+ {const den=100-TIMING.value+TIMING.value*S.vmT,sh=k=>Math.round(100*TIMING[k]*(k==="value"?S.vmT:1)/den);
+  $("tparts").textContent=`Technicals ${gp("tech")} (${sh("tech")}%) · Market & earnings ${gp("mkt")} (${sh("mkt")}%) · Valuation ${gp("value")} (${sh("value")}%)`+(S.vmT>1?" · valuation weight raised because it is weak":"")}
+ {const el=$("tevt"),E=S.nextEarn;el.className="tevt";el.textContent="";
+  if(E){const days=Math.round((E.t-Date.now())/864e5),ds=new Date(E.t).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}),cf=E.confirmed?"confirmed":"estimated";
+   if(days>=0&&days<=EVENT_DAYS){el.classList.add("in");el.textContent=`⚠ Earnings on ${ds} (${cf}), in ${days} days, inside the 2–12-week window: the report can move the price sharply and override this score.`+(S.groups.value.sT!=null&&S.groups.value.sT<VAL_T?" With valuation this stretched, a disappointment usually costs more than a beat gains.":"")}
+   else if(days>EVENT_DAYS)el.textContent=`Next earnings ${ds} (${cf}), after the 12-week window.`}}
  $("cov").textContent=`${S.cov.ok}/${REG.length} indicators scored · ${S.cov.nf} missing · ${S.cov.na} n/a${S.isFin?" · bank/insurer ratios excluded":""}`;
  const V=S.v,gates=[["Rev CAGR ≥10%",V.revCagr5,v=>v>=10],["P/E <25",V.pe,v=>v>0&&v<25],["PEG <2",V.peg,v=>v>0&&v<2],["ROE 5y >5%",V.roe5,v=>v>5],["Net debt/EBITDA <3",V.ndEbitda,v=>v<3]];
  let pass=0,tot=0;$("gates").innerHTML=gates.map(([l,v,f])=>{const nc=l.startsWith("Net debt")&&v.s==="ok"&&v.d==="net cash",ok=v.s==="ok"&&isN(v.v)||(v.s==="ok"&&v.force!=null&&l==="P/E <25")||nc,p=ok?(nc?true:isN(v.v)?f(v.v):false):null;if(ok){tot++;if(p)pass++}return`<span class="gate ${ok?(p?"p":"f"):"s"}">${l} ${ok?(p?"✓":"✗"):"∅"}</span>`}).join("");
@@ -679,7 +696,7 @@ function chart(){
 async function load(sym,fresh){
  sym=sym.trim().toUpperCase();if(!sym)return;const g=++S.gen;
  if(fresh)Object.keys(localStorage).forEach(k=>k.startsWith("sg_")&&k.includes(sym)&&localStorage.removeItem(k));
- Object.assign(S,{sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",industry:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,surp:null,bench:null,mkt:null,F:null,v:{},groups:{},score:null,sent:null,tscore:null,tsent:null,via:{}});
+ Object.assign(S,{sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",industry:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,surp:null,nextEarn:null,bench:null,mkt:null,F:null,v:{},groups:{},score:null,sent:null,tscore:null,tsent:null,via:{}});
  $("srcs").innerHTML=[["sec","SEC EDGAR"],["yahoo","Yahoo"],["nasdaq","Nasdaq"],["est","Consensus EPS"],["surp","Earnings surprise"],["bench","Benchmark"],["wiki","Wikipedia"]].map(([k,l])=>`<span class="st" data-k="${k}">${l}</span>`).join("");
  store("sg_last",sym);$("banner").classList.remove("show");$("cname").textContent="Loading "+sym+"…";
  await Promise.allSettled([secTask(sym,g),yahooTask(sym,g),fundTask(sym,g),divTask(sym,g),nasdaqTask(sym,g)]);
