@@ -112,6 +112,7 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
 .m{display:flex;align-items:center;gap:7px;padding:2px 4px;border-radius:8px;cursor:help;min-width:0}.m:hover{background:var(--sel)}
 .m i{width:8px;height:8px;border-radius:50%;flex:none;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent)}
 .m.nf i{background:none;border:1.5px dashed var(--warn);box-shadow:none}
+.m.ctx i{background:none;border:1.5px solid var(--ink3);box-shadow:none}.m.ctx span,.m.ctx b{color:var(--ink3);font-style:italic}
 .m span{flex:1;font-size:11px;font-weight:500;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .m b{font-size:12px;font-weight:700;color:var(--c)}.m.nf b,.m.na b{color:var(--ink3)}
 .src{font-size:9.5px;color:var(--ink3);font-weight:600;margin-top:3px}
@@ -189,7 +190,7 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
  <header id="top" class="glass">
   <div class="brand"><span class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M6 4v3M6 15v4M4 7h4v8H4zM12 2v4M12 16v5M10 6h4v10h-4zM18 5v3M18 17v3M16 8h4v9h-4z"/></svg></span><b>StockGlass Lite</b></div>
   <div class="searchwrap"><div class="sbox"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".55"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Ticker or name — AAPL, MSFT, ASML.AS…" autocomplete="off" spellcheck="false" aria-label="Search stocks"><div id="spin"></div></div><div id="drop" class="glass" role="listbox"></div></div>
-  <div class="tools"><select class="btn" id="lens" aria-label="Scoring lens"><option value="balanced">Balanced</option><option value="value">Value</option><option value="growth">Growth</option><option value="dividend">Dividend</option></select><button class="btn" id="refresh" title="Reload live data" aria-label="Reload">⟳</button><button class="btn" id="copy" title="Copy indices">Copy</button><button class="btn" id="theme" title="Toggle light / dark" aria-label="Toggle theme"></button></div>
+  <div class="tools"><button class="btn" id="refresh" title="Reload live data" aria-label="Reload">⟳</button><button class="btn" id="copy" title="Copy indices">Copy</button><button class="btn" id="theme" title="Toggle light / dark" aria-label="Toggle theme"></button></div>
  </header>
  <div id="banner">Live sources unreachable. Retry, or set MY_PROXY in the script (see top of code).<button class="btn" id="retry">Retry</button></div>
  <section id="id" class="glass">
@@ -206,7 +207,7 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
    <!-- Score by group (long-term weights) -->
    <div class="card glass"><h3>Score by group <span class="chip">long-term weights</span></h3><div class="bars" id="bars"></div></div>
    
-   <div class="card glass"><h3>Verdict note <span class="chip" id="lchip">Balanced</span></h3><div id="gates"></div><p id="note"></p></div>
+   <div class="card glass"><h3>Verdict note</h3><div id="gates"></div><p id="note"></p></div>
    <div class="card glass" id="finc"><h3>Revenue, net income &amp; margin <span class="chip" id="funit"></span></h3><div id="fin"></div><div class="lgd"><span><i class="d rev"></i>Revenue</span><span><i class="d ni"></i>Net inc.</span><span><i class="d mar"></i>Margin</span><button id="esttog" title="Show or hide estimates"><i></i>Est.</button></div><div id="estnote"></div></div>
    <div class="card glass"><h3>Sources</h3><div id="srcs"></div></div>
    <p id="disc">Rule-based screen on public data, not investment advice. Missing values (∅) are excluded from the score, never guessed.</p>
@@ -282,60 +283,72 @@ M("gross","profit","Gross margin",pc,[[10,1],[25,4],[40,6.5],[55,8.5],[70,10]],"
 M("op","profit","Operating margin",pc,[[0,1],[8,4],[15,6],[25,8],[35,9.5],[50,10]],"Core profitability. Target ≥15%."),
 M("net","profit","Net margin",pc,[[-5,0],[0,2],[5,4],[10,6],[20,8.5],[30,10]],"Net profit per unit of sales."),
 M("fcfM","profit","FCF margin",pc,[[0,1],[5,3.5],[10,5.5],[20,8],[30,10]],"Free cash flow / revenue."),
-M("roe","profit","ROE",pc,[[0,1],[5,3.5],[10,5.5],[15,7],[25,9],[40,10]],"Return on equity (inflated by buybacks when equity is small)."),
+M("roe","profit","ROE",pc,[[0,1],[5,3.5],[10,5.5],[15,7],[25,9],[40,10]],"Return on equity. Context only: inflated by leverage and buybacks."),
 M("roe5","profit","ROE 5y avg",pc,[[0,1],[5,3.5],[10,5.5],[15,7],[25,9],[40,10]],"Average ROE; gate > 5%."),
 M("roic","profit","ROIC",pc,[[2,.5],[6,3.5],[10,6],[15,8],[25,10]],"NOPAT / invested capital. Target ≥10%."),
+M("gpa","profit","Gross profit / assets",pc,[[5,1],[15,4],[25,6.5],[35,8.5],[50,10]],"Gross profitability (Novy-Marx 2013): as predictive as book-to-market."),
 M("ndEbitda","health","Net debt / EBITDA",xf,[[-2,10],[0,9.5],[1,8],[2,6],[3,4],[4,2],[5,.5],[7,0]],"Years of EBITDA to repay net debt; <0 = net cash."),
 M("intCov","health","Interest cover",v=>v>=999?"no debt":xf(v),[[.5,0],[1,1],[2,2.5],[5,5.5],[10,8],[20,10]],"EBIT / interest expense. Target ≥5×."),
 M("de","health","Debt / equity",v=>pc(v,0),[[0,10],[30,9],[60,8],[100,6.5],[150,4.5],[250,2],[400,0]],"Total debt / equity. Target ≤100%."),
 M("current","health","Current ratio",v=>xf(v,2),[[.6,.5],[.8,2],[1,3.5],[1.2,5],[1.5,7],[2,8.5],[3,10]],"Current assets / current liabilities."),
-M("quick","health","Quick ratio",v=>xf(v,2),[[.3,.5],[.5,1.5],[.8,3.5],[1,5.5],[1.5,7.5],[2,9],[3,10]],"(Current assets − inventory) / current liabilities; gate > 1.0."),
+M("quick","health","Quick ratio",v=>xf(v,2),[[.3,.5],[.5,1.5],[.8,3.5],[1,5.5],[1.5,7.5],[2,9],[3,10]],"(Current assets − inventory) / current liabilities. Low weight: describes working-capital structure more than solvency."),
 M("pe","value","P/E trailing",xf,[[5,9.5],[8,9],[12,8.5],[18,7.5],[25,6],[35,4],[50,2],[80,.5]],"Price / trailing EPS; gate < 25."),
 M("peFwd","value","P/E forward",xf,[[5,9.5],[8,9],[12,8.5],[17,7.5],[23,6],[32,4],[45,2],[70,.5]],"Price / next-year EPS (Nasdaq consensus, else model)."),
-M("peg","value","PEG",v=>xf(v,2),[[.3,10],[.5,9.5],[1,8.5],[1.5,7],[2,5.5],[3,3],[5,1]],"P/E ÷ 5y EPS growth; gate < 2."),
+M("peg","value","PEG",v=>xf(v,2),[[.3,10],[.5,9.5],[1,8.5],[1.5,7],[2,5.5],[3,3],[5,1]],"P/E ÷ 5y EPS growth; gate < 2. Low weight: relies on growth that rarely persists."),
 M("ps","value","P/S",xf,[[.7,9.5],[1,9],[2,8],[4,6.5],[8,4],[15,1.5],[25,.5]],"Market cap / revenue."),
-M("pfcf","value","P/FCF",xf,[[6,9.5],[8,9],[12,8.5],[18,7],[25,5.5],[40,3],[60,1]],"Market cap / free cash flow."),
+M("pfcf","value","P/FCF",xf,[[6,9.5],[8,9],[12,8.5],[18,7],[25,5.5],[40,3],[60,1]],"Market cap / free cash flow. Context only: the inverse of FCF yield, which is scored."),
 M("evEbitda","value","EV / EBITDA",xf,[[4,9.5],[6,9],[10,8],[14,6.5],[20,4.5],[30,2],[45,.5]],"Enterprise value / EBITDA."),
 M("fcfY","value","FCF yield",pc,[[0,.5],[2,4],[4,6.5],[6,8.5],[9,10]],"FCF / market cap. Target ≥4%."),
 M("shY","value","Shareholder yield",pc,[[-2,1],[0,2.5],[1,4.5],[3,7],[5,9],[8,10]],"(Dividends + buybacks) / market cap."),
+M("pb","value","P/B",v=>xf(v,2),[[.5,9],[.8,8],[1,7],[1.5,5],[2,3.5],[3,1.5]],"Price / book. Scored for banks and insurers only."),
 M("piotroski","quality","Piotroski F",v=>v.toFixed(0)+"/9",[[0,0],[3,3],[5,5.5],[7,7.5],[8,9],[9,10]],"9-point fundamental-strength score."),
 M("beneish","quality","Beneish M",v=>v.toFixed(2),[[-3.2,10],[-2.6,9.5],[-2.22,7],[-1.78,4],[-1,2],[0,0]],"Earnings-manipulation risk; safe below −2.22."),
 M("altman","quality","Altman Z",v=>v.toFixed(1),[[1,.5],[1.8,2],[2.2,3.5],[3,6.5],[5,8.5],[8,10]],"Bankruptcy-risk composite; safe above 3."),
 M("conv","quality","FCF / net income",v=>pc(v,0),[[0,.5],[50,4],[80,6.5],[100,8],[130,10]],"Cash backing of reported earnings."),
 M("gmStab","quality","Gross margin σ",v=>v.toFixed(1)+" pt",[[1,9.5],[2,9],[3,8],[6,6],[10,3.5],[15,1.5]],"Stability of gross margin over 5y (lower = better)."),
-M("spread","quality","ROIC − WACC",v=>(v>=0?"+":"")+v.toFixed(1)+" pt",[[-3,0],[0,3],[3,6],[8,8.5],[15,10]],"Value creation vs CAPM cost of capital (estimate)."),
+M("spread","quality","ROIC − WACC",v=>(v>=0?"+":"")+v.toFixed(1)+" pt",[[-3,0],[0,3],[3,6],[8,8.5],[15,10]],"Return on capital minus WACC (CAPM cost of equity, after-tax cost of debt). Banks/insurers: ROE minus cost of equity."),
 M("divY","div","Dividend yield",v=>pc(v,2),[[0,2],[.5,3],[1.5,5],[2.5,6.5],[4,8.5],[6,9.5],[9,6],[12,3]],"TTM dividends / price; >9% = trap risk."),
 M("payout","div","Payout ratio",v=>pc(v,0),[[0,10],[30,9],[50,8],[70,6.5],[90,4],[120,1.5],[150,.5]],"Dividends / EPS. Target ≤70%."),
 M("divCagr","div","Dividend CAGR 5y",pc,[[0,3],[3,5],[7,7.5],[10,9],[15,10]],"5y dividend-per-share growth."),
 M("streak","div","Raise streak",v=>v.toFixed(0)+" y",[[0,2],[3,4],[5,5.5],[10,7],[25,9],[40,10]],"Consecutive annual dividend increases."),
-M("rsi","tech","RSI 14",v=>v.toFixed(0),[[15,3],[25,4.5],[35,6],[50,7.5],[60,7],[70,4.5],[80,2],[90,.5]],"Overbought >70, oversold <30."),
-M("macd","tech","MACD histogram",v=>v.toFixed(2),null,"12/26/9 momentum; sign and slope."),
-M("adx","tech","ADX 14",v=>v.toFixed(0),null,"Trend strength (>25) with DI direction."),
-M("boll","tech","Bollinger %B",v=>v.toFixed(2),[[-.1,3],[0,4],[.2,6],[.5,7.5],[.8,6.5],[1,4.5],[1.15,3]],"Position in the 20d ±2σ band."),
-M("e200","tech","vs EMA 200",pc,[[-25,.5],[-10,3],[0,5],[10,7.5],[25,9],[45,8]],"Distance from the 200d exponential mean."),
-M("stack","tech","Trend stack",v=>v.toFixed(0)+"/4",[[0,1],[1,3.5],[2,6],[3,8],[4,10]],"Price > EMA9 > 21 > 50 > 200 alignment."),
-M("mom","tech","12m momentum",pc,[[-30,.5],[-10,3],[0,5],[15,7.5],[30,9],[60,9.5],[120,8]],"Trailing 12-month price return."),
+M("rsi","tech","RSI 14",v=>v.toFixed(0),[[15,3],[25,4.5],[35,6],[50,7.5],[60,7],[70,4.5],[80,2],[90,.5]],"Overbought >70, oversold <30. Entry timing only: the single oscillator kept."),
+M("macd","tech","MACD histogram",v=>v.toFixed(2),null,"12/26/9 momentum. Context only: duplicates RSI and the trend measures."),
+M("adx","tech","ADX 14",v=>v.toFixed(0),null,"Trend strength (>25) with DI direction. Context only."),
+M("boll","tech","Bollinger %B",v=>v.toFixed(2),[[-.1,3],[0,4],[.2,6],[.5,7.5],[.8,6.5],[1,4.5],[1.15,3]],"Position in the 20-day ±2σ band. Context only: no rigorous single-stock evidence."),
+M("e200","tech","vs 200-day average",pc,[[-25,.5],[-10,3],[0,5.5],[10,8],[20,9.5]],"Distance from the 200-day simple average; rises with distance, flat above +20%."),
+M("stack","tech","Trend regime",v=>v.toFixed(0)+"/2",[[0,1],[1,5.5],[2,10]],"Price > SMA200 and SMA50 > SMA200."),
+M("mom","tech","12-1 momentum (risk-adj.)",v=>(v>=0?"+":"")+v.toFixed(2),[[-1,.5],[-.5,2.5],[0,5],[.5,7],[1,8.5],[1.5,9.5],[2.5,10]],"12-month return skipping the last month, divided by annual volatility."),
 M("vol","tech","Volatility (ann.)",v=>pc(v,0),[[12,9.5],[20,8.5],[30,7],[45,5],[65,2.5],[100,.5]],"Annualised σ of daily returns."),
-M("upside","mkt","Analyst upside",pc,[[-20,1],[-5,3],[0,4.5],[10,6.5],[20,8.5],[40,10]],"Nasdaq 1-year target vs price."),
-M("hi52","mkt","vs 52-week high",pc,[[-50,1],[-30,3],[-15,5.5],[-5,8],[0,9]],"Distance below the 52-week high."),
-M("beta","mkt","Beta",v=>v.toFixed(2),[[.5,8],[.8,9],[1,8],[1.3,6],[1.7,3.5],[2.5,1]],"Sensitivity to the market (Nasdaq)."),
+M("hi52","tech","vs 52-week high",pc,[[-50,1],[-30,3],[-15,5.5],[-5,8],[0,9]],"Proximity to the 52-week high (George & Hwang 2004)."),
+M("rev1m","tech","1-month reversal",pc,[[-20,7.5],[-10,6.5],[0,5.5],[10,4],[20,2.5],[35,1]],"Last-month return: short-term losers tend to rebound, winners to give back. Entry timing only."),
+M("rs","tech","Relative strength 12m",v=>(v>=0?"+":"")+v.toFixed(1)+" pt",[[-30,1],[-10,3.5],[0,5],[10,7],[25,9],[50,10]],"12-month return minus the sector ETF (US) or STOXX 600 (Europe) 12-month return."),
+M("upside","mkt","Analyst upside",pc,[[-20,1],[-5,3],[0,4.5],[10,6.5],[20,8.5],[40,10]],"Nasdaq 1-year target vs price. Low weight: weak predictor."),
+M("beta","mkt","Beta",v=>v.toFixed(2),[[.5,8.5],[.8,7.5],[1,6.5],[1.3,5],[1.7,3],[2.5,1]],"Sensitivity to the market (Nasdaq). Lower is better."),
 M("dilut","mkt","Share count Δ / yr",pc,[[-5,10],[-2,8.5],[0,6],[2,3.5],[5,1]],"3y share-count CAGR; negative = net buybacks."),
+M("surprise","mkt","Earnings surprise",pc,[[-15,1],[-5,3],[0,5],[3,6.5],[8,8.5],[15,10]],"Reported EPS vs consensus, average of the last 2 quarters (Nasdaq). Post-earnings drift."),
 ];
 const RM=Object.fromEntries(REG.map(m=>[m.k,m]));
 const GR=[["growth","Growth","#3ddc97"],["profit","Profitability","#b794ff"],["health","Financial health","#5db3ff"],["value","Valuation","#4fd8e8"],["quality","Quality","#ffc04d"],["div","Dividend","#ff9f5a"],["tech","Technicals","#ff7a8a"],["mkt","Market & sentiment","#9ab8e6"]];
 /* Per-indicator weights [long-term, entry-timing]. Within a group the score is a weighted mean of the
    indicators found, so overlapping or noisy indicators count less (e.g. P/FCF and FCF yield carry the same
    information; ROE is distorted by buybacks; RSI/MACD/Bollinger matter for weeks, not years). */
-const WI={revCagr5:[1,0],revCagr3:[1,0],epsCagr5:[1,0],fcfCagr5:[.75,0],revYoY:[.5,0],epsYoY:[.5,0],
- gross:[.75,0],op:[1,0],net:[.5,0],fcfM:[1,0],roe:[.5,0],roe5:[.5,0],roic:[1.5,0],
- ndEbitda:[1.5,0],intCov:[1,0],de:[.75,0],current:[.5,0],quick:[.5,0],
- pe:[1,.75],peFwd:[1,1.25],peg:[.75,.75],ps:[.5,.25],pfcf:[.5,.5],evEbitda:[1.25,1],fcfY:[.75,.75],shY:[.5,.5],
+const WI={revCagr5:[1,0],revCagr3:[1,0],epsCagr5:[1,0],fcfCagr5:[.75,0],revYoY:[0,0],epsYoY:[0,0],
+ gross:[.75,0],op:[1,0],net:[.5,0],fcfM:[1,0],roe:[0,0],roe5:[.5,0],roic:[1.5,0],gpa:[1,0],
+ ndEbitda:[1.5,0],intCov:[1,0],de:[.75,0],current:[.25,0],quick:[.25,0],
+ pe:[1,.75],peFwd:[1,1.25],peg:[.25,.25],ps:[.5,.25],pfcf:[0,0],evEbitda:[1.25,1],fcfY:[1,.75],shY:[.5,.5],pb:[0,0],
  piotroski:[1,0],beneish:[.5,0],altman:[.5,0],conv:[1,0],gmStab:[.75,0],spread:[1.25,0],
  divY:[1,0],payout:[1,0],divCagr:[.75,0],streak:[.75,0],
- rsi:[.25,1],macd:[.25,1.25],adx:[.5,1.25],boll:[.25,.75],e200:[1.25,1],stack:[1,1.25],mom:[1.5,.75],vol:[1,.75],
- upside:[.5,1],hi52:[.5,1],beta:[.75,.5],dilut:[1.25,.25]};
-/* Entry timing (2–12 weeks): price action dominates; valuation acts as a margin-of-safety / downside-risk factor */
-const TIMING={tech:55,value:30,mkt:15};
+ rsi:[0,.5],macd:[0,0],adx:[0,0],boll:[0,0],e200:[1,0],stack:[.75,1.25],mom:[1.5,1],vol:[1,.5],hi52:[1.25,1.25],rev1m:[0,.75],rs:[.5,.75],
+ upside:[.25,.25],beta:[.25,.25],dilut:[1.25,.25],surprise:[.5,1.25]};
+/* Weights [long-term, entry-timing]; 0 = context only. Evidence-based revision (Nov 2026): redundant or weak signals cut
+   (P/FCF = 1/FCF yield, trailing ROE, PEG, analyst targets, current/quick ratios, MACD/ADX/Bollinger); added gross
+   profit/assets, 12-1 risk-adjusted momentum, 52-week-high proximity, 1-month reversal, relative strength, earnings surprise. */
+const FIN_OVR={pb:[1,.75]};
+const MIN_COV=.4;            /* groups with less than 40% of their indicator weight found are left out */
+const RF=4.94,ERP=4.41;      /* Damodaran, 1 Nov 2026: US T-bond rate and implied equity risk premium */
+const LW={growth:10,profit:20,health:11,value:22,quality:14,div:3,tech:12,mkt:8};   /* long-term group weights */
+/* Entry timing (2–12 weeks): price action, then earnings news; valuation acts as a downside-risk factor */
+const TIMING={tech:55,mkt:25,value:20};
 /* Banks and insurers: these ratios are not meaningful (deposits are liabilities, no gross margin, no EBITDA) */
 const FIN_RX=/\b(bank|banks|banking|insurance|insurer|reinsurance|savings institution|thrift)/i;
 const FIN_NA=["gross","fcfM","conv","ndEbitda","intCov","de","current","quick","evEbitda","pfcf","fcfY","altman","beneish"];
@@ -351,10 +364,9 @@ const TM_T=[[7.5,"Favourable entry conditions","Trend and momentum support the p
  [-1,"Poor entry conditions","Downtrend with no valuation support.","#ff6b81","#d62c48"]];
 const tierOf=(sc,T)=>sc==null?null:T.find(t=>sc>=t[0]);
 const ringPair=sc=>sc==null?["#9aaac0","#9aaac0"]:sc>=7.5?["#0c9f6a","#19b6e6"]:sc>=6.2?["#7fb800","#0c9f6a"]:sc>=4.5?["#f5b400","#e08a00"]:["#e08a00","#e0344a"];
-const W={balanced:{growth:17,profit:19,health:14,value:21,quality:12,div:4,tech:9,mkt:4},value:{growth:7,profit:14,health:17,value:34,quality:14,div:5,tech:4,mkt:5},growth:{growth:30,profit:21,health:9,value:10,quality:10,div:0,tech:15,mkt:5},dividend:{growth:3,profit:14,health:19,value:15,quality:15,div:29,tech:2,mkt:3}};
 
 /* ---------- state ---------- */
-const S={gen:0,lens:read("sg_lens","balanced"),showEst:read("sg_est",true),per:read("sg_per","1D")};
+const S={gen:0,showEst:read("sg_est",true),per:read("sg_per","1D")};
 const PER={"1D":1,"1W":7,"1M":30,"6M":182,"1Y":365};
 const stat=k=>$("srcs").querySelector(`[data-k="${k}"]`);
 
@@ -400,7 +412,7 @@ async function fundTask(sym,g){
 /* ---------- Nasdaq: market cap, forward P/E, beta, target, sector, company description ---------- */
 const nn=v=>{const n=parseFloat(String(v??"").replace(/[$,%\s,]/g,""));return isN(n)?n:null};
 async function nasdaqTask(sym,g){
- if(sym.includes(".")){stat("nasdaq").className="st nf";stat("est").className="st nf";return}
+ if(sym.includes(".")){["nasdaq","est","surp"].forEach(k=>stat(k).className="st nf");return}
  try{const{j,via}=await race(`https://api.nasdaq.com/api/quote/${sym}/summary?assetclass=stocks`,j=>j&&j.data&&(j.data.summaryData||j.data.SummaryData),{t:10000});
   if(g!==S.gen)return;const d=j.data.summaryData||j.data.SummaryData,v=k=>nn(d[k]&&d[k].value);
   S.nd={mcap:v("MarketCap"),pe:v("PERatio"),fpe:v("ForwardPE1Yr"),divRate:v("AnnualizedDividend")??v("DividendRate"),beta:v("Beta"),target:v("OneYrTarget")};
@@ -410,7 +422,22 @@ async function nasdaqTask(sym,g){
   if(g!==S.gen)return;const d=j.data,t=(d.CompanyDescription||d.companyDescription||{}).value;if(t&&t.length>60)S.desc=t}catch(e){}
  try{const{j}=await race(`https://api.nasdaq.com/api/analyst/${sym}/earnings-forecast`,j=>j&&j.data&&j.data.yearlyForecast,{t:10000});
   if(g!==S.gen)return;S.est=((j.data.yearlyForecast.rows)||[]).map(r=>({y:+((String(r.fiscalEnd).match(/\d{4}/)||[])[0]),eps:nn(r.consensusEPSForecast),n:nn(r.noOfEstimates)})).filter(r=>r.y&&isN(r.eps));
-  stat("est").className=S.est.length?"st ok":"st nf"}catch(e){if(g===S.gen)stat("est").className="st nf"}soon()}
+  stat("est").className=S.est.length?"st ok":"st nf"}catch(e){if(g===S.gen)stat("est").className="st nf"}
+ try{const{j}=await race(`https://api.nasdaq.com/api/company/${sym}/earnings-surprise`,j=>j&&j.data&&j.data.earningsSurpriseTable,{t:10000});
+  if(g!==S.gen)return;const rs=((j.data.earningsSurpriseTable.rows)||[]).map(r=>nn(r.percentageSurprise)).filter(isN).slice(0,2);
+  if(rs.length)S.surp=sum(rs)/rs.length;stat("surp").className=rs.length?"st ok":"st nf"}catch(e){if(g===S.gen)stat("surp").className="st nf"}soon()}
+
+/* ---------- benchmark for relative strength: US sector ETF, else STOXX Europe 600 ---------- */
+const SECTOR_ETF=[[/health|pharma|biotech|medical/i,"XLV"],[/tech|software|semicond|computer|electronic/i,"XLK"],[/communic|telecom|media|internet|entertain/i,"XLC"],
+ [/financ|bank|insur|capital market/i,"XLF"],[/discretionary|cyclical|retail|auto|apparel|leisure|restaurant/i,"XLY"],[/staples|defensive|food|beverage|household|tobacco/i,"XLP"],
+ [/energy|oil|gas/i,"XLE"],[/industr|aerospace|defen[cs]e|machinery|transport/i,"XLI"],[/utilit/i,"XLU"],[/real estate|reit/i,"XLRE"],[/material|chemical|mining|metal|steel/i,"XLB"]];
+async function benchTask(sym,g){
+ const txt=(S.sector||"")+" "+(S.industry||""),us=!sym.includes(".");
+ let b=us?((SECTOR_ETF.find(([rx])=>rx.test(txt))||[0,"SPY"])[1]):"^STOXX",n=us?(b==="SPY"?"S&P 500 (SPY)":b+" sector ETF"):"STOXX Europe 600";
+ try{const{j}=await cached("yb_"+b,6*36e5,()=>race(yCh(b,"2y","1d"),j=>j.chart&&j.chart.result&&j.chart.result[0]));
+  if(g!==S.gen)return;const c=(j.chart.result[0].indicators.quote[0].close||[]).filter(x=>x!=null);
+  if(c.length>253){S.bench={n,r:(last(c)/c[c.length-253]-1)*100};stat("bench").className="st ok"}else stat("bench").className="st nf"}
+ catch(e){if(g===S.gen)stat("bench").className="st nf"}}
 
 /* ---------- Wikipedia: fallback description (non-US tickers or Nasdaq miss) ---------- */
 async function wikiTask(g){
@@ -448,7 +475,7 @@ function tech(){const d=S.closes;if(d.length<60)return{};
   for(let i=n;i<tr.length;i++){s+=tr[i]-s/n;a+=pd[i]-a/n;b+=md[i]-b/n;pdi=s?100*a/s:0;mdi=s?100*b/s:0;dx.push(pdi+mdi?100*Math.abs(pdi-mdi)/(pdi+mdi):0)}
   if(dx.length>n){adx=sum(dx.slice(0,n))/n;for(let i=n;i<dx.length;i++)adx=(adx*(n-1)+dx[i])/n}}
  const m20=sma(c,20),s20=sd(c.slice(-20)),r=[];for(let i=c.length-252;i<c.length;i++)if(i>0)r.push(Math.log(c[i]/c[i-1]));
- return{p,e9:E(9),e21:E(21),e50:E(50),e200:E(200),rsi:rsiC(c),hist,hp,adx,pdi,mdi,bu:m20+2*s20,bl:m20-2*s20,vol:r.length>100?sd(r)*Math.sqrt(252)*100:null,mom:c.length>252?(p/c[c.length-253]-1)*100:null,hi:Math.max(...c.slice(-252))}}
+ const N=c.length;return{p,s50:sma(c,50),s200:sma(c,200),m121:N>253?(c[N-22]/c[N-253]-1)*100:null,r1m:N>22?(p/c[N-22]-1)*100:null,r12:N>253?(p/c[N-253]-1)*100:null,e9:E(9),e21:E(21),e50:E(50),e200:E(200),rsi:rsiC(c),hist,hp,adx,pdi,mdi,bu:m20+2*s20,bl:m20-2*s20,vol:r.length>100?sd(r)*Math.sqrt(252)*100:null,mom:c.length>252?(p/c[c.length-253]-1)*100:null,hi:Math.max(...c.slice(-252))}}
 
 /* ---------- metric computation ---------- */
 function calc(){
@@ -461,8 +488,8 @@ function calc(){
  const px=S.price!=null?(pence(S.cur)?S.price/100:S.price):null;
  const sh=(S.sec&&S.sec.shares)||B.shares||L.shares,mcap=nd.mcap||(sh&&px?sh*px:null);
  const set=(k,v,o={})=>{const m=RM[k],r={v,s:"nf",...o};if(r.s!=="na"){if(r.force!=null){r.s="ok";r.sc=r.force}else if(isN(v)&&m.st){r.s="ok";r.sc=band(v,m.st)}}r.d=r.dd||(isN(v)?m.f(v):r.s==="na"?"—":"∅");V[k]=r};
- const cg=(f,n)=>{const s=A.filter(x=>x[f]!=null),e=last(s);if(!e)return null;let bs=null;for(const x of s)if(new Date(x.end)<=new Date(e.end)-n*365.25*864e5+120*864e5)bs=x;if(!bs||bs===e)return null;const y=(new Date(e.end)-new Date(bs.end))/(365.25*864e5);return y<n-.7?null:cagr(bs[f],e[f],y)};
- const rev=g("rev"),ni=g("ni"),eps=g("eps"),fcf=g("fcf"),op=g("op"),gross=g("gross"),ebitda=L.ebitda!=null?L.ebitda:null;
+ const cg=(f,n)=>{const s=A.filter(x=>x[f]!=null),e=last(s);if(!e)return null;const pick=k=>{let r=null;for(const x of s)if(new Date(x.end)<=new Date(e.end)-k*365.25*864e5+120*864e5)r=x;return r};let bs=pick(n);if((!bs||bs===e)&&n>=5)bs=pick(n-1);if(!bs||bs===e)return null;const y=(new Date(e.end)-new Date(bs.end))/(365.25*864e5);return y<n-1.2?null:cagr(bs[f],e[f],y)};
+ const rev=g("rev"),ni=g("ni"),eps=g("eps"),fcf=g("fcf"),op=g("op"),gross=g("gross"),ebitda=lat("ebitda");
  const debt=b("debt"),cash=b("cash"),eq=b("equity"),as=b("assets"),ca=b("ca"),cl=b("cl"),inv=b("inv")||0;
  set("revCagr5",cg("rev",5));set("revCagr3",cg("rev",3));set("epsCagr5",cg("eps",5));set("fcfCagr5",cg("fcf",5));
  set("revYoY",L.rev!=null&&P.rev>0?(L.rev/P.rev-1)*100:null);set("epsYoY",L.eps!=null&&P.eps>0?(L.eps/P.eps-1)*100:null);
@@ -470,7 +497,7 @@ function calc(){
  const roes=A.filter(x=>x.ni!=null&&x.equity>0).map(x=>x.ni/x.equity*100);
  set("roe",ni!=null&&eq>0?ni/eq*100:last(roes));set("roe5",roes.length>=3?sum(roes.slice(-5))/Math.min(5,roes.length):null);
  const tr=L.pretax>0&&L.tax!=null?clamp(L.tax/L.pretax,0,.4):.25,ic=(debt||0)+(eq||0)-(cash||0),roic=op!=null&&ic>0?op*(1-tr)/ic*100:null;set("roic",roic);
- const beta=nd.beta!=null?nd.beta:1,ke=.042+beta*.046,kd=debt>0&&lat("int")>0?clamp(lat("int")/debt,.02,.12):ke,wacc=mcap&&debt!=null?(mcap*ke+debt*kd*(1-tr))/(mcap+debt):ke;
+ const beta=nd.beta!=null?nd.beta:1,ke=(RF+beta*ERP)/100,kd=debt>0&&lat("int")>0?clamp(lat("int")/debt,.02,.12):ke,wacc=mcap&&debt!=null?(mcap*ke+debt*kd*(1-tr))/(mcap+debt):ke;
  set("spread",roic!=null?roic-wacc*100:null);
  const net=(debt||0)-(cash||0);
  if(ebitda>0&&debt!=null)set("ndEbitda",net/ebitda);else if(debt!=null&&cash>debt)set("ndEbitda",null,{dd:"net cash",force:9});else set("ndEbitda",null);
@@ -484,9 +511,11 @@ function calc(){
  set("peFwd",fe,{src:fs});
  const gr=V.epsCagr5.v;set("peg",pe>0&&gr>0?pe/gr:null);
  set("ps",mcap>0&&rev>0?mcap/rev:null);
+ {const[gp_]=same("gross");set("gpa",gp_!=null&&as>0?gp_/as*100:null)}
+ set("pb",mcap>0&&eq>0?mcap/eq:null);
  fcf!=null&&fcf<=0?set("pfcf",null,{dd:"n/m",force:.5}):set("pfcf",mcap>0&&fcf>0?mcap/fcf:null);
  const ev=mcap!=null?mcap+(debt||0)-(cash||0):null;
- set("evEbitda",ev>0&&ebitda>0?ev/ebitda:null);set("fcfY",mcap>0&&fcf!=null?fcf/mcap*100:null);
+ ebitda!=null&&ebitda<=0?set("evEbitda",null,{dd:"n/m (neg. EBITDA)",force:.5}):set("evEbitda",ev>0&&ebitda>0?ev/ebitda:null);set("fcfY",mcap>0&&fcf!=null?fcf/mcap*100:null);
  {const bb=lat("buy"),dv=lat("div");set("shY",mcap>0&&(bb!=null||dv!=null)?(Math.abs(bb||0)+Math.abs(dv||0))/mcap*100:null)}
  /* quality */
  if(A.length>=2){let f=0,n=0;const ok=c=>{n++;if(c)f++};
@@ -520,29 +549,37 @@ function calc(){
  set("macd",t.hist,t.hist!=null?{force:t.hist>0?(t.hist>=t.hp?8.5:6.5):(t.hist>=t.hp?4.5:2),dd:(t.hist>0?"bull ":"bear ")+t.hist.toFixed(2)}:{});
  set("adx",t.adx,t.adx!=null?{force:t.adx>=25?(t.pdi>=t.mdi?9:1.5):(t.pdi>=t.mdi?7:4),dd:t.adx.toFixed(0)+(t.pdi>=t.mdi?" ↑":" ↓")}:{});
  set("boll",t.bu>t.bl?(t.p-t.bl)/(t.bu-t.bl):null);
- set("stack",t.e200!=null?(t.p>t.e9)+(t.e9>t.e21)+(t.e21>t.e50)+(t.e50>t.e200):null);
- set("e200",t.e200>0?(t.p/t.e200-1)*100:null);set("mom",t.mom);set("vol",t.vol);
+ set("stack",t.s200!=null?(t.p>t.s200)+(t.s50>t.s200):null);
+ set("e200",t.s200>0?(t.p/t.s200-1)*100:null);set("vol",t.vol);set("rev1m",t.r1m);
+ if(t.m121!=null){const va=t.vol||30,r=t.m121/va;set("mom",r,{dd:(r>=0?"+":"")+r.toFixed(2)+` (12-1: ${t.m121>=0?"+":""}${t.m121.toFixed(1)}%)`,src:t.vol?null:"volatility not available: 30% assumed"})}else set("mom",null);
+ set("rs",t.r12!=null&&S.bench&&isN(S.bench.r)?t.r12-S.bench.r:null,S.bench?{src:"vs "+S.bench.n}:{});
+ set("surprise",S.surp!=null?S.surp:null);
  /* market */
  set("upside",nd.target>0&&px>0&&S.cur==="USD"?(nd.target/px-1)*100:null);
  const hi=S.hi52||t.hi;set("hi52",hi>0&&S.price?(S.price/hi-1)*100:null);
  set("beta",nd.beta!=null?nd.beta:null);set("dilut",cg("shares",3));
  /* sector fit: ratios that mean nothing for banks and insurers are marked n/a instead of scored */
  S.isFin=FIN_RX.test((S.industry||"")+" "+(S.sector||""));
- if(S.isFin)FIN_NA.forEach(k=>{V[k]={v:null,s:"na",d:"n/m",src:"not meaningful for banks and insurers"}});
+ const WE=S.isFin?{...WI,...FIN_OVR}:WI;S.WE=WE;
+ if(S.isFin){FIN_NA.forEach(k=>{V[k]={v:null,s:"na",d:"n/m",src:"not meaningful for banks and insurers"}});
+  const r5=V.roe5.v!=null?V.roe5.v:V.roe.v;if(r5!=null){const sp=r5-(RF+(nd.beta!=null?nd.beta:1)*ERP);set("spread",sp,{src:"ROE minus cost of equity (bank/insurer)"})}}
  /* groups: weighted mean of available indicators; coverage = share of the group's indicator weight found */
- const gscore=(k,j)=>{let sw=0,ws=0,tw=0,n=0;REG.filter(m=>m.g===k).forEach(m=>{const w=WI[m.k][j];if(!w)return;const v=V[m.k];if(v.s==="na")return;tw+=w;if(v.s==="ok"){sw+=w*v.sc;ws+=w;n++}});return{s:ws?sw/ws:null,cov:tw?ws/tw:0,n}};
+ const gscore=(k,j)=>{let sw=0,ws=0,tw=0,n=0;REG.filter(m=>m.g===k).forEach(m=>{const w=WE[m.k][j];if(!w)return;const v=V[m.k];if(v.s==="na")return;tw+=w;if(v.s==="ok"){sw+=w*v.sc;ws+=w;n++}});return{s:ws?sw/ws:null,cov:tw?ws/tw:0,n}};
  S.groups={};let ok=0,nf=0,na=0;
  GR.forEach(([k])=>{const ms=REG.filter(m=>m.g===k);ms.forEach(m=>{const v=V[m.k];v.s==="ok"?ok++:v.s==="na"?na++:nf++});
   const a=gscore(k,0),b=gscore(k,1);S.groups[k]={s:a.s,cov:a.cov,sT:b.s,covT:b.cov,n:a.n,tot:ms.length}});
  S.cov={ok,nf,na};
- /* long-term: lens weight × coverage, so a half-empty group counts half */
- const w=W[S.lens];let ac=0,ws=0;
- GR.forEach(([k])=>{const G=S.groups[k];if(G.s!=null&&w[k]>0){const e=w[k]*G.cov;ac+=G.s*e;ws+=e}});
+ /* long-term: group weight × coverage (a half-empty group counts half; under 40% coverage it is left out) */
+ const w=LW;let ac=0,ws=0;
+ GR.forEach(([k])=>{const G=S.groups[k];if(G.s!=null&&w[k]>0&&G.cov>=MIN_COV){const e=w[k]*G.cov;ac+=G.s*e;ws+=e}});
+ const clab=c=>c>=.8?"high":c>=.6?"medium":"low";
  S.score=ws&&ok>=12?Math.round(ac/ws*10)/10:null;
  /* entry timing: needs at least half of the technical weight and two valuation indicators */
- let ta=0,tw=0;Object.entries(TIMING).forEach(([k,wt])=>{const G=S.groups[k];if(G.sT!=null){const e=wt*G.covT;ta+=G.sT*e;tw+=e}});
+ let ta=0,tw=0;Object.entries(TIMING).forEach(([k,wt])=>{const G=S.groups[k];if(G.sT!=null&&G.covT>=MIN_COV){const e=wt*G.covT;ta+=G.sT*e;tw+=e}});
  const tOK=S.groups.tech.covT>=.5&&REG.filter(m=>m.g==="value"&&V[m.k].s==="ok").length>=2;
  S.tscore=tw&&tOK?Math.round(ta/tw*10)/10:null;
+ S.conf=clab(GR.reduce((a,[k])=>a+(S.groups[k].cov>=MIN_COV?LW[k]*S.groups[k].cov:0),0)/100);
+ S.tconf=clab(Object.entries(TIMING).reduce((a,[k,wt])=>a+(S.groups[k].covT>=MIN_COV?wt*S.groups[k].covT:0),0)/100);
  const lt=tierOf(S.score,LT_T),tm=tierOf(S.tscore,TM_T);
  const tc=t=>isLight()?t[4]:t[3];S.sent=lt?[lt[1],tc(lt),lt[2]]:null;S.tsent=tm?[tm[1],tc(tm),tm[2]]:null;
 }
@@ -563,21 +600,20 @@ function render(){
  if(pf){ce.textContent=(pf.pct>=0?"+":"")+pf.pct.toFixed(2)+"% · "+S.per+(pf.short?" (since first data)":"");ce.title="vs close of "+new Date(pf.from).toLocaleDateString();ce.style.color=pf.pct>=0?"var(--good)":"var(--bad)";ce.style.background=pf.pct>=0?"color-mix(in srgb,var(--good) 15%,transparent)":"color-mix(in srgb,var(--bad) 15%,transparent)"}else ce.textContent="—";
  $("asof").textContent="updated "+new Date().toLocaleTimeString();
  $("grid").innerHTML=GR.map(([k,name,c])=>{const G=S.groups[k]||{},gc=G.s!=null?col(G.s):"var(--ink3)";
-  const rows=REG.filter(m=>m.g===k).map(m=>{const v=S.v[m.k];const cc=v.s==="ok"?col(v.sc):"var(--ink3)";
-   const wi=WI[m.k],tip=`${m.l}: ${m.tip}${v.src?" Source: "+v.src+".":""} ${v.s==="ok"?"Score "+v.sc.toFixed(1)+"/10.":v.s==="na"?"Not applicable, excluded.":"Not found, excluded."} Weight: long-term ×${wi[0]}${wi[1]?", entry timing ×"+wi[1]:""}.`;
-   return`<div class="m ${v.s}" style="--c:${cc}" title="${esc(tip)}"><i></i><span>${esc(m.l)}</span><b>${esc(v.d)}</b></div>`}).join("");
+  const rows=REG.filter(m=>m.g===k).map(m=>{const v=S.v[m.k],wi=(S.WE||WI)[m.k],ctx=!wi[0]&&!wi[1];const cc=v.s==="ok"&&!ctx?col(v.sc):"var(--ink3)";
+   const tip=`${m.l}: ${m.tip}${v.src?" Source: "+v.src+".":""} ${ctx?"Shown for context, not scored.":(v.s==="ok"?"Score "+v.sc.toFixed(1)+"/10.":v.s==="na"?"Not applicable, excluded.":"Not found, excluded.")+` Weight: long-term ×${wi[0]}${wi[1]?", entry timing ×"+wi[1]:""}.`}`;
+   return`<div class="m ${v.s}${ctx?" ctx":""}" style="--c:${cc}" title="${esc(tip)}"><i></i><span>${esc(m.l)}</span><b>${esc(v.d)}</b></div>`}).join("");
   return`<section class="grp glass"><div class="gh"><h3 style="--gc:${c}">${name}</h3><span class="gs" style="color:${gc};background:color-mix(in srgb,${gc} 12%,transparent)">${G.s!=null?G.s.toFixed(1):"∅"}</span></div><div class="rows">${rows}</div><div class="src">${G.n||0}/${G.tot||0} scored</div></section>`}).join("");
  const C=2*Math.PI*38;
  const ringSet=(fgId,a,b,numId,sc)=>{const fg=$(fgId);fg.style.strokeDasharray=C;fg.style.strokeDashoffset=sc!=null?C*(1-sc/10):C;const p=ringPair(sc);$(a).setAttribute("stop-color",p[0]);$(b).setAttribute("stop-color",p[1]);$(numId).textContent=sc!=null?sc.toFixed(1):"∅"};
  const pill=(id,t)=>{const e=$(id);if(t){e.textContent=t[0];e.style.color=t[1];e.style.background=`color-mix(in srgb,${t[1]} 14%,transparent)`}else{e.textContent="not enough data";e.style.color="var(--ink3)";e.style.background="var(--field)"}};
- ringSet("rfg","r1","r2","snum",S.score);pill("sent",S.sent);$("lmean").textContent=S.sent?S.sent[2]+` (${S.lens} lens)`:"";
- ringSet("tfg","t1","t2","tnum",S.tscore);pill("tsent",S.tsent);$("tmean").textContent=S.tsent?S.tsent[2]:"Needs at least half of the technical indicators and two valuation ratios.";
+ ringSet("rfg","r1","r2","snum",S.score);pill("sent",S.sent);$("lmean").textContent=S.sent?S.sent[2]+` Data confidence: ${S.conf}.`:"";
+ ringSet("tfg","t1","t2","tnum",S.tscore);pill("tsent",S.tsent);$("tmean").textContent=S.tsent?S.tsent[2]+` Data confidence: ${S.tconf}.`:"Needs at least half of the technical indicators and two valuation ratios.";
  const gp=k=>{const v=S.groups[k]&&S.groups[k].sT;return v!=null?v.toFixed(1):"∅"};
- $("tparts").textContent=`Technicals ${gp("tech")} (55%) · Valuation ${gp("value")} (30%) · Market ${gp("mkt")} (15%)`;
+ $("tparts").textContent=`Technicals ${gp("tech")} (55%) · Market & earnings ${gp("mkt")} (25%) · Valuation ${gp("value")} (20%)`;
  $("cov").textContent=`${S.cov.ok}/${REG.length} indicators scored · ${S.cov.nf} missing · ${S.cov.na} n/a${S.isFin?" · bank/insurer ratios excluded":""}`;
- $("lchip").textContent=S.lens[0].toUpperCase()+S.lens.slice(1);
- const V=S.v,gates=[["Rev CAGR ≥10%",V.revCagr5,v=>v>=10],["P/E <25",V.pe,v=>v>0&&v<25],["PEG <2",V.peg,v=>v>0&&v<2],["ROE 5y >5%",V.roe5,v=>v>5],["Quick >1.0",V.quick,v=>v>1]];
- let pass=0,tot=0;$("gates").innerHTML=gates.map(([l,v,f])=>{const ok=v.s==="ok"&&isN(v.v)||(v.s==="ok"&&v.force!=null&&l==="P/E <25"),p=ok?f(v.v):null;if(ok){tot++;if(p)pass++}return`<span class="gate ${ok?(p?"p":"f"):"s"}">${l} ${ok?(p?"✓":"✗"):"∅"}</span>`}).join("");
+ const V=S.v,gates=[["Rev CAGR ≥10%",V.revCagr5,v=>v>=10],["P/E <25",V.pe,v=>v>0&&v<25],["PEG <2",V.peg,v=>v>0&&v<2],["ROE 5y >5%",V.roe5,v=>v>5],["Net debt/EBITDA <3",V.ndEbitda,v=>v<3]];
+ let pass=0,tot=0;$("gates").innerHTML=gates.map(([l,v,f])=>{const nc=l.startsWith("Net debt")&&v.s==="ok"&&v.d==="net cash",ok=v.s==="ok"&&isN(v.v)||(v.s==="ok"&&v.force!=null&&l==="P/E <25")||nc,p=ok?(nc?true:isN(v.v)?f(v.v):false):null;if(ok){tot++;if(p)pass++}return`<span class="gate ${ok?(p?"p":"f"):"s"}">${l} ${ok?(p?"✓":"✗"):"∅"}</span>`}).join("");
  $("note").textContent=note(pass,tot);
  $("bars").innerHTML=GR.map(([k,n])=>{const s=(S.groups[k]||{}).s,c=s!=null?col(s):"var(--ink3)";return`<div class="br"><span>${n.split(" ")[0]}</span><u><i style="width:${s!=null?s*10:0}%;background:${c}"></i></u><b style="color:${c}">${s!=null?s.toFixed(1):"∅"}</b></div>`}).join("");
  $("srcs").querySelectorAll(".st").forEach(e=>{const k=e.dataset.k;e.title=e.classList.contains("ok")?"loaded"+(S.via[k]?" via "+S.via[k]:""):""});
@@ -628,13 +664,14 @@ function chart(){
 async function load(sym,fresh){
  sym=sym.trim().toUpperCase();if(!sym)return;const g=++S.gen;
  if(fresh)Object.keys(localStorage).forEach(k=>k.startsWith("sg_")&&k.includes(sym)&&localStorage.removeItem(k));
- Object.assign(S,{sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",industry:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,F:null,v:{},groups:{},score:null,sent:null,tscore:null,tsent:null,via:{}});
- $("srcs").innerHTML=[["sec","SEC EDGAR"],["yahoo","Yahoo"],["nasdaq","Nasdaq"],["est","Consensus EPS"],["wiki","Wikipedia"]].map(([k,l])=>`<span class="st" data-k="${k}">${l}</span>`).join("");
+ Object.assign(S,{sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",industry:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,surp:null,bench:null,F:null,v:{},groups:{},score:null,sent:null,tscore:null,tsent:null,via:{}});
+ $("srcs").innerHTML=[["sec","SEC EDGAR"],["yahoo","Yahoo"],["nasdaq","Nasdaq"],["est","Consensus EPS"],["surp","Earnings surprise"],["bench","Benchmark"],["wiki","Wikipedia"]].map(([k,l])=>`<span class="st" data-k="${k}">${l}</span>`).join("");
  store("sg_last",sym);$("banner").classList.remove("show");$("cname").textContent="Loading "+sym+"…";
  await Promise.allSettled([secTask(sym,g),yahooTask(sym,g),fundTask(sym,g),divTask(sym,g),nasdaqTask(sym,g)]);
  if(g!==S.gen)return;
  if(!S.F&&S.price==null&&!S.sec){$("banner").classList.add("show");$("cname").textContent=sym;draw();return}
  if(!S.name)S.name=sym;
+ await benchTask(sym,g);if(g!==S.gen)return;
  if(!S.desc)await wikiTask(g);else stat("wiki").className="st";
  draw()}
 
@@ -657,8 +694,6 @@ function wireSearch(){const q=$("q");
 function init(){
  setTheme(read("sg_theme","dark"));
  $("theme").onclick=()=>setTheme(isLight()?"dark":"light");
- $("lens").value=S.lens;
- $("lens").onchange=()=>{S.lens=$("lens").value;store("sg_lens",S.lens);if(S.sym)draw()};
  $("refresh").onclick=()=>S.sym&&load(S.sym,true);$("retry").onclick=()=>load(S.sym||"AAPL",true);
  
  // UPDATED COPY FUNCTION - ONLY ROW INDICES
