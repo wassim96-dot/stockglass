@@ -204,7 +204,7 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
   <div id="left"><div id="grid"></div></div>
   <aside id="side">
    <div class="card glass sc" id="vc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="rg" x1="0" y1="1" x2="1" y2="0"><stop id="r1" offset="0" stop-color="#0c9f6a"/><stop id="r2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="rfg" cx="46" cy="46" r="38" fill="none" stroke="url(#rg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="snum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Long-term score <i class="hz">1–3 years</i></span><span id="sent">…</span><p class="mean" id="lmean"></p><div id="cov"></div></div></div>
-   <div class="card glass sc" id="tc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="tg" x1="0" y1="1" x2="1" y2="0"><stop id="t1" offset="0" stop-color="#0c9f6a"/><stop id="t2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="tfg" cx="46" cy="46" r="38" fill="none" stroke="url(#tg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="tnum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Entry-timing score <i class="hz">2–12 weeks</i></span><span id="tsent">…</span><p class="mean" id="tmean"></p><div class="parts" id="tparts"></div><div class="tevt" id="tevt"></div><div class="mreg" id="mreg"></div></div></div>
+   <div class="card glass sc" id="tc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="tg" x1="0" y1="1" x2="1" y2="0"><stop id="t1" offset="0" stop-color="#0c9f6a"/><stop id="t2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="tfg" cx="46" cy="46" r="38" fill="none" stroke="url(#tg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="tnum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Entry-timing score <i class="hz">2–12 weeks</i></span><span id="tsent">…</span><p class="mean" id="tmean"></p><div class="parts" id="tparts"></div><div class="tevt" id="tevt"></div><div class="tevt" id="txp"></div><div class="mreg" id="mreg"></div></div></div>
    
    <!-- Score by group (long-term weights) -->
    <div class="card glass"><h3>Score by group <span class="chip">long-term weights</span></h3><div class="bars" id="bars"></div></div>
@@ -301,6 +301,7 @@ M("ps","value","P/S",xf,[[.7,9.5],[1,9],[2,8],[4,6.5],[8,4],[15,1.5],[25,.5]],"M
 M("pfcf","value","P/FCF",xf,[[6,9.5],[8,9],[12,8.5],[18,7],[25,5.5],[40,3],[60,1]],"Market cap / free cash flow. Context only: the inverse of FCF yield, which is scored."),
 M("evEbitda","value","EV / EBITDA",xf,[[4,9.5],[6,9],[10,8],[14,6.5],[20,4.5],[30,2],[45,.5]],"Enterprise value / EBITDA."),
 M("fcfY","value","FCF yield",pc,[[0,.5],[2,4],[4,6.5],[6,8.5],[9,10]],"FCF / market cap. Target ≥4%."),
+M("impG","value","Implied FCF growth",v=>v.toFixed(1)+"%/yr",[[0,10],[2,9],[3,7.5],[4,6],[5,4.5],[6,3],[8,1]],"Reverse DCF: the free-cash-flow growth per year, forever, that today's price assumes at the WACC: (WACC − FCF yield) / (1 + FCF yield). Long-run economy ≈ 4%. Context, not scored."),
 M("shY","value","Shareholder yield",pc,[[-2,1],[0,2.5],[1,4.5],[3,7],[5,9],[8,10]],"(Dividends + buybacks) / market cap."),
 M("pb","value","P/B",v=>xf(v,2),[[.5,9],[.8,8],[1,7],[1.5,5],[2,3.5],[3,1.5]],"Price / book. Scored for banks and insurers only."),
 M("piotroski","quality","Piotroski F",v=>v.toFixed(0)+"/9",[[0,0],[3,3],[5,5.5],[7,7.5],[8,9],[9,10]],"9-point fundamental-strength score."),
@@ -339,7 +340,7 @@ const GR=[["growth","Growth","#3ddc97"],["profit","Profitability","#b794ff"],["h
 const WI={revCagr5:[1,0],revCagr3:[1,0],epsCagr5:[1,0],fcfCagr5:[.75,0],revYoY:[0,0],epsYoY:[0,0],
  gross:[.75,0],op:[1,0],net:[.5,0],fcfM:[1,0],roe:[0,0],roe5:[.5,0],roic:[1.5,0],gpa:[1,0],
  ndEbitda:[1.5,0],intCov:[1,0],de:[.75,0],current:[.25,0],quick:[.25,0],
- pe:[1,.75],peFwd:[1,1.25],peg:[.25,.25],ps:[.5,.25],pfcf:[0,0],evEbitda:[1.25,1],fcfY:[1,.75],shY:[.5,.5],pb:[0,0],
+ pe:[1,.75],peFwd:[1,1.25],peg:[.25,.25],ps:[.5,.25],pfcf:[0,0],evEbitda:[1.25,1],fcfY:[1,.75],shY:[.5,.5],impG:[0,0],pb:[0,0],
  piotroski:[1,0],beneish:[.5,0],altman:[.5,0],conv:[1,0],gmStab:[.75,0],spread:[1.25,0],
  divY:[1,0],payout:[1,0],divCagr:[.75,0],streak:[.75,0],
  rsi:[0,.5],macd:[0,0],adx:[0,0],boll:[0,0],e200:[1,0],stack:[.75,1.25],mom:[1.5,1],vol:[1,.5],hi52:[1.25,1.25],rev1m:[0,.75],rs:[.5,.75],ext50:[0,.5],rvol:[0,.5],
@@ -359,7 +360,7 @@ const VAL_T=4,VAL_K=2,vmult=v=>v==null||v>=VAL_T?1:1+VAL_K*(VAL_T-Math.max(v,0))
 const EVENT_DAYS=84;          /* earnings within 12 weeks fall inside the entry-timing horizon */
 /* Banks and insurers: these ratios are not meaningful (deposits are liabilities, no gross margin, no EBITDA) */
 const FIN_RX=/\b(bank|banks|banking|insurance|insurer|reinsurance|savings institution|thrift)/i;
-const FIN_NA=["gross","fcfM","conv","ndEbitda","intCov","de","current","quick","evEbitda","pfcf","fcfY","altman","beneish"];
+const FIN_NA=["gross","fcfM","conv","ndEbitda","intCov","de","current","quick","evEbitda","pfcf","fcfY","impG","altman","beneish"];
 const LT_T=[[7.5,"Strong long-term profile","Business quality, growth and balance sheet are strong, and the price is reasonable for them.","#3ddc97","#0e8a57"],
  [6.2,"Favourable long-term profile","The business case is sound; one or two areas (often valuation) hold the score back.","#a6e22e","#5d8a00"],
  [4.5,"Mixed long-term profile","Strengths and weaknesses roughly offset; the long-term case depends on which of them improves.","#ffb84a","#a86a00"],
@@ -540,6 +541,16 @@ function calc(){
  fcf!=null&&fcf<=0?set("pfcf",null,{dd:"n/m",force:.5}):set("pfcf",mcap>0&&fcf>0?mcap/fcf:null);
  const ev=mcap!=null?mcap+(debt||0)-(cash||0):null;
  ebitda!=null&&ebitda<=0?set("evEbitda",null,{dd:"n/m (neg. EBITDA)",force:.5}):set("evEbitda",ev>0&&ebitda>0?ev/ebitda:null);set("fcfY",mcap>0&&fcf!=null?fcf/mcap*100:null);
+ if(mcap>0&&fcf!=null){if(fcf<=0)set("impG",null,{dd:"n/m (neg. FCF)",force:1});else{const fy=fcf/mcap;set("impG",(wacc-fy)/(1+fy)*100)}}else set("impG",null);
+ /* expectations check (context): implied growth vs revenue-growth trend */
+ {const rg=[];for(let i=1;i<A.length;i++)if(A[i-1].rev>0&&A[i].rev!=null)rg.push((A[i].rev/A[i-1].rev-1)*100);
+  const ig=V.impG&&isN(V.impG.v)?V.impG.v:null,negF=V.impG&&V.impG.d&&V.impG.d.startsWith("n/m"),pe_=isN(pe)&&pe>0?pe:null;
+  const dec=rg.length>=2&&rg[rg.length-1]<rg[rg.length-2],dec2=rg.length>=3&&dec&&rg[rg.length-2]<rg[rg.length-3],slow=dec&&pe_!=null&&pe_>35,rich=(ig!=null&&ig>=5)||negF;
+  const pt=[];if(ig!=null)pt.push(`The price assumes free cash flow grows about ${ig.toFixed(1)}% a year forever${ig>4?", above long-run economic growth (about 4%)":""}.`);
+  if(negF)pt.push("Free cash flow is negative, so the price rests entirely on cash flows that are not visible yet.");
+  if(slow)pt.push(`Revenue growth slowed from ${rg[rg.length-2].toFixed(1)}% to ${rg[rg.length-1].toFixed(1)}%${dec2?" for a second year":""} while the P/E is ${pe_.toFixed(1)}×.`);
+  if(slow||(rich&&dec))pt.push("High expectations with slowing growth: a guidance miss is the typical trigger for a sharp drop.");
+  S.xp=pt.length?{flag:slow||rich,note:pt.join(" ")}:null}
  {const bb=lat("buy"),dv=lat("div");set("shY",mcap>0&&(bb!=null||dv!=null)?(Math.abs(bb||0)+Math.abs(dv||0))/mcap*100:null)}
  /* quality */
  if(A.length>=2){let f=0,n=0;const ok=c=>{n++;if(c)f++};
@@ -639,6 +650,7 @@ function render(){
   el.innerHTML=`<b style="color:${cc}">Market: ${M_.lab}</b>${esc(M_.n)} ${M_.iv>=0?"+":""}${M_.iv.toFixed(1)}% vs its 200-day, 50-day ${M_.up?"above":"below"} 200-day. Not scored.`}else el.textContent=""}
  {const den=100-TIMING.value+TIMING.value*S.vmT,sh=k=>Math.round(100*TIMING[k]*(k==="value"?S.vmT:1)/den);
   $("tparts").textContent=`Technicals ${gp("tech")} (${sh("tech")}%) · Market & earnings ${gp("mkt")} (${sh("mkt")}%) · Valuation ${gp("value")} (${sh("value")}%)`+(S.vmT>1?" · valuation weight raised because it is weak":"")}
+ {const el=$("txp");el.className="tevt";el.innerHTML="";if(S.xp){if(S.xp.flag)el.classList.add("in");el.innerHTML="<b>Expectations.</b> "+esc(S.xp.note)}}
  {const el=$("tevt"),E=S.nextEarn;el.className="tevt";el.textContent="";
   if(E){const days=Math.round((E.t-Date.now())/864e5),ds=new Date(E.t).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}),cf=E.confirmed?"confirmed":"estimated";
    if(days>=0&&days<=EVENT_DAYS){el.classList.add("in");el.textContent=`⚠ Earnings on ${ds} (${cf}), in ${days} days, inside the 2–12-week window: the report can move the price sharply and override this score.`+(S.groups.value.sT!=null&&S.groups.value.sT<VAL_T?" With valuation this stretched, a disappointment usually costs more than a beat gains.":"")}
