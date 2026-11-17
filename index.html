@@ -98,23 +98,23 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
 .l1{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 #cname{font-size:clamp(17px,1.8vw,22px);font-weight:800;letter-spacing:-.02em}#ctk{color:var(--ink3);font-weight:700;font-size:12px}
 .chip{padding:2px 9px;border-radius:99px;font-size:10px;font-weight:600;background:var(--field);border:1px solid var(--ln);color:var(--ink2);white-space:nowrap}
-#cdesc{margin-top:4px;font-size:11px;line-height:1.5;color:var(--ink2);max-width:105ch;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
-#cdesc.open{-webkit-line-clamp:unset}
+.l2{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .pr{text-align:right;flex:none}#price{font-size:clamp(20px,2vw,26px);font-weight:800}
 #chg{display:inline-block;margin-top:2px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:8px}#asof{font-size:9.5px;color:var(--ink3);margin-top:2px}
 #main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 384px;gap:10px}
 #left{display:flex;flex-direction:column;gap:9px;min-height:0;overflow:auto}
-#grid{flex:1;min-height:420px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:9px}
-.grp{padding:10px 11px 8px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+#grid{flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:auto;gap:9px}
+.grp{padding:10px 11px 8px;display:flex;flex-direction:column;min-width:0}
 .gh{display:flex;align-items:center;gap:6px;padding-bottom:6px;margin-bottom:4px;border-bottom:1px solid var(--ln)}
 .gh h3{flex:1;font-size:12px;font-weight:800;display:flex;align-items:center}.gh h3::before{content:"";width:9px;height:9px;border-radius:50%;margin-right:7px;background:var(--gc);box-shadow:0 0 9px var(--gc)}.gs{font-size:11px;font-weight:800;padding:1px 8px;border-radius:8px}
-.rows{flex:1;display:flex;flex-direction:column;justify-content:space-evenly}
-.m{display:flex;align-items:center;gap:7px;padding:2px 4px;border-radius:8px;cursor:help;min-width:0}.m:hover{background:var(--sel)}
+.rows{flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:4px}
+.m{padding:3px 4px;border-radius:8px;cursor:help;min-width:0}.m:hover{background:var(--sel)}.mr{display:flex;align-items:center;gap:7px;min-width:0}
+.md{font-size:9.5px;line-height:1.4;color:var(--ink3);margin:1px 0 1px 15px}
 .m i{width:8px;height:8px;border-radius:50%;flex:none;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent)}
 .m.nf i{background:none;border:1.5px dashed var(--warn);box-shadow:none}
-.m.ctx i{background:none;border:1.5px solid var(--ink3);box-shadow:none}.m.ctx span,.m.ctx b{color:var(--ink3);font-style:italic}
-.m span{flex:1;font-size:11px;font-weight:500;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.m b{font-size:12px;font-weight:700;color:var(--c)}.m.nf b,.m.na b{color:var(--ink3)}
+.m.ctx i{background:none;border:1.5px solid var(--ink3);box-shadow:none}.m.ctx .mr span,.m.ctx .mr b{color:var(--ink3);font-style:italic}
+.m .mr span{flex:1;font-size:11px;font-weight:500;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m .mr b{font-size:12px;font-weight:700;color:var(--c)}.m.nf .mr b,.m.na .mr b{color:var(--ink3)}
 .src{font-size:9.5px;color:var(--ink3);font-weight:600;margin-top:3px}
 #side{display:flex;flex-direction:column;gap:9px;min-height:0;overflow:auto;padding-right:2px}
 .card{padding:12px 14px;flex:none}
@@ -197,7 +197,7 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
  <div id="banner">Live sources unreachable. Retry, or set MY_PROXY in the script (see top of code).<button class="btn" id="retry">Retry</button></div>
  <section id="id" class="glass">
   <div id="lg">–</div>
-  <div class="idm"><div class="l1"><span id="cname">Loading…</span><span id="ctk"></span><span class="chip" id="csec">—</span><span class="chip" id="cex">—</span></div><p id="cdesc" title="Click to expand">Fetching company profile…</p></div>
+  <div class="idm"><div class="l1"><span id="cname">Loading…</span><span id="ctk"></span></div><div class="l2"><span class="chip" id="csec">—</span><span class="chip" id="cind" hidden></span><span class="chip" id="cex">—</span></div></div>
   <div class="pr"><div id="price">—</div><span id="chg">—</span><br><div class="seg" id="per" role="group" aria-label="Price change period"><button data-p="1D">1D</button><button data-p="1W">1W</button><button data-p="1M">1M</button><button data-p="6M">6M</button><button data-p="1Y">1Y</button></div><div id="asof"></div></div>
  </section>
  <main id="main">
@@ -274,6 +274,8 @@ const yTS=s=>{const n=Math.floor(Date.now()/1e3);return`${Y}/ws/fundamentals-tim
 /* ---------- metric registry ---------- */
 const M=(k,g,l,f,st,tip)=>({k,g,l,f,st,tip});
 const G6=[[-5,0],[0,2],[5,4.5],[10,6.5],[15,8],[25,10]];
+/* Plain-language definition shown under each indicator: what it is, what it measures, which direction is better. */
+const DESC={"revCagr5": "Average yearly revenue growth over 5 years. Shows how fast the business has grown sales; higher is better.", "revCagr3": "Average yearly revenue growth over 3 years. A more recent view of sales growth; higher is better.", "epsCagr5": "Average yearly growth of earnings per share over 5 years. Profit growth per share; higher is better.", "fcfCagr5": "Average yearly growth of free cash flow over 5 years. Growth of the cash left after investment; higher is better.", "revYoY": "Revenue change in the latest year vs the year before. Context only: one year says little about the future.", "epsYoY": "Earnings-per-share change in the latest year. Context only: one-off items often distort it.", "gross": "Gross profit / revenue. What is left after the direct cost of the product; high = pricing power.", "op": "Operating income / revenue. Profit from the core business before interest and tax; higher is better.", "net": "Net income / revenue. The share of each sale kept as final profit; higher is better.", "fcfM": "Free cash flow / revenue. Cash generated per unit of sales after investment; higher is better.", "roe": "Net income / shareholders' equity. Return on owners' money; context only (debt and buybacks inflate it).", "roe5": "Return on equity averaged over 5 years. Steadier view of returns to shareholders; higher is better.", "roic": "After-tax operating profit / capital invested (debt + equity − cash). How well the business turns capital into profit.", "gpa": "Gross profit / total assets. Productivity of the asset base; a strong quality signal (Novy-Marx).", "ndEbitda": "(Debt − cash) / EBITDA. Years of operating profit needed to repay net debt; below 0 = net cash, lower is better.", "intCov": "Operating profit / interest expense. How many times profit covers interest; higher is safer.", "de": "Total debt / equity. Financial leverage; lower is safer.", "current": "Current assets / current liabilities. Ability to pay bills due within a year; around 1.5 or more is comfortable.", "quick": "(Current assets − inventory) / current liabilities. Short-term liquidity without selling stock.", "pe": "Share price / earnings per share (last 12 months). Years of current profit you pay for; lower = cheaper.", "peFwd": "Share price / expected earnings next year. Same as P/E but on forecasts; lower = cheaper.", "peg": "P/E divided by the earnings growth rate. Price adjusted for growth; below 1 is cheap, above 2 expensive.", "ps": "Market value / revenue. Price paid per unit of sales; lower = cheaper (compare within the industry).", "pfcf": "Market value / free cash flow. Context only (the inverse of FCF yield).", "evEbitda": "Enterprise value (market value + net debt) / EBITDA. Price of the whole business vs its operating profit; lower = cheaper.", "fcfY": "Free cash flow / market value. Cash return the business produces for its price; higher = cheaper.", "shY": "(Dividends + buybacks) / market value. Cash returned to shareholders each year; higher is better.", "impG": "Reverse DCF: the yearly free-cash-flow growth, forever, that today's price assumes. Above ~4% = growth above the economy. Context only.", "pb": "Share price / book value per share. Scored only for banks and insurers.", "piotroski": "Piotroski F-score: 9 yes/no tests on profitability, debt and efficiency trends. 7–9 = strong, 0–3 = weak.", "beneish": "Beneish M-score: statistical test for earnings manipulation. Below −2.22 = low risk.", "altman": "Altman Z-score: bankruptcy-risk formula. Above 3 = safe, below 1.8 = distress zone.", "conv": "Free cash flow / net income. Whether reported profit turns into cash; 80% or more is healthy.", "gmStab": "Variation of the gross margin over 5 years (percentage points). Stable margins = durable pricing power; lower is better.", "spread": "ROIC minus the cost of capital (WACC). Positive = the business creates value on each dollar invested.", "divY": "Dividend per share / price. Cash income per year; very high yields (>9%) often signal a cut.", "payout": "Dividends / earnings. Share of profit paid out; below about 75% leaves room to keep paying.", "divCagr": "Average yearly dividend growth over 5 years; higher is better.", "streak": "Number of consecutive years the dividend was raised; longer = more reliable.", "rsi": "Relative Strength Index (14 days): speed of recent price moves on a 0–100 scale. Above 70 overbought, below 30 oversold.", "macd": "MACD histogram: gap between short- and long-term price momentum. Above 0 = momentum improving. Context only.", "adx": "Average Directional Index: strength of the trend, not its direction. Below 20 no trend, above 25 trending. Context only.", "boll": "Bollinger %B: where the price sits in its 20-day volatility band. 1 = upper edge, 0 = lower edge. Context only.", "s200": "Price vs its 200-day average. Shows the long-term trend direction, not value; above 0 = uptrend.", "stack": "Trend regime: price above the 200-day average, and 50-day above 200-day. 2/2 = confirmed uptrend.", "mom": "12-month return skipping the latest month, divided by volatility. Medium-term momentum, which tends to persist.", "vol": "Annualised volatility of the price. How much it swings; lower is calmer.", "hi52": "Distance from the 52-week high. Stocks near their high tend to keep outperforming.", "rev1m": "Last month's return. Big short-term gains tend to be partly given back (timing only).", "ext50": "(Price − 50-day average) / average daily range. Above +4 the price is stretched (timing only).", "rvol": "Average volume of the last month vs the months before. Above 1.3 = unusual interest (timing only).", "rs": "12-month return minus the sector or market benchmark return. Positive = the stock leads its peers.", "upside": "Analyst target price vs current price. Weak predictor, low weight.", "beta": "Sensitivity to market moves. 1 = moves with the market; above 1 swings more.", "dilut": "Yearly change in the number of shares. Negative = buybacks (good); positive = dilution.", "surprise": "Reported earnings vs analyst forecasts, last 2 quarters. Beats tend to be followed by drift up for weeks.", "revision": "Change in analysts' next-year earnings forecast over 3 months. Rising forecasts support the price.", "e200": "Price vs its 200-day exponential average. Shows the long-term trend direction, not value; above 0 = uptrend."};
 const REG=[
 M("revCagr5","growth","Revenue CAGR 5y",pc,G6,"5-year compound revenue growth. Target ≥10%/yr."),
 M("revCagr3","growth","Revenue CAGR 3y",pc,G6,"3-year compound revenue growth."),
@@ -541,7 +543,7 @@ function calc(){
  fcf!=null&&fcf<=0?set("pfcf",null,{dd:"n/m",force:.5}):set("pfcf",mcap>0&&fcf>0?mcap/fcf:null);
  const ev=mcap!=null?mcap+(debt||0)-(cash||0):null;
  ebitda!=null&&ebitda<=0?set("evEbitda",null,{dd:"n/m (neg. EBITDA)",force:.5}):set("evEbitda",ev>0&&ebitda>0?ev/ebitda:null);set("fcfY",mcap>0&&fcf!=null?fcf/mcap*100:null);
- if(mcap>0&&fcf!=null){if(fcf<=0)set("impG",null,{dd:"n/m (neg. FCF)",force:1});else{const fy=fcf/mcap;set("impG",(wacc-fy)/(1+fy)*100)}}else set("impG",null);
+ if(mcap>0&&fcf!=null){if(fcf<=0)set("impG",null,{dd:"n/m (neg. FCF)",force:1});else{const fy=fcf/mcap,gg=(wacc-fy)/(1+fy)*100;set("impG",Math.abs(gg)<.05?0:gg)}}else set("impG",null);
  /* expectations check (context): implied growth vs revenue-growth trend */
  {const rg=[];for(let i=1;i<A.length;i++)if(A[i-1].rev>0&&A[i].rev!=null)rg.push((A[i].rev/A[i-1].rev-1)*100);
   const ig=V.impG&&isN(V.impG.v)?V.impG.v:null,negF=V.impG&&V.impG.d&&V.impG.d.startsWith("n/m"),pe_=isN(pe)&&pe>0?pe:null;
@@ -628,7 +630,7 @@ function perf(){const c=S.closes;if(S.price==null||c.length<2)return null;let b=
  const short=!b;if(!b)b=c[0];return{pct:(S.price/b.c-1)*100,from:b.t,short}}
 function render(){
  $("cname").textContent=S.name||S.sym;$("ctk").textContent=S.sym;$("lg").style.background=logoG(S.sym);$("lg").textContent=S.sym.replace(/[^A-Z0-9]/g,"").slice(0,4);
- $("csec").textContent=S.sector||"sector ∅";$("cex").textContent=S.ex||"listed";$("cdesc").textContent=S.desc||"Company profile pending (Nasdaq / Wikipedia)…";
+ $("csec").textContent=S.sector||"sector ∅";$("cex").textContent=S.ex||"listed";{const ci=$("cind"),ind=S.industry&&S.industry!==S.sector?S.industry:"";ci.textContent=ind;ci.hidden=!ind}
  $("price").textContent=S.price!=null?money(S.price,S.cur):"∅";
  const pf=perf(),ce=$("chg");
  $("per").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.p===S.per));
@@ -637,7 +639,7 @@ function render(){
  $("grid").innerHTML=GR.map(([k,name,c])=>{const G=S.groups[k]||{},gc=G.s!=null?col(G.s):"var(--ink3)";
   const rows=REG.filter(m=>m.g===k).map(m=>{const v=S.v[m.k],wi=(S.WE||WI)[m.k],ctx=!wi[0]&&!wi[1];const cc=v.s==="ok"&&!ctx?col(v.sc):"var(--ink3)";
    const tip=`${m.l}: ${m.tip}${v.src?" Source: "+v.src+".":""} ${ctx?"Shown for context, not scored.":(v.s==="ok"?"Score "+v.sc.toFixed(1)+"/10.":v.s==="na"?"Not applicable, excluded.":"Not found, excluded.")+` Weight: long-term ×${wi[0]}${wi[1]?", entry timing ×"+wi[1]:""}.`}`;
-   return`<div class="m ${v.s}${ctx?" ctx":""}" style="--c:${cc}" title="${esc(tip)}"><i></i><span>${esc(m.l)}</span><b>${esc(v.d)}</b></div>`}).join("");
+   return`<div class="m ${v.s}${ctx?" ctx":""}" style="--c:${cc}" title="${esc(tip)}"><div class="mr"><i></i><span>${esc(m.l)}</span><b>${esc(v.d)}</b></div><p class="md">${esc(DESC[m.k]||m.tip)}</p></div>`}).join("");
   return`<section class="grp glass"><div class="gh"><h3 style="--gc:${c}">${name}</h3><span class="gs" style="color:${gc};background:color-mix(in srgb,${gc} 12%,transparent)">${G.s!=null?G.s.toFixed(1):"∅"}</span></div><div class="rows">${rows}</div><div class="src">${G.n||0}/${G.tot||0} scored</div></section>`}).join("");
  const C=2*Math.PI*38;
  const ringSet=(fgId,a,b,numId,sc)=>{const fg=$(fgId);fg.style.strokeDasharray=C;fg.style.strokeDashoffset=sc!=null?C*(1-sc/10):C;const p=ringPair(sc);$(a).setAttribute("stop-color",p[0]);$(b).setAttribute("stop-color",p[1]);$(numId).textContent=sc!=null?sc.toFixed(1):"∅"};
@@ -709,14 +711,14 @@ async function load(sym,fresh){
  sym=sym.trim().toUpperCase();if(!sym)return;const g=++S.gen;
  if(fresh)Object.keys(localStorage).forEach(k=>k.startsWith("sg_")&&k.includes(sym)&&localStorage.removeItem(k));
  Object.assign(S,{sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",industry:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,surp:null,nextEarn:null,bench:null,mkt:null,F:null,v:{},groups:{},score:null,sent:null,tscore:null,tsent:null,via:{}});
- $("srcs").innerHTML=[["sec","SEC EDGAR"],["yahoo","Yahoo"],["nasdaq","Nasdaq"],["est","Consensus EPS"],["surp","Earnings surprise"],["bench","Benchmark"],["wiki","Wikipedia"]].map(([k,l])=>`<span class="st" data-k="${k}">${l}</span>`).join("");
+ $("srcs").innerHTML=[["sec","SEC EDGAR"],["yahoo","Yahoo"],["nasdaq","Nasdaq"],["est","Consensus EPS"],["surp","Earnings surprise"],["bench","Benchmark"]].map(([k,l])=>`<span class="st" data-k="${k}">${l}</span>`).join("");
  store("sg_last",sym);$("banner").classList.remove("show");$("cname").textContent="Loading "+sym+"…";
  await Promise.allSettled([secTask(sym,g),yahooTask(sym,g),fundTask(sym,g),divTask(sym,g),nasdaqTask(sym,g)]);
  if(g!==S.gen)return;
  if(!S.F&&S.price==null&&!S.sec){$("banner").classList.add("show");$("cname").textContent=sym;draw();return}
  if(!S.name)S.name=sym;
  await benchTask(sym,g);if(g!==S.gen)return;
- if(!S.desc)await wikiTask(g);else stat("wiki").className="st";
+
  draw()}
 
 /* ---------- search ---------- */
@@ -769,7 +771,7 @@ function init(){
     navigator.clipboard ? navigator.clipboard.writeText(text).then(()=>toast("Indices copied")).catch(()=>toast("Copy blocked by browser")) : toast("Clipboard unavailable");
  };
 
- $("cdesc").onclick=e=>e.currentTarget.classList.toggle("open");
+ 
  document.addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();$("q").focus()}else if(e.key==="/"&&!/INPUT|SELECT/.test(document.activeElement.tagName)){e.preventDefault();$("q").focus()}});
  $("per").onclick=e=>{const b=e.target.closest("[data-p]");if(b){S.per=b.dataset.p;store("sg_per",S.per);if(S.sym)render()}};
  $("esttog").classList.toggle("off",!S.showEst);
