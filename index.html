@@ -110,6 +110,7 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
 .rows{flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:4px}
 .m{padding:3px 4px;border-radius:8px;cursor:help;min-width:0}.m:hover{background:var(--sel)}.mr{display:flex;align-items:center;gap:7px;min-width:0}
 .md{font-size:9.5px;line-height:1.4;color:var(--ink3);margin:1px 0 1px 15px}
+.cmp{display:inline-block;font-style:normal;font-size:9px;padding:0 6px;border-radius:99px;border:1px solid rgba(90,169,255,.45);color:#9fd0ff;margin-top:2px}.cmp.cx{border-color:var(--ln);color:var(--ink3)}
 .m i{width:8px;height:8px;border-radius:50%;flex:none;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent)}
 .m.nf i{background:none;border:1.5px dashed var(--warn);box-shadow:none}
 .m.ctx i{background:none;border:1.5px solid var(--ink3);box-shadow:none}.m.ctx .mr span,.m.ctx .mr b{color:var(--ink3);font-style:italic}
@@ -270,7 +271,7 @@ async function cached(k,ttl,fn){const h=read("sg_"+k,null);if(h&&Date.now()-h.t<
 const Y="https://query1.finance.yahoo.com";
 const yCh=(s,r,i)=>`${Y}/v8/finance/chart/${encodeURIComponent(s)}?range=${r}&interval=${i}&events=div`;
 const ySr=q=>`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=8&newsCount=0`;
-const YM={rev:"TotalRevenue",ni:"NetIncome",eps:"DilutedEPS",fcf:"FreeCashFlow",ocf:"OperatingCashFlow",capex:"CapitalExpenditure",assets:"TotalAssets",equity:"StockholdersEquity",debt:"TotalDebt",cash:"CashCashEquivalentsAndShortTermInvestments",ca:"CurrentAssets",cl:"CurrentLiabilities",inv:"Inventory",op:"OperatingIncome",gross:"GrossProfit",pretax:"PretaxIncome",tax:"TaxProvision",div:"CashDividendsPaid",buy:"RepurchaseOfCapitalStock",shares:"OrdinarySharesNumber",ret:"RetainedEarnings",ppe:"NetPPE",recv:"Receivables",sga:"SellingGeneralAndAdministration",dep:"ReconciledDepreciation",int:"InterestExpense",ebitda:"EBITDA"};
+const YM={rev:"TotalRevenue",ni:"NetIncome",eps:"DilutedEPS",fcf:"FreeCashFlow",ocf:"OperatingCashFlow",capex:"CapitalExpenditure",assets:"TotalAssets",equity:"StockholdersEquity",debt:"TotalDebt",cash:"CashCashEquivalentsAndShortTermInvestments",ca:"CurrentAssets",cl:"CurrentLiabilities",inv:"Inventory",op:"OperatingIncome",gross:"GrossProfit",pretax:"PretaxIncome",tax:"TaxProvision",div:"CashDividendsPaid",buy:"RepurchaseOfCapitalStock",iss:"IssuanceOfCapitalStock",shares:"OrdinarySharesNumber",ret:"RetainedEarnings",ppe:"NetPPE",recv:"Receivables",sga:"SellingGeneralAndAdministration",dep:"ReconciledDepreciation",int:"InterestExpense",ebitda:"EBITDA"};
 const YQ=["TotalRevenue","NetIncome","DilutedEPS","FreeCashFlow","OperatingCashFlow","CapitalExpenditure","OperatingIncome","GrossProfit","TotalDebt","CashCashEquivalentsAndShortTermInvestments","StockholdersEquity","TotalAssets","CurrentAssets","CurrentLiabilities","OrdinarySharesNumber","Inventory"];
 const YF1=["debt","cash","int","ebitda"];
 const yTS=s=>{const n=Math.floor(Date.now()/1e3);return`${Y}/ws/fundamentals-timeseries/v1/finance/timeseries/${encodeURIComponent(s)}?symbol=${encodeURIComponent(s)}&period1=${n-346e6}&period2=${n}&type=${[...Object.values(YM).map(x=>"annual"+x),...YQ.map(x=>"quarterly"+x)].join(",")}&merge=false`};
@@ -298,7 +299,7 @@ M("gpa","profit","Gross profit / assets",pc,[[5,1],[15,4],[25,6.5],[35,8.5],[50,
 M("ndEbitda","health","Net debt / EBITDA",xf,[[-2,10],[0,9.5],[1,8],[2,6],[3,4],[4,2],[5,.5],[7,0]],"Years of EBITDA to repay net debt; <0 = net cash."),
 M("intCov","health","Interest cover",v=>v>=999?"no debt":xf(v),[[.5,0],[1,1],[2,2.5],[5,5.5],[10,8],[20,10]],"EBIT / interest expense. Target ≥5×."),
 M("de","health","Debt / equity",v=>pc(v,0),[[0,10],[30,9],[60,8],[100,6.5],[150,4.5],[250,2],[400,0]],"Total debt / equity. Target ≤100%."),
-M("current","health","Current ratio",v=>xf(v,2),[[.6,.5],[.8,2],[1,3.5],[1.2,5],[1.5,7],[2,8.5],[3,10]],"Current assets / current liabilities."),
+M("current","health","Current ratio",v=>xf(v,2),[[.6,.5],[.8,2],[1,4],[1.2,6],[1.5,7.5],[2,8]],"Current assets / current liabilities. Liquidity flag: low values penalised, no extra credit above 2."),
 M("quick","health","Quick ratio",v=>xf(v,2),[[.3,.5],[.5,1.5],[.8,3.5],[1,5.5],[1.5,7.5],[2,9],[3,10]],"(Current assets − inventory) / current liabilities. Low weight: describes working-capital structure more than solvency."),
 M("pe","value","P/E trailing",xf,[[5,9.5],[8,9],[12,8.5],[18,7.5],[25,6],[35,4],[50,2],[80,.5]],"Price / trailing EPS; gate < 25."),
 M("peFwd","value","P/E forward",xf,[[5,9.5],[8,9],[12,8.5],[17,7.5],[23,6],[32,4],[45,2],[70,.5]],"Price / next-year EPS (Nasdaq consensus, else model)."),
@@ -308,13 +309,14 @@ M("pfcf","value","P/FCF",xf,[[6,9.5],[8,9],[12,8.5],[18,7],[25,5.5],[40,3],[60,1
 M("evEbitda","value","EV / EBITDA",xf,[[4,9.5],[6,9],[10,8],[14,6.5],[20,4.5],[30,2],[45,.5]],"Enterprise value / EBITDA."),
 M("fcfY","value","FCF yield",pc,[[0,.5],[2,4],[4,6.5],[6,8.5],[9,10]],"FCF / market cap. Target ≥4%."),
 M("impG","value","Implied FCF growth",v=>v.toFixed(1)+"%/yr",[[0,10],[2,9],[3,7.5],[4,6],[5,4.5],[6,3],[8,1]],"Reverse DCF: the free-cash-flow growth per year, forever, that today's price assumes at the WACC: (WACC − FCF yield) / (1 + FCF yield). Long-run economy ≈ 4%. Context, not scored."),
-M("shY","value","Shareholder yield",pc,[[-2,1],[0,2.5],[1,4.5],[3,7],[5,9],[8,10]],"(Dividends + buybacks) / market cap."),
+M("shY","value","Net payout yield",pc,[[-2,1],[0,2.5],[1,4.5],[3,7],[5,9],[8,10]],"(Dividends + buybacks − share issuance) / market cap (Boudoukh et al. 2007)."),
 M("pb","value","P/B",v=>xf(v,2),[[.5,9],[.8,8],[1,7],[1.5,5],[2,3.5],[3,1.5]],"Price / book. Scored for banks and insurers only."),
 M("piotroski","quality","Piotroski F",v=>v.toFixed(0)+"/9",[[0,0],[3,3],[5,5.5],[7,7.5],[8,9],[9,10]],"9-point fundamental-strength score."),
 M("beneish","quality","Beneish M",v=>v.toFixed(2),[[-3.2,10],[-2.6,9.5],[-2.22,7],[-1.78,4],[-1,2],[0,0]],"Earnings-manipulation risk; safe below −2.22."),
 M("altman","quality","Altman Z",v=>v.toFixed(1),[[1,.5],[1.8,2],[2.2,3.5],[3,6.5],[5,8.5],[8,10]],"Bankruptcy-risk composite; safe above 3."),
 M("conv","quality","FCF / net income",v=>pc(v,0),[[0,.5],[50,4],[80,6.5],[100,8],[130,10]],"Cash backing of reported earnings."),
 M("gmStab","quality","Gross margin σ",v=>v.toFixed(1)+" pt",[[1,9.5],[2,9],[3,8],[6,6],[10,3.5],[15,1.5]],"Stability of gross margin over 5y (lower = better)."),
+M("assetG","quality","Asset growth",pc,[[-10,7],[0,8],[5,7.5],[10,6.5],[20,4.5],[35,2.5],[60,.5]],"Total-asset growth over the last year; fast balance-sheet expansion predicts lower returns (Cooper, Gulen & Schill 2008)."),
 M("spread","quality","ROIC − WACC",v=>(v>=0?"+":"")+v.toFixed(1)+" pt",[[-3,0],[0,3],[3,6],[8,8.5],[15,10]],"Return on capital minus WACC (CAPM cost of equity, after-tax cost of debt). Banks/insurers: ROE minus cost of equity."),
 M("divY","div","Dividend yield",v=>pc(v,2),[[0,2],[.5,3],[1.5,5],[2.5,6.5],[4,8.5],[6,9.5],[9,6],[12,3]],"TTM dividends / price; >9% = trap risk."),
 M("payout","div","Payout ratio",v=>pc(v,0),[[0,10],[30,9],[50,8],[70,6.5],[90,4],[120,1.5],[150,.5]],"Dividends / EPS. Target ≤70%."),
@@ -343,23 +345,32 @@ const GR=[["growth","Growth","#3ddc97"],["profit","Profitability","#b794ff"],["h
 /* Per-indicator weights [long-term, entry-timing]. Within a group the score is a weighted mean of the
    indicators found, so overlapping or noisy indicators count less (e.g. P/FCF and FCF yield carry the same
    information; ROE is distorted by buybacks; RSI/MACD/Bollinger matter for weeks, not years). */
-const WI={revCagr5:[1,0],revCagr3:[1,0],epsCagr5:[1,0],fcfCagr5:[.75,0],revYoY:[0,0],epsYoY:[0,0],
- gross:[.75,0],op:[1,0],net:[.5,0],fcfM:[1,0],roe:[0,0],roe5:[.5,0],roic:[1.5,0],gpa:[1,0],
- ndEbitda:[1.5,0],intCov:[1,0],de:[.75,0],current:[.25,0],quick:[.25,0],
- pe:[1,.75],peFwd:[1,1.25],peg:[.25,.25],ps:[.5,.25],pfcf:[0,0],evEbitda:[1.25,1],fcfY:[1,.75],shY:[.5,.5],impG:[0,0],pb:[0,0],
- piotroski:[1,0],beneish:[.5,0],altman:[.5,0],conv:[1,0],gmStab:[.75,0],spread:[1.25,0],
- divY:[1,0],payout:[1,0],divCagr:[.75,0],streak:[.75,0],
- rsi:[0,.5],macd:[0,0],adx:[0,0],boll:[0,0],e200:[1,0],stack:[.75,1.25],mom:[1.5,1],vol:[1,.5],hi52:[1.25,1.25],rev1m:[0,.75],rs:[.5,.75],ext50:[0,.5],rvol:[0,.5],
- upside:[.25,.25],beta:[.25,.25],dilut:[1.25,.25],surprise:[.5,1.25]};
-/* Weights [long-term, entry-timing]; 0 = context only. Evidence-based revision (Nov 2026): redundant or weak signals cut
-   (P/FCF = 1/FCF yield, trailing ROE, PEG, analyst targets, current/quick ratios, MACD/ADX/Bollinger); added gross
-   profit/assets, 12-1 risk-adjusted momentum, 52-week-high proximity, 1-month reversal, relative strength, earnings surprise. */
+/* Weights [long-term, entry-timing]; 0 = context only. Indicator-redundancy review (18 Nov 2026, same as the stock-verdict
+   skill, references/indicator-review.md): indicators that measure the same thing share one theme weight (composites:
+   value, margins, leverage, revenue growth, earnings-power growth, trend, reversal/overextension); duplicates and signals
+   without replicated evidence are context only (ROE, net margin, quick ratio, P/FCF, PEG, Altman Z, ROIC−WACC, MACD, ADX,
+   relative volume, beta, analyst upside). Asset growth (investment factor) added. */
+const WI={revCagr5:[.5,0],revCagr3:[.5,0],epsCagr5:[.5,0],fcfCagr5:[.5,0],revYoY:[0,0],epsYoY:[0,0],
+ gross:[.25,0],op:[.25,0],net:[0,0],fcfM:[1,0],roe:[0,0],roe5:[0,0],roic:[1.25,0],gpa:[1.5,0],
+ ndEbitda:[.75,0],intCov:[.5,0],de:[.25,0],current:[.25,0],quick:[0,0],
+ pe:[.225,.225],peFwd:[.4,.4],peg:[0,0],ps:[.25,.25],pfcf:[0,0],evEbitda:[.625,.625],fcfY:[.625,.625],shY:[.625,.625],impG:[0,0],pb:[0,0],
+ piotroski:[1,0],beneish:[.5,0],altman:[0,0],conv:[1,0],gmStab:[.75,0],assetG:[.75,0],spread:[0,0],
+ divY:[.5,0],payout:[1,0],divCagr:[.75,0],streak:[0,0],
+ rsi:[0,.2],macd:[0,0],adx:[0,0],boll:[0,.1],e200:[.125,.25],stack:[.125,.25],mom:[.25,.5],vol:[1.25,.5],hi52:[.25,.5],rev1m:[0,.5],rs:[0,.25],ext50:[0,.2],rvol:[0,0],
+ upside:[0,0],beta:[0,0],dilut:[1.25,0],surprise:[.25,1]};
+const COMPOSITE={revCagr5:"Revenue growth",revCagr3:"Revenue growth",epsCagr5:"Earnings-power growth",fcfCagr5:"Earnings-power growth",gross:"Margins",op:"Margins",
+ ndEbitda:"Leverage",intCov:"Leverage",de:"Leverage",peFwd:"Value",pe:"Value",evEbitda:"Value",fcfY:"Value",shY:"Value",
+ mom:"Trend",hi52:"Trend",e200:"Trend",stack:"Trend",rev1m:"Reversal / overextension",rsi:"Reversal / overextension",ext50:"Reversal / overextension",boll:"Reversal / overextension"};
+const CTXW={revYoY:"inside the 3y/5y revenue growth",epsYoY:"noisy one-year change",net:"dominated by gross profitability",roe:"leverage-driven; ROIC covers it",roe5:"overlaps ROIC",
+ quick:"near-duplicate of the current ratio",peg:"no evidence it beats its parts",pfcf:"exact inverse of the FCF yield",pb:"scored for banks and insurers only",impG:"expectations check",
+ altman:"its parts are already scored; distress is not rewarded",spread:"ranks like ROIC",streak:"no evidence raise streaks predict returns",macd:"no out-of-sample support",adx:"no out-of-sample support",
+ rvol:"weak, unreplicated",upside:"targets lag prices",beta:"volatility carries the low-risk effect"};
 const FIN_OVR={pb:[1,.75]};
 const MIN_COV=.4;            /* groups with less than 40% of their indicator weight found are left out */
 const RF=4.94,ERP=4.41;      /* Damodaran, 1 Nov 2026: US T-bond rate and implied equity risk premium */
-const LW={growth:10,profit:20,health:11,value:22,quality:14,div:3,tech:12,mkt:8};   /* long-term group weights */
-/* Entry timing (2–12 weeks): price action, then earnings news; valuation acts as a downside-risk factor */
-const TIMING={tech:55,mkt:25,value:20};
+const LW={growth:8,profit:21,health:9,value:22,quality:14,div:3,tech:12,mkt:11};   /* long-term group weights */
+/* Entry timing (2–12 weeks): price setup, then earnings news (EPS surprise, counted once), valuation as a risk factor */
+const TIMING={tech:65,mkt:20,value:15};
 /* Weak valuation weighs more in both scores: below 4/10 its weight × (1 + 2·(4 − v)/4), up to ×3 at 0.
    Stocks priced for high growth fall much harder on disappointments than they rise on beats (Skinner & Sloan 2002). */
 const VAL_T=4,VAL_K=2,vmult=v=>v==null||v>=VAL_T?1:1+VAL_K*(VAL_T-Math.max(v,0))/VAL_T;
@@ -392,7 +403,7 @@ function cikOf(sym){if(CIKP[sym])return CIKP[sym];
  CIKP[sym]=(async()=>{let cik=read("sg_cik_"+sym,null);if(cik)return cik;
   const{j}=await race("https://www.sec.gov/files/company_tickers.json",j=>j&&typeof j==="object",{direct:true});const r=Object.values(j).find(x=>String(x.ticker).toUpperCase()===sym);if(!r)throw Error("no cik");
   cik=String(r.cik_str).padStart(10,"0");store("sg_cik_"+sym,cik);return cik})().catch(e=>{delete CIKP[sym];throw e});return CIKP[sym]}
-const SM={rev:["RevenueFromContractWithCustomerExcludingAssessedTax","Revenues","RevenueFromContractWithCustomerIncludingAssessedTax","SalesRevenueNet"],ni:["NetIncomeLoss","ProfitLoss"],eps:["EarningsPerShareDiluted","EarningsPerShareBasicAndDiluted"],ocf:["NetCashProvidedByUsedInOperatingActivities"],capex:["PaymentsToAcquirePropertyPlantAndEquipment","PaymentsToAcquireProductiveAssets"],assets:["Assets"],equity:["StockholdersEquity","StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"],ca:["AssetsCurrent"],cl:["LiabilitiesCurrent"],inv:["InventoryNet"],op:["OperatingIncomeLoss"],gross:["GrossProfit"],pretax:["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest","IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments"],tax:["IncomeTaxExpenseBenefit"],div:["PaymentsOfDividendsCommonStock","PaymentsOfDividends"],buy:["PaymentsForRepurchaseOfCommonStock"],ret:["RetainedEarningsAccumulatedDeficit"],ppe:["PropertyPlantAndEquipmentNet"],recv:["AccountsReceivableNetCurrent","ReceivablesNetCurrent"],sga:["SellingGeneralAndAdministrativeExpense"],dep:["DepreciationDepletionAndAmortization","DepreciationAmortizationAndAccretionNet"]};
+const SM={rev:["RevenueFromContractWithCustomerExcludingAssessedTax","Revenues","RevenueFromContractWithCustomerIncludingAssessedTax","SalesRevenueNet"],ni:["NetIncomeLoss","ProfitLoss"],eps:["EarningsPerShareDiluted","EarningsPerShareBasicAndDiluted"],ocf:["NetCashProvidedByUsedInOperatingActivities"],capex:["PaymentsToAcquirePropertyPlantAndEquipment","PaymentsToAcquireProductiveAssets"],assets:["Assets"],equity:["StockholdersEquity","StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"],ca:["AssetsCurrent"],cl:["LiabilitiesCurrent"],inv:["InventoryNet"],op:["OperatingIncomeLoss"],gross:["GrossProfit"],pretax:["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest","IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments"],tax:["IncomeTaxExpenseBenefit"],div:["PaymentsOfDividendsCommonStock","PaymentsOfDividends"],buy:["PaymentsForRepurchaseOfCommonStock"],iss:["ProceedsFromIssuanceOfCommonStock"],ret:["RetainedEarningsAccumulatedDeficit"],ppe:["PropertyPlantAndEquipmentNet"],recv:["AccountsReceivableNetCurrent","ReceivablesNetCurrent"],sga:["SellingGeneralAndAdministrativeExpense"],dep:["DepreciationDepletionAndAmortization","DepreciationAmortizationAndAccretionNet"]};
 const IM={rev:["Revenue"],ni:["ProfitLoss"],eps:["DilutedEarningsLossPerShare"],assets:["Assets"],equity:["Equity"],ca:["CurrentAssets"],cl:["CurrentLiabilities"],inv:["Inventories"],op:["ProfitLossFromOperatingActivities"],gross:["GrossProfit"]};
 const DUR=new Set(["rev","ni","eps","ocf","capex","op","gross","pretax","tax","div","buy","sga","dep"]),AF=["10-K","20-F","40-F","10-K/A"];
 function ser(facts,names,unit,dur){for(const n of names){const c=facts[n];if(!c||!c.units||!c.units[unit])continue;const o={};
@@ -589,6 +600,7 @@ function calc(){
  const gr=V.epsCagr5.v;set("peg",pe>0&&gr>0?pe/gr:null);
  set("ps",mcap>0&&rev>0?mcap/rev:null);
  {const[gp_]=same("gross");set("gpa",gp_!=null&&as>0?gp_/as*100:null)}
+ set("assetG",as>0&&L.assets>0&&P.assets>0?(L.assets/P.assets-1)*100:null);
  set("pb",mcap>0&&eq>0?mcap/eq:null);
  fcf!=null&&fcf<=0?set("pfcf",null,{dd:"n/m",force:.5}):set("pfcf",mcap>0&&fcf>0?mcap/fcf:null);
  const ev=mcap!=null?mcap+(debt||0)-(cash||0):null;
@@ -603,7 +615,7 @@ function calc(){
   if(slow)pt.push(`Revenue growth slowed from ${rg[rg.length-2].toFixed(1)}% to ${rg[rg.length-1].toFixed(1)}%${dec2?" for a second year":""} while the P/E is ${pe_.toFixed(1)}×.`);
   if(slow||(rich&&dec))pt.push("High expectations with slowing growth: a guidance miss is the typical trigger for a sharp drop.");
   S.xp=pt.length?{flag:slow||rich,note:pt.join(" ")}:null}
- {const bb=lat("buy"),dv=lat("div");set("shY",mcap>0&&(bb!=null||dv!=null)?(Math.abs(bb||0)+Math.abs(dv||0))/mcap*100:null)}
+ {const bb=lat("buy"),dv=lat("div"),is_=lat("iss");set("shY",mcap>0&&(bb!=null||dv!=null||is_!=null)?(Math.abs(bb||0)+Math.abs(dv||0)-Math.abs(is_||0))/mcap*100:null,is_==null?{src:"issuance not reported: gross payout yield"}:{})}
  /* quality */
  if(A.length>=2){let f=0,n=0;const ok=c=>{n++;if(c)f++};
   if(L.ni!=null&&as>0)ok(L.ni/as>0);if(L.ocf!=null)ok(L.ocf>0);
@@ -689,7 +701,7 @@ function render(){
  $("grid").innerHTML=GR.map(([k,name,c])=>{const G=S.groups[k]||{},gc=G.s!=null?col(G.s):"var(--ink3)";
   const rows=REG.filter(m=>m.g===k).map(m=>{const v=S.v[m.k],wi=(S.WE||WI)[m.k],ctx=!wi[0]&&!wi[1];const cc=v.s==="ok"&&!ctx?col(v.sc):"var(--ink3)";
    const tip=`${m.l}: ${m.tip}${v.src?" Source: "+v.src+".":""} ${ctx?"Shown for context, not scored.":(v.s==="ok"?"Score "+v.sc.toFixed(1)+"/10.":v.s==="na"?"Not applicable, excluded.":"Not found, excluded.")+` Weight: long-term ×${wi[0]}${wi[1]?", entry timing ×"+wi[1]:""}.`}`;
-   return`<div class="m ${v.s}${ctx?" ctx":""}" style="--c:${cc}" title="${esc(tip)}"><div class="mr"><i></i><span>${esc(m.l)}</span><b>${esc(v.d)}</b></div><p class="md">${esc(DESC[m.k]||m.tip)}</p></div>`}).join("");
+   return`<div class="m ${v.s}${ctx?" ctx":""}" style="--c:${cc}" title="${esc(tip)}"><div class="mr"><i></i><span>${esc(m.l)}</span><b>${esc(v.d)}</b></div><p class="md">${esc(DESC[m.k]||m.tip)}${!ctx&&COMPOSITE[m.k]?' <em class="cmp">'+esc(COMPOSITE[m.k])+' composite</em>':ctx&&CTXW[m.k]?' <em class="cmp cx">Context: '+esc(CTXW[m.k])+'</em>':""}</p></div>`}).join("");
   return`<section class="grp glass"><div class="gh"><h3 style="--gc:${c}">${name}</h3><span class="gs" style="color:${gc};background:color-mix(in srgb,${gc} 12%,transparent)">${G.s!=null?G.s.toFixed(1):"∅"}</span></div><div class="rows">${rows}</div><div class="src">${G.n||0}/${G.tot||0} scored</div></section>`}).join("");
  const C=2*Math.PI*38;
  const ringSet=(fgId,a,b,numId,sc)=>{const fg=$(fgId);fg.style.strokeDasharray=C;fg.style.strokeDashoffset=sc!=null?C*(1-sc/10):C;const p=ringPair(sc);$(a).setAttribute("stop-color",p[0]);$(b).setAttribute("stop-color",p[1]);$(numId).textContent=sc!=null?sc.toFixed(1):"∅"};
