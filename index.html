@@ -126,6 +126,9 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
 .mean{font-size:10.5px;line-height:1.45;color:var(--ink2);margin-top:5px}
 .parts{font-size:10px;color:var(--ink3);margin-top:4px;line-height:1.4}
 .tevt{font-size:10px;line-height:1.45;color:var(--ink2);margin-top:6px}.tevt.in{color:var(--warn);padding:5px 8px;border-radius:9px;border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.tevt.bad{color:var(--bad);padding:5px 8px;border-radius:9px;border:1px solid color-mix(in srgb,var(--bad) 45%,transparent);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.tevt .muted{display:block;color:var(--ink3);font-size:9.5px;margin-top:2px}.fcl{list-style:none;margin:3px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}.fcl li{color:var(--ink2)}.fcl li.ff{color:var(--bad)}.fcl a,.fw a{color:inherit;text-decoration:underline;text-decoration-color:var(--ln);text-underline-offset:2px}
+.fw{display:flex;flex-direction:column;gap:9px}.fw h4{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:0 0 2px}.fw p{font-size:11px;line-height:1.45;color:var(--ink2);margin:0}.fw .muted{font-size:9.5px;color:var(--ink3)}
 .mreg{font-size:10px;color:var(--ink2);margin-top:6px;line-height:1.4}.mreg b{font-weight:800;padding:1px 7px;border-radius:99px;border:1px solid currentColor;margin-right:5px}
 .ring{position:relative;width:92px;height:92px;flex:none}.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring div{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.ring b{font-size:28px;font-weight:800;line-height:1}.ring small{font-size:9px;color:var(--ink3);font-weight:600}
@@ -204,11 +207,12 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
   <div id="left"><div id="grid"></div></div>
   <aside id="side">
    <div class="card glass sc" id="vc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="rg" x1="0" y1="1" x2="1" y2="0"><stop id="r1" offset="0" stop-color="#0c9f6a"/><stop id="r2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="rfg" cx="46" cy="46" r="38" fill="none" stroke="url(#rg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="snum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Long-term score <i class="hz">1–3 years</i></span><span id="sent">…</span><p class="mean" id="lmean"></p><div id="cov"></div></div></div>
-   <div class="card glass sc" id="tc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="tg" x1="0" y1="1" x2="1" y2="0"><stop id="t1" offset="0" stop-color="#0c9f6a"/><stop id="t2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="tfg" cx="46" cy="46" r="38" fill="none" stroke="url(#tg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="tnum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Entry-timing score <i class="hz">2–12 weeks</i></span><span id="tsent">…</span><p class="mean" id="tmean"></p><div class="parts" id="tparts"></div><div class="tevt" id="tevt"></div><div class="tevt" id="txp"></div><div class="mreg" id="mreg"></div></div></div>
+   <div class="card glass sc" id="tc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="tg" x1="0" y1="1" x2="1" y2="0"><stop id="t1" offset="0" stop-color="#0c9f6a"/><stop id="t2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="tfg" cx="46" cy="46" r="38" fill="none" stroke="url(#tg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="tnum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Entry-timing score <i class="hz">2–12 weeks</i></span><span id="tsent">…</span><p class="mean" id="tmean"></p><div class="parts" id="tparts"></div><div class="tevt" id="tevt"></div><div class="tevt" id="txp"></div><div class="tevt" id="tfil"></div><div class="mreg" id="mreg"></div></div></div>
    
    <!-- Score by group (long-term weights) -->
    <div class="card glass"><h3>Score by group <span class="chip">long-term weights</span></h3><div class="bars" id="bars"></div></div>
    
+   <div class="card glass" id="fwc"><h3>Future expectations &amp; sales <span class="chip">not scored</span></h3><div id="fwd"></div></div>
    <div class="card glass"><h3>Verdict note</h3><div id="gates"></div><p id="note"></p></div>
    <div class="card glass" id="finc"><h3>Revenue, net income &amp; margin <span class="chip" id="funit"></span></h3><div id="fin"></div><div class="lgd"><span><i class="d rev"></i>Revenue</span><span><i class="d ni"></i>Net inc.</span><span><i class="d mar"></i>Margin</span><button id="esttog" title="Show or hide estimates"><i></i>Est.</button></div><div id="estnote"></div></div>
    <div class="card glass"><h3>Sources</h3><div id="srcs"></div></div>
@@ -382,6 +386,12 @@ const PER={"1D":1,"1W":7,"1M":30,"6M":182,"1Y":365};
 const stat=k=>$("srcs").querySelector(`[data-k="${k}"]`);
 
 /* ---------- SEC EDGAR (official filings, annual 10-K / 20-F / 40-F) ---------- */
+const dDiff=(a,b)=>Math.round((new Date(a)-new Date(b))/864e5);
+const CIKP={};
+function cikOf(sym){if(CIKP[sym])return CIKP[sym];
+ CIKP[sym]=(async()=>{let cik=read("sg_cik_"+sym,null);if(cik)return cik;
+  const{j}=await race("https://www.sec.gov/files/company_tickers.json",j=>j&&typeof j==="object",{direct:true});const r=Object.values(j).find(x=>String(x.ticker).toUpperCase()===sym);if(!r)throw Error("no cik");
+  cik=String(r.cik_str).padStart(10,"0");store("sg_cik_"+sym,cik);return cik})().catch(e=>{delete CIKP[sym];throw e});return CIKP[sym]}
 const SM={rev:["RevenueFromContractWithCustomerExcludingAssessedTax","Revenues","RevenueFromContractWithCustomerIncludingAssessedTax","SalesRevenueNet"],ni:["NetIncomeLoss","ProfitLoss"],eps:["EarningsPerShareDiluted","EarningsPerShareBasicAndDiluted"],ocf:["NetCashProvidedByUsedInOperatingActivities"],capex:["PaymentsToAcquirePropertyPlantAndEquipment","PaymentsToAcquireProductiveAssets"],assets:["Assets"],equity:["StockholdersEquity","StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"],ca:["AssetsCurrent"],cl:["LiabilitiesCurrent"],inv:["InventoryNet"],op:["OperatingIncomeLoss"],gross:["GrossProfit"],pretax:["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest","IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments"],tax:["IncomeTaxExpenseBenefit"],div:["PaymentsOfDividendsCommonStock","PaymentsOfDividends"],buy:["PaymentsForRepurchaseOfCommonStock"],ret:["RetainedEarningsAccumulatedDeficit"],ppe:["PropertyPlantAndEquipmentNet"],recv:["AccountsReceivableNetCurrent","ReceivablesNetCurrent"],sga:["SellingGeneralAndAdministrativeExpense"],dep:["DepreciationDepletionAndAmortization","DepreciationAmortizationAndAccretionNet"]};
 const IM={rev:["Revenue"],ni:["ProfitLoss"],eps:["DilutedEarningsLossPerShare"],assets:["Assets"],equity:["Equity"],ca:["CurrentAssets"],cl:["CurrentLiabilities"],inv:["Inventories"],op:["ProfitLossFromOperatingActivities"],gross:["GrossProfit"]};
 const DUR=new Set(["rev","ni","eps","ocf","capex","op","gross","pretax","tax","div","buy","sga","dep"]),AF=["10-K","20-F","40-F","10-K/A"];
@@ -392,17 +402,56 @@ function ser(facts,names,unit,dur){for(const n of names){const c=facts[n];if(!c|
  const s=Object.values(o).sort((a,b)=>a.end<b.end?-1:1);if(s.length)return s}return[]}
 async function secTask(sym,g){
  if(/[.^=]/.test(sym)){stat("sec").className="st nf";return}
- try{const d=await cached("sec3_"+sym,12*36e5,async()=>{
-   let cik=read("sg_cik_"+sym,null);
-   if(!cik){const{j}=await race("https://www.sec.gov/files/company_tickers.json",j=>j&&typeof j==="object",{direct:true});const r=Object.values(j).find(x=>String(x.ticker).toUpperCase()===sym);if(!r)throw Error("no cik");cik=String(r.cik_str).padStart(10,"0");store("sg_cik_"+sym,cik)}
+ try{const d=await cached("sec4_"+sym,12*36e5,async()=>{
+   const cik=await cikOf(sym);
    const{j,via}=await race(`https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`,j=>j&&j.facts,{direct:true,t:20000});
    const us=j.facts["us-gaap"]||{},ifr=j.facts["ifrs-full"]||{},by={};
    for(const f in SM){const u=f==="eps"?"USD/shares":"USD";let s=ser(us,SM[f],u,DUR.has(f));if(!s.length&&IM[f])s=ser(ifr,IM[f],u,DUR.has(f));s.slice(-9).forEach(p=>{(by[p.end]=by[p.end]||{end:p.end})[f]=p.v})}
    const annual=Object.values(by).filter(x=>x.rev!=null||x.ni!=null).sort((a,b)=>a.end<b.end?-1:1);
    const dei=j.facts.dei&&j.facts.dei.EntityCommonStockSharesOutstanding,sh=dei&&dei.units&&dei.units.shares?last(dei.units.shares.filter(e=>e.val>0).sort((a,b)=>(a.filed||"")<(b.filed||"")?-1:1)):null;
-   return{annual,shares:sh?sh.val:null,name:j.entityName,via}});
+   /* remaining performance obligations = contracted revenue not yet recognised (future sales), any 10-Q/10-K */
+   const ro={};(((us.RevenueRemainingPerformanceObligation||{}).units||{}).USD||[]).forEach(e=>{if(e.end&&e.val!=null&&(!ro[e.end]||(e.filed||"")>(ro[e.end].filed||"")))ro[e.end]=e});
+   const rs=Object.values(ro).sort((a,b)=>a.end<b.end?-1:1);let rpo=null;
+   if(rs.length){const L=last(rs),pv=rs.filter(e=>{const k=dDiff(L.end,e.end);return k>330&&k<400}).pop();rpo={v:L.val,end:L.end,yoy:pv&&pv.val>0?(L.val/pv.val-1)*100:null}}
+   return{annual,shares:sh?sh.val:null,name:j.entityName,rpo,via}});
   if(g!==S.gen)return;S.sec=d;S.via.sec=d.via;if(!S.name)S.name=d.name;stat("sec").className="st ok"}
  catch(e){if(g===S.gen)stat("sec").className="st nf"}soon()}
+
+/* ---------- SEC filing check (context, not scored): were the last three reports filed on time? ---------- */
+/* Deadlines after period end: 10-Q 40 d (45 small filers), 10-K 60/75/90 d, 20-F/40-F 120 d; a weekend deadline moves to Monday. */
+const FDL={"10-Q":{L:40,A:40,N:45},"10-K":{L:60,A:75,N:90},"20-F":120,"40-F":120};
+const dAdd=(s,n)=>{const d=new Date(s+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);const w=d.getUTCDay();if(w===6)d.setUTCDate(d.getUTCDate()+2);if(w===0)d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)};
+const edgarIdx=(cik,acc)=>`https://www.sec.gov/Archives/edgar/data/${+cik}/${acc.replace(/-/g,"")}/${acc}-index.htm`;
+async function filingTask(sym,g){
+ if(/[.^=]/.test(sym)){S.fil={na:true};stat("fil").className="st nf";return}
+ try{const d=await cached("subm1_"+sym,6*36e5,async()=>{
+   const cik=await cikOf(sym);
+   const{j,via}=await race(`https://data.sec.gov/submissions/CIK${cik}.json`,j=>j&&j.filings&&j.filings.recent&&Array.isArray(j.filings.recent.form),{direct:true,t:20000});
+   const r=j.filings.recent,F=[];
+   for(let i=0;i<r.form.length;i++){const f=r.form[i];if(/^(10-Q|10-K|20-F|40-F|NT 10-Q|NT 10-K|NT 20-F|8-K)$/.test(f))F.push({f,fd:r.filingDate[i],rd:r.reportDate[i]||"",it:(r.items&&r.items[i])||"",acc:r.accessionNumber[i]})}
+   return{cik,cat:j.category||"",F,via}});
+  if(g!==S.gen)return;
+  const today=new Date().toISOString().slice(0,10),tier=/large accelerated/i.test(d.cat)?"L":/accelerated/i.test(d.cat)?"A":"N";
+  const dl=(f,pe)=>{const x=FDL[f];return x&&pe?dAdd(pe,typeof x==="number"?x:x[tier]):null};
+  const per=d.F.filter(x=>FDL[x.f]&&x.rd).sort((a,b)=>a.fd<b.fd?-1:1);
+  const res8=d.F.filter(x=>x.f==="8-K"&&/2\.02/.test(x.it)).sort((a,b)=>a.fd<b.fd?-1:1);
+  const rows=per.map(x=>{const rr=res8.filter(t=>t.fd>x.rd&&t.fd<=x.fd).pop(),D=dl(x.f,x.rd);
+   return{form:x.f,pe:x.rd,filed:x.fd,res:rr?rr.fd:null,dl:D,st:D?(x.fd>D?"late":"on time"):"published",lag:rr?dDiff(x.fd,rr.fd):null,url:edgarIdx(d.cik,x.acc)}});
+  const lags=rows.map(x=>x.lag).filter(isN).sort((a,b)=>a-b),usual=lags.length?lags[Math.floor(lags.length/2)]:null;
+  const lp=last(per),lr=last(res8);
+  if(lp&&lr&&lr.fd>lp.fd){ /* results announced after the last report: the next report is pending */
+   const pe=(()=>{const q=new Date(lp.rd+"T00:00:00Z");q.setUTCDate(q.getUTCDate()+91);return q.toISOString().slice(0,10)})(),k10=[...per].reverse().find(x=>x.f==="10-K"),form=lp.f==="10-Q"||lp.f==="10-K"?(k10&&dDiff(pe,k10.rd)>330?"10-K":"10-Q"):null;
+   if(form){const D=dl(form,pe),waited=dDiff(today,lr.fd);
+    rows.push({form,pe,est:true,filed:null,res:lr.fd,dl:D,waited,st:D&&today>D?"late (not filed)":usual!=null&&waited>usual+2?"pending (later than usual)":"pending",url:null})}}
+  const flags=[];const yr2=dAdd(today,-730),yr1=dAdd(today,-365);
+  d.F.forEach(x=>{if(/^NT /.test(x.f)&&x.fd>=yr2)flags.push({hard:true,t:`${x.f} (notice of late filing)`,date:x.fd,url:edgarIdx(d.cik,x.acc)});
+   if(x.f==="8-K"&&x.fd>=yr1){if(/4\.02/.test(x.it))flags.push({hard:true,t:"Restatement: prior statements no longer reliable (8-K 4.02)",date:x.fd,url:edgarIdx(d.cik,x.acc)});
+    if(/4\.01/.test(x.it))flags.push({hard:false,t:"Change of auditor (8-K 4.01)",date:x.fd,url:edgarIdx(d.cik,x.acc)})}});
+  const R3=rows.slice(-3),lastR=last(R3)||{};
+  const lab=!R3.length?null:flags.some(f=>f.hard)||R3.some(x=>x.st.startsWith("late"))?"Warning":flags.length||lastR.st==="pending (later than usual)"?"Watch":"OK";
+  S.fil={lab,rows:R3,flags,usual,cat:d.cat,foreign:R3.some(x=>x.form==="20-F"||x.form==="40-F"),lastRes:lr?{date:lr.fd,url:edgarIdx(d.cik,lr.acc)}:null};
+  S.via.fil=d.via;stat("fil").className=R3.length?"st ok":"st nf"}
+ catch(e){if(g===S.gen){S.fil=null;stat("fil").className="st nf"}}soon()}
 
 /* ---------- Yahoo: prices (2y daily), dividends (10y), fundamentals ---------- */
 async function yahooTask(sym,g){
@@ -433,6 +482,7 @@ async function nasdaqTask(sym,g){
   if(g!==S.gen)return;const d=j.data,t=(d.CompanyDescription||d.companyDescription||{}).value;if(t&&t.length>60)S.desc=t}catch(e){}
  try{const{j}=await race(`https://api.nasdaq.com/api/analyst/${sym}/earnings-forecast`,j=>j&&j.data&&j.data.yearlyForecast,{t:10000});
   if(g!==S.gen)return;S.est=((j.data.yearlyForecast.rows)||[]).map(r=>({y:+((String(r.fiscalEnd).match(/\d{4}/)||[])[0]),eps:nn(r.consensusEPSForecast),n:nn(r.noOfEstimates)})).filter(r=>r.y&&isN(r.eps));
+  S.estQ=(((j.data.quarterlyForecast||{}).rows)||[]).map(r=>({p:String(r.fiscalEnd||""),eps:nn(r.consensusEPSForecast),n:nn(r.noOfEstimates)})).filter(r=>r.p&&isN(r.eps));
   stat("est").className=S.est.length?"st ok":"st nf"}catch(e){if(g===S.gen)stat("est").className="st nf"}
  try{const{j}=await race(`https://api.nasdaq.com/api/company/${sym}/earnings-surprise`,j=>j&&j.data&&j.data.earningsSurpriseTable,{t:10000});
   if(g!==S.gen)return;const rs=((j.data.earningsSurpriseTable.rows)||[]).map(r=>nn(r.percentageSurprise)).filter(isN).slice(0,2);
@@ -653,6 +703,25 @@ function render(){
  {const den=100-TIMING.value+TIMING.value*S.vmT,sh=k=>Math.round(100*TIMING[k]*(k==="value"?S.vmT:1)/den);
   $("tparts").textContent=`Technicals ${gp("tech")} (${sh("tech")}%) · Market & earnings ${gp("mkt")} (${sh("mkt")}%) · Valuation ${gp("value")} (${sh("value")}%)`+(S.vmT>1?" · valuation weight raised because it is weak":"")}
  {const el=$("txp");el.className="tevt";el.innerHTML="";if(S.xp){if(S.xp.flag)el.classList.add("in");el.innerHTML="<b>Expectations.</b> "+esc(S.xp.note)}}
+ const fdt=t=>t?new Date(t+"T00:00:00Z").toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}):"";
+ {const el=$("tfil"),FL=S.fil;el.className="tevt";el.innerHTML="";
+  if(FL&&FL.na)el.innerHTML="<b>Filing check.</b> Not on SEC EDGAR for this listing. European rules: annual report within 4 months of year end, half-year report within 3 months; check the company's financial calendar.";
+  else if(FL&&FL.lab){if(FL.lab!=="OK")el.classList.add(FL.lab==="Warning"?"bad":"in");
+   const li=FL.rows.map(x=>{const nm=`${x.form} for the period to ${fdt(x.pe)}${x.est?" (est.)":""}`;
+     return`<li>${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(nm)}</a>`:esc(nm)}: <b>${esc(x.st)}</b>`+(x.filed?` · filed ${esc(fdt(x.filed))}`:"")+(isN(x.lag)?` (${x.lag} d after results)`:"")+(x.waited!=null?` · results ${esc(fdt(x.res))}, ${x.waited} d ago${FL.usual!=null?`, usually ${FL.usual} d`:""}`:"")+(!x.filed&&x.dl?` · deadline ${esc(fdt(x.dl))}`:"")+"</li>"}).join("")
+    +FL.flags.map(f=>`<li class="ff"><a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.t)}</a> · ${esc(fdt(f.date))}</li>`).join("");
+   el.innerHTML=`<b>Filing check: ${FL.lab}.</b> Last three formal reports vs their legal deadline (SEC EDGAR). Not scored.<ul class="fcl">${li}</ul>`+(FL.foreign?`<span class="muted">Interim reports of foreign issuers (6-K) have no deadline.</span>`:"")}}
+ {const el=$("fwd"),parts=[],bn=v=>Math.abs(v)>=1e9?(v/1e9).toFixed(1)+" bn":(v/1e6).toFixed(0)+" m";
+  const eq=S.estQ&&S.estQ[0],ey=(S.est||[]).slice(0,2);
+  if(eq||ey.length){let t="";if(eq)t+=`Next quarter (${esc(eq.p)}): EPS ${eq.eps.toFixed(2)}${isN(eq.n)?` (${eq.n} analysts)`:""}. `;
+   if(ey.length)t+=ey.map(r=>`FY${r.y}: EPS ${r.eps.toFixed(2)}`).join(" · ")+(ey.length===2&&ey[0].eps>0?` (${((ey[1].eps/ey[0].eps-1)*100).toFixed(0)}% growth expected)`:"")+".";
+   parts.push(`<div><h4>What analysts expect</h4><p>${t}</p><p class="muted">Nasdaq consensus EPS.</p></div>`)}
+  const rp=S.sec&&S.sec.rpo;
+  if(rp)parts.push(`<div><h4>Future sales already contracted</h4><p>Remaining performance obligations: ${S.cur==="USD"?"$":""}${bn(rp.v)} at ${esc(fdt(rp.end))}${isN(rp.yoy)?` (${rp.yoy>=0?"+":""}${rp.yoy.toFixed(0)}% vs a year earlier)`:""}: revenue under signed contracts not yet booked.</p><p class="muted">SEC XBRL (10-Q/10-K).</p></div>`);
+  else if(S.sec)parts.push(`<div><h4>Future sales already contracted</h4><p>Not reported in SEC data (many companies don't disclose backlog or RPO).</p></div>`);
+  const lr=S.fil&&S.fil.lastRes;
+  parts.push(`<div><h4>Company guidance</h4><p>${lr?`In the outlook section of the latest results release: <a href="${esc(lr.url)}" target="_blank" rel="noopener">8-K of ${esc(fdt(lr.date))}</a> (exhibit 99.1).`:"In the outlook section of the company's latest results release (investor-relations site)."}</p></div>`);
+  el.className="fw";el.innerHTML=parts.join("")}
  {const el=$("tevt"),E=S.nextEarn;el.className="tevt";el.textContent="";
   if(E){const days=Math.round((E.t-Date.now())/864e5),ds=new Date(E.t).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}),cf=E.confirmed?"confirmed":"estimated";
    if(days>=0&&days<=EVENT_DAYS){el.classList.add("in");el.textContent=`⚠ Earnings on ${ds} (${cf}), in ${days} days, inside the 2–12-week window: the report can move the price sharply and override this score.`+(S.groups.value.sT!=null&&S.groups.value.sT<VAL_T?" With valuation this stretched, a disappointment usually costs more than a beat gains.":"")}
@@ -710,10 +779,10 @@ function chart(){
 async function load(sym,fresh){
  sym=sym.trim().toUpperCase();if(!sym)return;const g=++S.gen;
  if(fresh)Object.keys(localStorage).forEach(k=>k.startsWith("sg_")&&k.includes(sym)&&localStorage.removeItem(k));
- Object.assign(S,{sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",industry:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,surp:null,nextEarn:null,bench:null,mkt:null,F:null,v:{},groups:{},score:null,sent:null,tscore:null,tsent:null,via:{}});
- $("srcs").innerHTML=[["sec","SEC EDGAR"],["yahoo","Yahoo"],["nasdaq","Nasdaq"],["est","Consensus EPS"],["surp","Earnings surprise"],["bench","Benchmark"]].map(([k,l])=>`<span class="st" data-k="${k}">${l}</span>`).join("");
+ Object.assign(S,{sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",industry:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,estQ:null,fil:null,surp:null,nextEarn:null,bench:null,mkt:null,F:null,v:{},groups:{},score:null,sent:null,tscore:null,tsent:null,via:{}});
+ $("srcs").innerHTML=[["sec","SEC EDGAR"],["yahoo","Yahoo"],["nasdaq","Nasdaq"],["est","Consensus EPS"],["fil","SEC filings"],["surp","Earnings surprise"],["bench","Benchmark"]].map(([k,l])=>`<span class="st" data-k="${k}">${l}</span>`).join("");
  store("sg_last",sym);$("banner").classList.remove("show");$("cname").textContent="Loading "+sym+"…";
- await Promise.allSettled([secTask(sym,g),yahooTask(sym,g),fundTask(sym,g),divTask(sym,g),nasdaqTask(sym,g)]);
+ await Promise.allSettled([secTask(sym,g),yahooTask(sym,g),fundTask(sym,g),divTask(sym,g),nasdaqTask(sym,g),filingTask(sym,g)]);
  if(g!==S.gen)return;
  if(!S.F&&S.price==null&&!S.sec){$("banner").classList.add("show");$("cname").textContent=sym;draw();return}
  if(!S.name)S.name=sym;
