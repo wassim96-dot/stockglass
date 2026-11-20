@@ -417,7 +417,7 @@ const VAL_T=4,VAL_K=2,vmult=v=>v==null||v>=VAL_T?1:1+VAL_K*(VAL_T-Math.max(v,0))
 const EVENT_DAYS=84;          /* earnings within 12 weeks fall inside the entry-timing horizon */
 /* Banks and insurers: these ratios are not meaningful (deposits are liabilities, no gross margin, no EBITDA) */
 const FIN_RX=/\b(bank|banks|banking|insurance|insurer|reinsurance|savings institution|thrift)/i;
-const FIN_NA=["gross","fcfM","conv","ndEbitda","intCov","de","current","quick","evEbitda","pfcf","fcfY","impG","altman","beneish"];
+const FIN_NA=["gross","gpa","fcfM","conv","ndEbitda","intCov","de","current","quick","evEbitda","pfcf","fcfY","impG","altman","beneish"];
 const LT_T_S=[[7.5,"Strong long-term profile","Business quality, growth and balance sheet are strong, and the price is reasonable for them.","#3ddc97","#0e8a57"],
  [6.2,"Favourable long-term profile","The business case is sound; one or two areas (often valuation) hold the score back.","#a6e22e","#5d8a00"],
  [4.5,"Mixed long-term profile","Strengths and weaknesses roughly offset; the long-term case depends on which of them improves.","#ffb84a","#a86a00"],
@@ -536,6 +536,15 @@ async function divTask(sym,g){
 async function fundTask(sym,g){
  try{const{j}=await cached("yf4_"+sym,6*36e5,()=>race(yTS(sym),j=>j.timeseries&&j.timeseries.result));
   if(g!==S.gen)return;const o={};(j.timeseries.result||[]).forEach(it=>{const t=it.meta&&it.meta.type&&it.meta.type[0];if(!t||!Array.isArray(it[t]))return;const m={};it[t].forEach(x=>{if(x&&x.reportedValue&&isN(x.reportedValue.raw)&&x.asOfDate)m[x.asOfDate]={end:x.asOfDate,v:x.reportedValue.raw}});o[t]=Object.values(m).sort((a,b)=>a.end<b.end?-1:1)});S.yf=o}catch(e){}soon()}
+
+/* ---------- Yahoo profile: sector and industry for every listing (Nasdaq covers US stocks only).
+   Needed to recognise banks and insurers, whose cash-flow and debt ratios are not meaningful. ---------- */
+async function profileTask(sym,g){
+ try{const{j,via}=await cached("yp_"+sym,7*864e5,()=>race(`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(sym)}&quotesCount=5&newsCount=0&listsCount=0`,
+   j=>j&&Array.isArray(j.quotes)&&j.quotes.some(q=>q.symbol&&q.symbol.toUpperCase()===sym),{t:10000}));
+  if(g!==S.gen)return;const q=j.quotes.find(q=>q.symbol&&q.symbol.toUpperCase()===sym)||{};
+  S.ySec=q.sectorDisp||q.sector||"";S.yInd=q.industryDisp||q.industry||"";S.via.profile=via||"Yahoo search";
+  stat("profile").className=S.ySec||S.yInd?"st ok":"st nf"}catch(e){if(g===S.gen)stat("profile").className="st nf"}}
 
 /* ---------- Nasdaq: market cap, forward P/E, beta, target, sector, company description ---------- */
 const nn=v=>{const n=parseFloat(String(v??"").replace(/[$,%\s,]/g,""));return isN(n)?n:null};
@@ -792,7 +801,7 @@ function calc(){
  const hi=S.hi52||t.hi;set("hi52",hi>0&&S.price?(S.price/hi-1)*100:null);
  set("beta",nd.beta!=null?nd.beta:null);set("dilut",cg("shares",3));
  /* sector fit: ratios that mean nothing for banks and insurers are marked n/a instead of scored */
- S.isFin=FIN_RX.test((S.industry||"")+" "+(S.sector||""));
+ S.isFin=(!S.kind||S.kind==="equity")&&FIN_RX.test([S.industry,S.sector,S.yInd,S.ySec].filter(Boolean).join(" "));
  const WE=S.isFin?{...WI,...FIN_OVR}:WI;S.WE=WE;
  if(S.isFin){FIN_NA.forEach(k=>{V[k]={v:null,s:"na",d:"n/m",src:"not meaningful for banks and insurers"}});
   const r5=V.roe5.v!=null?V.roe5.v:V.roe.v;if(r5!=null){const sp=r5-(RF+(nd.beta!=null?nd.beta:1)*ERP);set("spread",sp,{src:"ROE minus cost of equity (bank/insurer)"})}}
@@ -947,10 +956,11 @@ function chart(){
 async function load(sym,fresh){
  sym=sym.trim().toUpperCase();if(!sym)return;const g=++S.gen;
  if(fresh)Object.keys(localStorage).forEach(k=>k.startsWith("sg_")&&k.includes(sym)&&localStorage.removeItem(k));
- Object.assign(S,{kind:null,fq:null,wk:[],sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",industry:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,estQ:null,fil:null,surp:null,nextEarn:null,bench:null,mkt:null,F:null,v:{},groups:{},score:null,sent:null,tscore:null,tsent:null,via:{}});
- $("srcs").innerHTML=[["sec","SEC EDGAR"],["yahoo","Yahoo"],["nasdaq","Nasdaq"],["est","Consensus EPS"],["fil","SEC filings"],["surp","Earnings surprise"],["bench","Benchmark"]].map(([k,l])=>`<span class="st" data-k="${k}">${l}</span>`).join("");
+ Object.assign(S,{kind:null,fq:null,wk:[],sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",industry:"",ySec:"",yInd:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,estQ:null,fil:null,surp:null,nextEarn:null,bench:null,mkt:null,F:null,v:{},groups:{},score:null,sent:null,tscore:null,tsent:null,via:{}});
+ $("srcs").innerHTML=[["sec","SEC EDGAR"],["yahoo","Yahoo"],["nasdaq","Nasdaq"],["est","Consensus EPS"],["fil","SEC filings"],["surp","Earnings surprise"],["profile","Sector"],["bench","Benchmark"]].map(([k,l])=>`<span class="st" data-k="${k}">${l}</span>`).join("");
  store("sg_last",sym);$("banner").classList.remove("show");$("cname").textContent="Loading "+sym+"…";
- await Promise.allSettled([secTask(sym,g),yahooTask(sym,g),fundTask(sym,g),divTask(sym,g),nasdaqTask(sym,g),filingTask(sym,g)]);
+ await Promise.allSettled([secTask(sym,g),yahooTask(sym,g),fundTask(sym,g),divTask(sym,g),nasdaqTask(sym,g),filingTask(sym,g),profileTask(sym,g)]);
+ if(g===S.gen&&(!S.kind||S.kind==="equity")){if(!S.sector&&S.ySec)S.sector=S.ySec;if(!S.industry&&S.yInd)S.industry=S.yInd}
  if(g===S.gen&&S.kind&&S.kind!=="equity"){if(S.kind==='index')S.sector='Index';if(S.kind==='crypto')S.sector='Crypto';await Promise.allSettled([S.kind==="fund"?etfTask(sym,g):null,wkTask(sym,g)])}
  if(g!==S.gen)return;
  if(!S.F&&S.price==null&&!S.sec){$("banner").classList.add("show");$("cname").textContent=sym;draw();return}
@@ -967,7 +977,7 @@ function snap(){
  REG.forEach(r=>{const x=V[r.k]||{},w=WI[r.k]||[0,0];m[r.k]={l:r.l,g:r.g,v:r2(x.v,4),d:x.d||"∅",sc:x.s==="ok"?r2(x.sc):null,ctx:!w[0]&&!w[1]?1:0}});
  GR.forEach(([k,n])=>{const G=S.groups&&S.groups[k];g[k]={n,lt:G?r2(G.s,1):null,tm:G?r2(G.sT,1):null,cov:G?r2(G.cov):0}});
  const ret=n=>c.length>n&&S.price!=null?r2((S.price/c[c.length-1-n].c-1)*100,1):null,Q=S.fq;
- return{sym:S.sym,kind:S.kind||"equity",name:S.name||S.sym,cur:S.cur,exchange:S.ex,sector:S.sector||null,industry:S.industry||null,price:r2(S.price,4),
+ return{sym:S.sym,kind:S.kind||"equity",name:S.name||S.sym,cur:S.cur,exchange:S.ex,sector:S.sector||null,industry:S.industry||null,fin:S.isFin?1:0,price:r2(S.price,4),
   chg_1d:ret(1),chg_1w:ret(5),chg_1m:ret(21),chg_1y:ret(252),
   long_term:{score:S.score,label:S.sent?S.sent[0]:null,confidence:S.score!=null?S.conf:null},
   timing:{score:S.tscore,label:S.tsent?S.tsent[0]:null,confidence:S.tscore!=null?S.tconf:null},
