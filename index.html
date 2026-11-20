@@ -196,7 +196,7 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
  <header id="top" class="glass">
   <div class="brand"><span class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M6 4v3M6 15v4M4 7h4v8H4zM12 2v4M12 16v5M10 6h4v10h-4zM18 5v3M18 17v3M16 8h4v9h-4z"/></svg></span><b>StockGlass Lite</b></div>
   <div class="searchwrap"><div class="sbox"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".55"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Ticker or name — AAPL, MSFT, ASML.AS…" autocomplete="off" spellcheck="false" aria-label="Search stocks"><div id="spin"></div></div><div id="drop" class="glass" role="listbox"></div></div>
-  <div class="tools"><button class="btn" id="refresh" title="Reload live data" aria-label="Reload">⟳</button><button class="btn" id="copy" title="Copy indices">Copy</button><button class="btn" id="theme" title="Toggle light / dark" aria-label="Toggle theme"></button></div>
+  <div class="tools"><button class="btn" id="refresh" title="Reload live data" aria-label="Reload">⟳</button><button class="btn" id="copy" title="Copy indices">Copy</button><a class="btn" id="wl" href="history.html" title="Weekly watchlist results" style="text-decoration:none;color:inherit">Watchlist</a><button class="btn" id="theme" title="Toggle light / dark" aria-label="Toggle theme"></button></div>
  </header>
  <div id="banner">Live sources unreachable. Retry, or set MY_PROXY in the script (see top of code).<button class="btn" id="retry">Retry</button></div>
  <section id="id" class="glass">
@@ -226,6 +226,8 @@ select.btn{appearance:none;padding-right:12px}select.btn option{background:var(-
 "use strict";
 /* Optional but strongly recommended: your own CORS proxy (e.g. a free Cloudflare Worker). Format: "https://xxx.workers.dev/?url=" */
 const MY_PROXY="";
+/* URL options: ?s=TICKER opens a stock · ?batch=1 runs watchlist.txt (or ?watchlist=A,B,C) and exports all results · ?direct=1 also tries sources directly (used by the weekly GitHub Action) */
+const QS=new URLSearchParams(location.search),DIRECT=QS.get("direct")==="1",BATCH=QS.has("batch")||QS.has("watchlist");
 
 /* ---------- helpers ---------- */
 const $=i=>document.getElementById(i),clamp=(v,a,b)=>Math.min(b,Math.max(a,v)),isN=v=>typeof v==="number"&&isFinite(v),sum=a=>a.reduce((x,y)=>x+y,0),last=a=>a&&a.length?a[a.length-1]:null;
@@ -260,7 +262,7 @@ const PROX=[...(MY_PROXY?[{n:"own",w:u=>MY_PROXY+encodeURIComponent(u)}]:[]),
  {n:"jina",w:u=>"https://r.jina.ai/"+u,x:1}];
 const parse=(t,x)=>{try{return JSON.parse(t)}catch(e){if(x){const i=t.indexOf("{"),k=t.lastIndexOf("}");if(i>=0&&k>i)return JSON.parse(t.slice(i,k+1))}throw e}};
 function race(url,ok,{direct=false,t=12000}={}){return new Promise((res,rej)=>{
- const A=[];if(direct)A.push({n:"direct",u:url});PROX.forEach(p=>A.push({n:p.n,u:p.w(url),x:p.x}));
+ const A=[];if(direct||DIRECT)A.push({n:"direct",u:url});PROX.forEach(p=>A.push({n:p.n,u:p.w(url),x:p.x}));
  let n=A.length,done=0,err;const C=[];
  A.forEach(a=>{const c=new AbortController();C.push(c);const tm=setTimeout(()=>c.abort(),t);
   fetch(a.u,{signal:c.signal}).then(async r=>{if(!r.ok)throw Error("HTTP "+r.status);const j=parse(await r.text(),a.x);if(ok&&!ok(j))throw Error("shape");clearTimeout(tm);if(!done){done=1;C.forEach(k=>k.abort());res({j,via:a.n})}})
@@ -802,6 +804,46 @@ async function load(sym,fresh){
 
  draw()}
 
+/* ---------- batch mode: run every watchlist ticker, then export all results (JSON / CSV) ---------- */
+const r2=(v,d=2)=>isN(v)?+v.toFixed(d):null;
+function snap(){
+ const V=S.v||{},m={},g={},c=S.closes||[];
+ REG.forEach(r=>{const x=V[r.k];if(x&&x.s==="ok")m[r.k]={v:r2(x.v,4),d:x.d,sc:r2(x.sc)}});
+ GR.forEach(([k])=>{const G=S.groups&&S.groups[k];if(G)g[k]={lt:r2(G.s,1),tm:r2(G.sT,1),cov:r2(G.cov)}});
+ const ret=n=>c.length>n&&S.price!=null?r2((S.price/c[c.length-1-n].c-1)*100,1):null;
+ return{sym:S.sym,name:S.name||S.sym,cur:S.cur,exchange:S.ex,sector:S.sector||null,industry:S.industry||null,price:r2(S.price,4),
+  chg_1d:ret(1),chg_1w:ret(5),chg_1m:ret(21),chg_1y:ret(252),
+  long_term:{score:S.score,label:S.sent?S.sent[0]:null,confidence:S.score!=null?S.conf:null},
+  timing:{score:S.tscore,label:S.tsent?S.tsent[0]:null,confidence:S.tscore!=null?S.tconf:null},
+  groups:g,metrics:m,coverage:S.cov||null,filing_check:S.fil&&S.fil.lab||null,
+  next_earnings:S.nextEarn?{date:new Date(S.nextEarn.t).toISOString().slice(0,10),confirmed:S.nextEarn.confirmed}:null,
+  expectations:S.xp||null,sources:S.via||{},status:S.score!=null?"scored":S.price!=null?"price only":"no data"}}
+async function watchlist(){
+ const q=QS.get("watchlist");if(q)return q.split(/[,\s]+/).map(x=>x.trim().toUpperCase()).filter(Boolean);
+ const t=await (await fetch("watchlist.txt",{cache:"no-store"})).text();
+ return[...new Set(t.split(/\r?\n/).map(l=>l.replace(/#.*/,"").trim().split(/\s+/)[0]).filter(Boolean).map(x=>x.toUpperCase()))]}
+function dl(name,txt,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function toCSV(R){const H=["sym","name","cur","price","chg_1d","chg_1w","chg_1m","chg_1y","lt_score","lt_label","tm_score","tm_label",...GR.map(([k])=>"g_"+k),"next_earnings","status"];
+ const q=v=>v==null?"":/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:String(v);
+ return[H.join(","),...R.map(r=>[r.sym,r.name,r.cur,r.price,r.chg_1d,r.chg_1w,r.chg_1m,r.chg_1y,r.long_term.score,r.long_term.label,r.timing.score,r.timing.label,...GR.map(([k])=>r.groups[k]?r.groups[k].lt:null),r.next_earnings&&r.next_earnings.date,r.status].map(q).join(","))].join("\n")}
+async function runBatch(){
+ const box=document.createElement("section");box.id="batch";box.className="glass";
+ box.style.cssText="position:fixed;inset:max(12px,env(safe-area-inset-top)) 12px 12px;z-index:50;overflow:auto;padding:16px;border-radius:18px;background:var(--bg1);border:1px solid var(--ln)";
+ document.body.appendChild(box);
+ let list=[];try{list=await watchlist()}catch(e){box.innerHTML="<p>Could not read watchlist.txt.</p>";window.SG_BATCH={done:true,error:"watchlist"};return}
+ const R=[],t0=Date.now();window.SG_BATCH={done:false,total:list.length,results:R};
+ const row=r=>{const sc=v=>v==null?"<td>∅</td>":`<td style="color:${col(v)};font-weight:700">${v.toFixed(1)}</td>`;
+  return`<tr><td><a href="?s=${encodeURIComponent(r.sym)}" style="color:inherit">${esc(r.sym)}</a></td><td style="color:var(--ink2)">${esc(r.name)}</td>${sc(r.long_term.score)}${sc(r.timing.score)}<td style="color:var(--ink3)">${esc(r.long_term.label||r.status)}</td></tr>`};
+ const paint=(cur)=>{box.innerHTML=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><h2 style="margin:0;font-size:16px">Watchlist batch</h2><span style="color:var(--ink3);font-size:12px">${R.length}/${list.length}${cur?" · running "+esc(cur):" · done in "+Math.round((Date.now()-t0)/1000)+" s"}</span>
+  <span style="margin-left:auto;display:flex;gap:6px"><button class="btn" id="bj" ${cur?"disabled":""}>JSON</button><button class="btn" id="bc" ${cur?"disabled":""}>CSV</button><a class="btn" href="history.html" style="text-decoration:none;color:inherit">History</a></span></div>
+  <div style="overflow-x:auto;margin-top:10px"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left;color:var(--ink3)"><th>Ticker</th><th>Name</th><th>Long-term</th><th>Timing</th><th>Label</th></tr></thead><tbody>${R.map(row).join("")}</tbody></table></div>`;
+  const d=new Date().toISOString().slice(0,10);
+  if(!cur){$("bj").onclick=()=>dl(`stockglass-${d}.json`,JSON.stringify(window.SG_BATCH,null,1),"application/json");$("bc").onclick=()=>dl(`stockglass-${d}.csv`,toCSV(R),"text/csv")}};
+ for(const sym of list){paint(sym);
+  try{await Promise.race([load(sym,true),new Promise(r=>setTimeout(r,90000))]);await new Promise(r=>setTimeout(r,700));if(S.sym===sym)draw()}catch(e){}
+  try{R.push(S.sym===sym?snap():{sym,name:sym,long_term:{},timing:{},groups:{},metrics:{},status:"error"})}catch(e){R.push({sym,name:sym,long_term:{},timing:{},groups:{},metrics:{},status:"error: "+e.message})}}
+ Object.assign(window.SG_BATCH,{done:true,date:new Date().toISOString(),seconds:Math.round((Date.now()-t0)/1000)});paint(null)}
+
 /* ---------- search ---------- */
 let sT=null,sI=[],sA=-1;const sC=new Map();
 const closeDrop=()=>{$("drop").classList.remove("open");sA=-1};
@@ -858,7 +900,7 @@ function init(){
  $("esttog").classList.toggle("off",!S.showEst);
  $("esttog").onclick=()=>{S.showEst=!S.showEst;store("sg_est",S.showEst);$("esttog").classList.toggle("off",!S.showEst);chart()};
  addEventListener("resize",()=>{if(S.sym)chart()});
- wireSearch();load(read("sg_last","AAPL"))}
+ wireSearch();if(BATCH){runBatch();return}load(QS.get("s")||read("sg_last","AAPL"))}
 document.readyState==="loading"?document.addEventListener("DOMContentLoaded",init):init();
 </script>
 </body>

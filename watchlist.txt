@@ -1,0 +1,69 @@
+# StockGlass weekly watchlist: one Yahoo Finance symbol per line.
+# Lines starting with # are ignored; text after a symbol is a comment.
+# Edit this file (also from the GitHub mobile app) to add or remove tickers.
+# One line per company: dual listings were merged (see notes).
+
+# --- US stocks ---
+AAPL
+ADBE
+AMD
+ASTS
+BE
+BRK-B
+BTI
+CAT
+COST
+GOOG
+INTC
+KO
+META
+MS
+MSTR
+NBIS      # Nebius Group (also held as YDX.DE in Frankfurt: same company)
+NFLX
+NOK       # Nokia (also held as NOA3.DE in Frankfurt: same company)
+NOW
+NVDA
+PLTR
+RDDT
+SAP
+SNDK
+SPCX
+TE
+UBER
+USAR
+WMT
+
+# --- European stocks ---
+AI.PA     # Air Liquide
+AIR.PA    # Airbus
+AZN.ST    # AstraZeneca (Stockholm)
+CS.PA     # AXA
+DG.PA     # Vinci
+ESSITY-B.ST
+IBE.MC    # Iberdrola
+ROG.SW    # Roche (screenshot read as ROP.SW; check)
+SAF.PA    # Safran
+SAN.PA    # Sanofi
+SIVE.ST   # Sivers Semiconductors
+SOI.PA    # Soitec
+SU.PA     # Schneider Electric
+TTE.PA    # TotalEnergies (US listing TTE is the same company)
+2DG.F
+
+# --- ETFs ---
+EUNL.DE
+EXV4.DE
+MEUD.PA
+VDE
+
+# --- Indices ---
+^GDAXI
+^FCHI
+^GSPC     # S&P 500 (shown as ^SPX)
+^RUT
+
+# --- Crypto ---
+BTC-USD
+ETH-USD
+NEAR-USD  # NEAR (WNEAR-USD is the wrapped version of the same token)

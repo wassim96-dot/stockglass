@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14171b">
+<title>StockGlass Watchlist</title>
+<script>try{var _t=JSON.parse(localStorage.getItem("sg_theme")||'"dark"');if(_t==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg1:#14171b;--bg2:#1d2127;--card:rgba(255,255,255,.055);--card2:rgba(255,255,255,.035);--ink:#eef1f5;--ink2:#b6bec9;--ink3:#828b96;--ln:rgba(255,255,255,.12);--btn:rgba(255,255,255,.08);--up:#3ddc97;--dn:#ff7a8a;--acc:#5db3ff;--trk:rgba(255,255,255,.12)}
+:root[data-theme="light"]{color-scheme:light;--bg1:#eceff3;--bg2:#e3e7ec;--card:rgba(255,255,255,.75);--card2:rgba(255,255,255,.55);--ink:#16191d;--ink2:#47505b;--ink3:#6b7480;--ln:rgba(0,0,0,.1);--btn:rgba(0,0,0,.05);--up:#0e8a57;--dn:#c4314b;--acc:#1f6fc5;--trk:rgba(0,0,0,.1)}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.wrap{max-width:980px;margin:0 auto;padding-block:max(14px,env(safe-area-inset-top)) 40px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:18px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--ink3);font-size:12px}
+.sp{flex:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:32px;padding:0 11px;border-radius:10px;background:var(--btn);border:1px solid var(--ln);color:inherit;font:600 12px Inter,system-ui,sans-serif;text-decoration:none;cursor:pointer}
+select.btn{appearance:none;padding-right:12px}
+input.btn{font-weight:500;min-width:0;flex:1 1 140px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}
+.tile{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:10px 12px;min-width:0}
+.tile b{display:block;font-size:11px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.tile span{font-size:13px}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:10px 12px;cursor:pointer}
+.top{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center}
+.nm{min-width:0}.nm b{font-size:14px}.nm small{display:block;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{text-align:center;min-width:64px}
+.pill i{display:block;font-style:normal;font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.pill strong{font-size:16px}
+.d{font-size:11px;font-weight:600;margin-left:3px}.d.u{color:var(--up)}.d.n{color:var(--dn)}
+.lab{color:var(--ink2);font-size:12px;margin-top:4px}
+.more{display:none;margin-top:10px;border-top:1px solid var(--ln);padding-top:10px}
+.row.open .more{display:block}
+.g{display:grid;grid-template-columns:118px 1fr 34px;gap:8px;align-items:center;font-size:12px;margin:3px 0}
+.trk{height:6px;border-radius:4px;background:var(--trk);overflow:hidden}.trk div{height:100%;border-radius:4px}
+.meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--ink3);font-size:12px;margin-top:8px}
+svg.sp{width:100%;height:56px;display:block;margin-top:8px}
+.empty{background:var(--card2);border:1px dashed var(--ln);border-radius:14px;padding:18px;color:var(--ink2)}
+footer{color:var(--ink3);font-size:11.5px;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <header>
+  <h1>StockGlass · Weekly watchlist</h1>
+  <span class="sub" id="when"></span>
+  <span class="sp"></span>
+  <a class="btn" href="index.html">StockGlass</a>
+  <button class="btn" id="theme" aria-label="Toggle theme">◐</button>
+ </header>
+ <div class="sum" id="sum"></div>
+ <div class="bar">
+  <input class="btn" id="f" type="search" placeholder="Filter ticker or name" aria-label="Filter">
+  <select class="btn" id="sort" aria-label="Sort">
+   <option value="lt">Long-term score</option><option value="tm">Entry timing</option>
+   <option value="dlt">Long-term change</option><option value="dtm">Timing change</option>
+   <option value="w">1-week price change</option><option value="sym">Ticker</option>
+  </select>
+  <select class="btn" id="run" aria-label="Week"></select>
+  <button class="btn" id="csv">CSV</button>
+ </div>
+ <div class="list" id="list"><div class="empty">Loading…</div></div>
+ <footer>Run every Friday at 18:00 Paris by a GitHub Action that opens StockGlass for each ticker in <code>watchlist.txt</code>. Changes compare with the previous weekly run. Rule-based screen on public data, not investment advice.</footer>
+</div>
+<script>
+"use strict";
+const $=i=>document.getElementById(i),isN=v=>typeof v==="number"&&isFinite(v);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const light=()=>document.documentElement.dataset.theme==="light";
+const col=s=>light()?`hsl(${s<=5?4+s/5*44:48+(s-5)/5*102} 66% 40%)`:`hsl(${s<=5?4+s/5*44:48+(s-5)/5*102} 88% 64%)`;
+const GR=[["growth","Growth"],["profit","Profitability"],["health","Financial health"],["value","Valuation"],["quality","Quality"],["div","Dividend"],["tech","Technicals"],["mkt","Market & sentiment"]];
+const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let RUNS=[],DATA={},cur=null;
+$("theme").onclick=()=>{const t=light()?"dark":"light";document.documentElement.dataset.theme=t;store("sg_theme",t);render()};
+
+const fmtD=d=>new Date(d+"T12:00:00").toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"});
+const money=(v,c)=>isN(v)?(({USD:"$",EUR:"€",GBP:"£",CHF:"CHF ",SEK:"kr "})[c]||(c?c+" ":""))+v.toLocaleString("en-US",{maximumFractionDigits:v<10?3:2}):"∅";
+const pct=v=>isN(v)?`<span class="d ${v>=0?"u":"n"}">${v>=0?"+":""}${v.toFixed(1)}%</span>`:"";
+const delta=v=>isN(v)&&Math.abs(v)>=0.05?`<span class="d ${v>0?"u":"n"}">${v>0?"▲":"▼"}${Math.abs(v).toFixed(1)}</span>`:"";
+
+async function getJSON(u){const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw Error(r.status);return r.json()}
+async function init(){
+ try{RUNS=(await getJSON("data/runs/index.json")).runs||[]}catch(e){RUNS=[]}
+ if(!RUNS.length){$("list").innerHTML='<div class="empty">No weekly run yet. The first run happens on Friday at 18:00 Paris, or start one from GitHub → Actions → "Weekly watchlist" → Run workflow.</div>';return}
+ await Promise.all(RUNS.map(async d=>{try{DATA[d]=await getJSON(`data/runs/${d}.json`)}catch(e){}}));
+ RUNS=RUNS.filter(d=>DATA[d]);cur=RUNS[RUNS.length-1];
+ $("run").innerHTML=RUNS.slice().reverse().map(d=>`<option value="${d}">${fmtD(d)}</option>`).join("");
+ $("run").onchange=e=>{cur=e.target.value;render()};$("sort").onchange=render;$("f").oninput=render;
+ $("csv").onclick=()=>{const R=rows(),H=["ticker","name","currency","price","chg_1w","long_term","lt_change","lt_label","timing","tm_change","tm_label","next_earnings","status"];
+  const q=v=>v==null?"":/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:String(v);
+  const t=[H.join(","),...R.map(x=>[x.sym,x.name,x.cur,x.price,x.chg_1w,x.lt,x.dlt,x.long_term.label,x.tm,x.dtm,x.timing.label,x.next_earnings&&x.next_earnings.date,x.status].map(q).join(","))].join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/csv"}));a.download=`watchlist-${cur}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),300)};
+ render()}
+
+function rows(){
+ const i=RUNS.indexOf(cur),prev=i>0?DATA[RUNS[i-1]]:null,pm={};
+ if(prev)prev.results.forEach(r=>pm[r.sym]=r);
+ return DATA[cur].results.map(r=>{const p=pm[r.sym],lt=r.long_term&&r.long_term.score,tm=r.timing&&r.timing.score;
+  return{...r,lt,tm,dlt:p&&isN(lt)&&isN(p.long_term&&p.long_term.score)?lt-p.long_term.score:null,dtm:p&&isN(tm)&&isN(p.timing&&p.timing.score)?tm-p.timing.score:null}})}
+
+function spark(sym){
+ const pts=RUNS.slice(0,RUNS.indexOf(cur)+1).map(d=>{const r=DATA[d].results.find(x=>x.sym===sym);return{d,lt:r&&r.long_term?r.long_term.score:null,tm:r&&r.timing?r.timing.score:null}});
+ if(pts.length<2)return'<div class="meta">Trend appears after the second weekly run.</div>';
+ const W=300,H=56,x=i=>6+i*(W-12)/(pts.length-1),y=v=>H-6-(v/10)*(H-12);
+ const line=(k,c)=>{let d="";pts.forEach((p,i)=>{if(isN(p[k]))d+=(d?"L":"M")+x(i).toFixed(1)+" "+y(p[k]).toFixed(1)});return d?`<path d="${d}" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`:""};
+ return`<svg class="sp" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Score history"><line x1="0" x2="${W}" y1="${y(5)}" y2="${y(5)}" stroke="var(--ln)" stroke-dasharray="3 4"/>${line("lt","var(--acc)")}${line("tm","var(--ink3)")}</svg><div class="meta"><span style="color:var(--acc)">— long-term</span><span>— entry timing</span><span>${fmtD(pts[0].d)} → ${fmtD(pts[pts.length-1].d)}</span></div>`}
+
+function render(){
+ if(!cur)return;const D=DATA[cur];let R=rows();
+ $("when").textContent=`${fmtD(cur)} · ${D.results.length} tickers`;
+ const sc=R.filter(r=>isN(r.lt)),avg=a=>a.length?(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1):"∅";
+ const mv=R.filter(r=>isN(r.dlt)).sort((a,b)=>b.dlt-a.dlt);
+ const top=R.filter(r=>isN(r.lt)).sort((a,b)=>b.lt-a.lt).slice(0,3).map(r=>esc(r.sym)).join(", ")||"∅";
+ $("sum").innerHTML=`<div class="tile"><b>Scored</b><span>${sc.length} of ${R.length}</span></div>
+  <div class="tile"><b>Average long-term</b><span>${avg(sc.map(r=>r.lt))}/10 · timing ${avg(R.filter(r=>isN(r.tm)).map(r=>r.tm))}</span></div>
+  <div class="tile"><b>Top long-term</b><span>${top}</span></div>
+  <div class="tile"><b>Biggest moves</b><span>${mv.length?`${esc(mv[0].sym)} ${delta(mv[0].dlt)} · ${esc(mv[mv.length-1].sym)} ${delta(mv[mv.length-1].dlt)}`:"after next run"}</span></div>`;
+ const f=$("f").value.trim().toLowerCase();if(f)R=R.filter(r=>(r.sym+" "+r.name).toLowerCase().includes(f));
+ const k=$("sort").value,num=(v,dir=-1)=>isN(v)?v*dir:Infinity;
+ R.sort((a,b)=>k==="sym"?a.sym.localeCompare(b.sym):k==="w"?num(a.chg_1w)-num(b.chg_1w):num(a[k])-num(b[k]));
+ const pill=(lab,v,d)=>`<div class="pill"><i>${lab}</i><strong style="color:${isN(v)?col(v):"var(--ink3)"}">${isN(v)?v.toFixed(1):"∅"}</strong>${delta(d)}</div>`;
+ $("list").innerHTML=R.map(r=>`<div class="row" data-s="${esc(r.sym)}">
+  <div class="top"><div class="nm"><b>${esc(r.sym)}</b> <span class="sub">${money(r.price,r.cur)}${pct(r.chg_1w)}</span><small>${esc(r.name)}</small></div>${pill("Long-term",r.lt,r.dlt)}${pill("Timing",r.tm,r.dtm)}</div>
+  <div class="lab">${esc(r.long_term&&r.long_term.label||r.status)}${r.timing&&r.timing.label?" · "+esc(r.timing.label):""}</div>
+  <div class="more">${GR.map(([g,n])=>{const v=r.groups&&r.groups[g]?r.groups[g].lt:null;return`<div class="g"><span>${n}</span><div class="trk"><div style="width:${isN(v)?v*10:0}%;background:${isN(v)?col(v):"transparent"}"></div></div><span>${isN(v)?v.toFixed(1):"∅"}</span></div>`}).join("")}
+   ${spark(r.sym)}
+   <div class="meta">${r.next_earnings?`<span>Next earnings ${esc(r.next_earnings.date)}${r.next_earnings.confirmed?"":" (est.)"}</span>`:""}${isN(r.chg_1m)?`<span>1 month ${r.chg_1m>=0?"+":""}${r.chg_1m.toFixed(1)}%</span>`:""}${isN(r.chg_1y)?`<span>1 year ${r.chg_1y>=0?"+":""}${r.chg_1y.toFixed(1)}%</span>`:""}<a href="index.html?s=${encodeURIComponent(r.sym)}" style="color:var(--acc)">Open in StockGlass →</a></div>
+  </div></div>`).join("")||'<div class="empty">No match.</div>';
+ document.querySelectorAll(".row").forEach(el=>el.onclick=e=>{if(e.target.closest("a"))return;el.classList.toggle("open")})}
+init();
+</script>
+</body>
+</html>
