@@ -74,14 +74,19 @@ def horizon(base_d, label, key):
         v = [sc(r, k) for r in rows.values() if (kd is None or kind(r) == kd) and num(sc(r, k))]
         return round(sum(v) / len(v), 2) if v else None
     kinds = sorted({kind(r) for r in CUR.values()}, key=["equity", "fund", "index", "crypto"].index)
-    agg = {kd: {"lt_was": avg(BASE, "long_term", kd), "lt_now": avg(CUR, "long_term", kd), "tm_was": avg(BASE, "timing", kd), "tm_now": avg(CUR, "timing", kd)} for kd in kinds}
+    def avg_px(kd):
+        v = [x["dpx"] for x in out if x["kind"] == kd and num(x["dpx"])]
+        return round(sum(v) / len(v), 1) if v else None
+    agg = {kd: {"lt_was": avg(BASE, "long_term", kd), "lt_now": avg(CUR, "long_term", kd), "tm_was": avg(BASE, "timing", kd), "tm_now": avg(CUR, "timing", kd), "px": avg_px(kd)} for kd in kinds}
+    # price and long-term score moving in opposite directions (price up while the business score falls, or the reverse)
+    div = [x for x in out if num(x["dpx"]) and num(x["dlt"]) and ((x["dpx"] >= 3 and x["dlt"] <= -.3) or (x["dpx"] <= -3 and x["dlt"] >= .3))]
     path = [{"d": d, "lt": avg(DATA[d], "long_term"), "tm": avg(DATA[d], "timing")} for d in win]
     tiers_was = [tier(lab(r, "long_term")) for r in BASE.values()]; tiers_now = [tier(lab(r, "long_term")) for r in CUR.values()]
     cnt = lambda T: {n: sum(1 for t in T if t == i) for i, n in ((4, "Strong"), (3, "Favourable"), (2, "Mixed"), (1, "Weak"), (0, "Poor"))}
     top = lambda k, rev=True, n=5: sorted([x for x in out if num(x[k]) and abs(x[k]) >= .05], key=lambda x: x[k], reverse=rev)[:n]
     return {"key": key, "label": label, "available": True, "from": base_d, "to": cur_d, "weeks": len(win) - 1, "runs": len(win),
             "lt_up": top("dlt"), "lt_down": top("dlt", False), "tm_up": top("dtm"), "tm_down": top("dtm", False),
-            "px_up": top("dpx"), "px_down": top("dpx", False),
+            "px_up": top("dpx"), "px_down": top("dpx", False), "price_vs_score": sorted(div, key=lambda x: -abs(x["dpx"]))[:8],
             "steady_up": sorted([x for x in out if num(x["slope"]) and x["slope"] >= .1], key=lambda x: -x["slope"])[:5] if len(win) >= 3 else [],
             "steady_down": sorted([x for x in out if num(x["slope"]) and x["slope"] <= -.1], key=lambda x: x["slope"])[:5] if len(win) >= 3 else [],
             "labels": [x for x in out if x["labels"]], "indicators": sorted([x for x in out if x["ind"]], key=lambda x: -max(abs(i["dsc"]) for i in x["ind"]))[:10],
@@ -147,7 +152,12 @@ for s, r in CUR.items():
     scored = [(m.get("l", k), m.get("d"), m["sc"]) for k, m in (r.get("metrics") or {}).items() if num(m.get("sc")) and not m.get("ctx")]
     up_w, dn_w = ind_moves(r, wb); up_s, dn_s = ind_moves(r, sb)
     M = r.get("metrics") or {}
-    TK.append({"sym": s, "name": r.get("name"), "kind": kd, "price": r.get("price"), "cur": r.get("cur"),
+    pp = [(dd, DATA[dd][s]["price"]) for dd in RUNS if s in DATA[dd] and num(DATA[dd][s].get("price")) and DATA[dd][s].get("cur") == r.get("cur")]
+    pv = [v for _, v in pp]
+    px = {"now": r.get("price"), "cur": r.get("cur"), "d1": r.get("chg_1d"), "w1": r.get("chg_1w"), "m1": r.get("chg_1m"), "y1": r.get("chg_1y"),
+          "runs": [[dd, v] for dd, v in pp], "lo": min(pv) if pv else None, "hi": max(pv) if pv else None,
+          "from_hi": round((pv[-1] / max(pv) - 1) * 100, 1) if len(pv) > 1 and max(pv) > 0 else None}
+    TK.append({"sym": s, "name": r.get("name"), "kind": kd, "price": r.get("price"), "cur": r.get("cur"), "px": px,
                "lt": sc(r, "long_term"), "tm": sc(r, "timing"), "ltl": lab(r, "long_term"), "tml": lab(r, "timing"), "chg": d, "groups": gr,
                "strong": [[a, b2] for a, b2, _ in sorted(scored, key=lambda x: -x[2])[:3]], "weak": [[a, b2] for a, b2, c in sorted(scored, key=lambda x: x[2])[:3] if c < 5],
                "ind_week": {"up": up_w, "down": dn_w}, "ind_start": {"up": up_s, "down": dn_s},
@@ -193,13 +203,15 @@ def section(h):
     labs = [li(x, "", "; ".join(f'{l["what"]}: {l["was"]} → {l["now"]}' for l in x["labels"])) for x in h["labels"]]
     inds = [li(x, "", "; ".join(f'{i["l"]} {i["was"]} → {i["now"]} ({i["dsc"]:+.1f}{", steady" if i["steady"] else ""})' for i in x["ind"])) for x in h["indicators"]]
     cross = [li(x, "", f'moved {x["cross"]} its 200-day average') for x in h["crossings"]]
-    aver = "".join(f'<tr><td>{KN[kd]}</td><td>{f1(a["lt_was"])} → <b style="color:{col(a["lt_now"])}">{f1(a["lt_now"])}</b></td><td>{f1(a["tm_was"])} → <b style="color:{col(a["tm_now"])}">{f1(a["tm_now"])}</b></td></tr>' for kd, a in h["averages"].items())
+    aver = "".join(f'<tr><td>{KN[kd]}</td><td>{f1(a["lt_was"])} → <b style="color:{col(a["lt_now"])}">{f1(a["lt_now"])}</b></td><td>{f1(a["tm_was"])} → <b style="color:{col(a["tm_now"])}">{f1(a["tm_now"])}</b></td><td>{pc(a.get("px")) or "–"}</td></tr>' for kd, a in h["averages"].items())
     tw, tn = h["tiers_was"], h["tiers_now"]
     tiers = " · ".join(f'{n} {tw[n]}→{tn[n]}' for n in tn if tw[n] or tn[n])
-    body = f'<div class="c"><h3>Watchlist averages</h3><div class="tw"><table><tr><th></th><th>Long-term</th><th>Timing</th></tr>{aver}</table></div><p class="sub">Long-term labels: {tiers}</p>{spark(h["path"]) if k != "week" else ""}</div>'
+    body = f'<div class="c"><h3>Watchlist averages</h3><div class="tw"><table><tr><th></th><th>Long-term</th><th>Timing</th><th>Avg price</th></tr>{aver}</table></div><p class="sub">Long-term labels: {tiers}</p>{spark(h["path"]) if k != "week" else ""}</div>'
     grid = (card("Long-term score up", ul(mv(h["lt_up"], "dlt", "lt"), "No rise.")) + card("Long-term score down", ul(mv(h["lt_down"], "dlt", "lt"), "No fall."))
             + card("Timing up", ul(mv(h["tm_up"], "dtm", "tm"), "No rise.")) + card("Timing down", ul(mv(h["tm_down"], "dtm", "tm"), "No fall."))
             + card("Best price change", ul(pxl(h["px_up"]), "∅")) + card("Worst price change", ul(pxl(h["px_down"]), "∅")))
+    if h.get("price_vs_score"):
+        grid += card("Price and score diverging", ul([li(x, f'price {pc(x["dpx"])} · LT {dl(x["dlt"])}') for x in h["price_vs_score"]], ""), "Price moved 3%+ one way while the long-term score moved 0.3+ the other way.")
     if h["runs"] >= 3:
         grid += card("Steadily improving", ul([li(x, f'{x["slope"]:+.2f}/wk <i style="color:{col(x["lt"])}">{f1(x["lt"])}</i>') for x in h["steady_up"]], "None yet."), "Long-term score trend per week (least-squares slope over every run).")
         grid += card("Steadily weakening", ul([li(x, f'{x["slope"]:+.2f}/wk <i style="color:{col(x["lt"])}">{f1(x["lt"])}</i>') for x in h["steady_down"]], "None."))
@@ -215,8 +227,8 @@ for kd, n in KN.items():
     xs = sorted([(s, r) for s, r in CUR.items() if kind(r) == kd], key=lambda t: -(sc(t[1], "long_term") if num(sc(t[1], "long_term")) else -1))
     if not xs: continue
     tr = "".join(f'<tr><td><b>{e(s)}</b><small>{e(r.get("name"))}</small></td><td style="color:{col(sc(r, "long_term"))}">{f1(sc(r, "long_term"))}{dl((wkrows.get(s) or {}).get("dlt"))}</td>'
-                 f'<td style="color:{col(sc(r, "timing"))}">{f1(sc(r, "timing"))}{dl((wkrows.get(s) or {}).get("dtm"))}</td><td>{dl((strows.get(s) or {}).get("dlt")) or "–"}</td><td>{pc(r.get("chg_1w"))}</td></tr>' for s, r in xs)
-    tables += f'<section class="c"><h3>{n} <span class="sub">{len(xs)}</span></h3><div class="tw"><table><tr><th></th><th>Long-term</th><th>Timing</th><th>Since start</th><th>1 week</th></tr>{tr}</table></div></section>'
+                 f'<td style="color:{col(sc(r, "timing"))}">{f1(sc(r, "timing"))}{dl((wkrows.get(s) or {}).get("dtm"))}</td><td>{dl((strows.get(s) or {}).get("dlt")) or "–"}</td><td>{(f"{r['price']:,.2f}" if num(r.get("price")) else "∅")}<small>{e(r.get("cur") or "")}</small></td><td>{pc(r.get("chg_1w"))}</td><td>{pc((strows.get(s) or {}).get("dpx")) or "–"}</td></tr>' for s, r in xs)
+    tables += f'<section class="c"><h3>{n} <span class="sub">{len(xs)}</span></h3><div class="tw"><table><tr><th></th><th>Long-term</th><th>Timing</th><th>LT since start</th><th>Price</th><th>1 week</th><th>Price since start</th></tr>{tr}</table></div></section>'
 watch_html = ul([li(x, f'<i style="color:{col(x["lt"])}">{f1(x["lt"])}</i> <i style="color:{col(x["tm"])}">{f1(x["tm"])}</i>', f'{x["name"]} · {x["ltl"]}' + (f' · improving {x["streak"]} weeks' if x["streak"] >= 2 else "")) for x in watch],
                 "No name combines a favourable long-term score with favourable timing this week.")
 alert_html = ul([li(x, "", "; ".join(x["flags"])) for x in alerts], "Nothing notable.")
@@ -227,7 +239,7 @@ if A.interp and os.path.exists(A.interp):
 def tcard(t):
     c = t["chg"]; parts = []
     def ch(hk, nm):
-        x = c[hk]; bits = [f"long-term {dl(x['lt'])}" if num(x["lt"]) and abs(x["lt"]) >= .05 else "", f"timing {dl(x['tm'])}" if num(x["tm"]) and abs(x["tm"]) >= .05 else "", pc(x["px"]) if num(x["px"]) else ""]
+        x = c[hk]; bits = [f"long-term {dl(x['lt'])}" if num(x["lt"]) and abs(x["lt"]) >= .05 else "", f"timing {dl(x['tm'])}" if num(x["tm"]) and abs(x["tm"]) >= .05 else "", f"price {pc(x['px'])}" if num(x["px"]) else ""]
         bits = [b for b in bits if b]
         return f'<span class="hz2"><em>{nm}</em> {" · ".join(bits) if bits else "<span class=sub>no change</span>"}</span>' if (H[hk]["available"]) else ""
     hz = "".join(ch(hk, nm) for hk, nm in (("week", "Week"), ("month", "Month"), ("start", "Since start")))
@@ -246,10 +258,26 @@ def tcard(t):
     if t["earnings"]: notes.append(f"Next earnings {e(t['earnings'])}")
     if t["warning"]: notes.append(f'<span class="n">⚠ {e(t["warning"])}</span>')
     it = INTERP.get(t["sym"].upper())
+    P = t["px"]
+    def fp(v): return "∅" if not num(v) else (f"{v:,.0f}" if v >= 1000 else f"{v:,.2f}" if v >= 1 else f"{v:.4f}")
+    pmk = " · ".join(f"{nm} {pc(P[k])}" for k, nm in (("w1", "1 week"), ("m1", "1 month"), ("y1", "1 year")) if num(P[k]))
+    pline = f'<p class="pl"><em>Price</em> <b>{fp(P["now"])}</b> {e(P["cur"] or "")}{" · " + pmk if pmk else ""}</p>' if num(P["now"]) else ""
+    pspark = ""
+    if len(P["runs"]) >= 2:
+        vs = [v for _, v in P["runs"]]; lo, hi = min(vs), max(vs); rg = (hi - lo) or 1; n = len(vs) - 1
+        d = "".join(("M" if i == 0 else "L") + f"{4 + i * 292 / n:.1f} {30 - (v - lo) / rg * 24:.1f}" for i, v in enumerate(vs))
+        lts = [sc(DATA[dd].get(t["sym"]), "long_term") for dd, _ in P["runs"]]; lv = [v for v in lts if num(v)]
+        d2 = ""
+        if len(lv) >= 2:
+            l0, l1 = min(lv) - .2, max(lv) + .2
+            d2 = "".join(("M" if i == 0 else "L") + f"{4 + i * 292 / n:.1f} {30 - (v - l0) / (l1 - l0) * 24:.1f}" for i, v in enumerate(lts) if num(v))
+        pspark = (f'<svg class="ps" viewBox="0 0 300 34" preserveAspectRatio="none" role="img" aria-label="Price and long-term score at each weekly run"><path d="{d}" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linejoin="round"/>'
+                  + (f'<path d="{d2}" fill="none" stroke="var(--lt)" stroke-width="1.5" stroke-dasharray="4 3" stroke-linejoin="round"/>' if d2 else "")
+                  + f'</svg><p class="sub ps2">— price at each run, {fp(lo)}–{fp(hi)}{" · " + format(P["from_hi"], "+.1f") + "% from the high" if num(P["from_hi"]) and P["from_hi"] < 0 else ""} · <span style="color:var(--lt)">- - long-term score</span></p>')
     return (f'<article class="tc" id="t-{e(t["sym"])}"><div class="th"><div class="tn"><b>{e(t["sym"])}</b>{badge(t)}<small>{e(t["name"])}</small></div>'
             f'<div class="ts"><span><i>LT</i><b style="color:{col(t["lt"])}">{f1(t["lt"])}</b>{dl(c["week"]["lt"])}</span><span><i>Timing</i><b style="color:{col(t["tm"])}">{f1(t["tm"])}</b>{dl(c["week"]["tm"])}</span></div></div>'
             f'<p class="tl">{lbl}{" · " + e(t["tml"]) if t["tml"] else ""}</p>'
-            + (f'<p class="it">{e(it)}</p>' if it else "")
+            + pline + pspark + (f'<p class="it">{e(it)}</p>' if it else "")
             + (f'<p class="hzl">{hz}</p>' if hz else "") + f'<p class="gl">{gtxt}</p>' + chg
             + (f'<p class="kl">{key}</p>' if key else "") + (f'<p class="kl">{" · ".join(notes)}</p>' if notes else "") + "</article>")
 cards = ""
@@ -287,7 +315,7 @@ svg.sp{{width:100%;height:64px;display:block;margin-top:8px}}
 .ts{{display:flex;gap:12px;white-space:nowrap}}.ts span{{display:flex;flex-direction:column;align-items:flex-end}}.ts i{{font-style:normal;font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em}}.ts b{{font-size:19px;font-weight:800;line-height:1.1}}
 .tc p{{margin:6px 0 0;font-size:12.5px;color:var(--ink2)}}.tc p.tl{{color:var(--ink);font-weight:600}}.tc p.it{{color:var(--ink);background:rgba(255,255,255,.06);border-left:3px solid var(--tm);border-radius:6px;padding:6px 9px}}
 .tc em{{font-style:normal;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-right:4px}}
-.hz2{{display:inline-block;margin-right:12px}}.tc .u{{color:var(--good)}}.tc .n{{color:var(--bad)}}.tc p.gl b,.tc p.kl b{{color:var(--ink);font-weight:700}}a{{color:var(--acc)}}.ft{{color:var(--ink3);font-size:11px;margin-top:16px}}
+.hz2{{display:inline-block;margin-right:12px}}.tc p.pl b{{color:var(--ink);font-weight:700}}svg.ps{{width:100%;height:34px;display:block;margin-top:6px}}.tc p.ps2{{margin-top:2px;font-size:11px}}.tc .u{{color:var(--good)}}.tc .n{{color:var(--bad)}}.tc p.gl b,.tc p.kl b{{color:var(--ink);font-weight:700}}a{{color:var(--acc)}}.ft{{color:var(--ink3);font-size:11px;margin-top:16px}}
 </style>
 <div class="w">
 <div class="top"><h1>Watchlist review</h1><span class="sub">{fd(cur_d)} · {len(CUR)} tickers · {len(RUNS)} weekly run{"s" if len(RUNS) != 1 else ""} since {fd(RUNS[0])}</span></div>
