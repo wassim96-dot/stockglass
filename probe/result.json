@@ -1,0 +1,1743 @@
+{
+ "_crumb": {
+  "cookie": true,
+  "status": 200,
+  "crumb": "XVJ9…"
+ },
+ "EUNL.DE": {
+  "chart": {
+   "status": 200,
+   "instrumentType": "ETF",
+   "currency": "EUR",
+   "name": "iShares Core MSCI World UCITS ETF USD (Acc)",
+   "exch": "XETRA",
+   "n": 262
+  },
+  "qs_nocrumb": {
+   "status": 401,
+   "ms": 93,
+   "len": 89,
+   "head": "{\"finance\":{\"result\":null,\"error\":{\"code\":\"Unauthorized\",\"description\":\"Invalid Crumb\"}}}"
+  },
+  "qs_crumb": {
+   "status": 200,
+   "len": 11227,
+   "modules": [
+    "assetProfile",
+    "fundProfile",
+    "summaryDetail",
+    "price",
+    "defaultKeyStatistics",
+    "topHoldings",
+    "fundPerformance"
+   ],
+   "sample": {
+    "fundProfile": {
+     "maxAge": 1,
+     "styleBoxUrl": "https://s.yimg.com/lq/i/fi/3_0stylelargeeq2.gif",
+     "family": "BlackRock Asset Management Ireland - ETF",
+     "categoryName": null,
+     "legalType": "Exchange Traded Fund",
+     "managementInfo": {
+      "managerName": null,
+      "managerBio": null,
+      "startdate": {}
+     },
+     "feesExpensesInvestment": {
+      "annualReportExpenseRatio": {
+       "raw": 0.002,
+       "fmt": "0.20%"
+      },
+      "frontEndSalesLoad": {},
+      "deferredSalesLoad": {},
+      "twelveBOne": {},
+      "netExpRatio": {},
+      "grossExpRatio": {},
+      "annualHoldingsTurnover": {
+       "raw": 0.113299996,
+       "fmt": "11.33%"
+      },
+      "totalNetAssets": {
+       "raw": 291101.34,
+       "fmt": "291,101.34"
+      },
+      "projectionValues": {}
+     },
+     "feesExpensesInvestmentCat": {
+      "annualReportExpenseRatio": {},
+      "frontEndSalesLoad": {},
+      "deferredSalesLoad": {},
+      "twelveBOne": {},
+      "annualHoldingsTurnover": {},
+      "totalNetAssets": {
+       "raw": 291101.34,
+       "fmt": "291,101.34"
+      },
+      "projectionValuesCat": {}
+     },
+     "initInvestment": {},
+     "initIraInvestment": {},
+     "initAipInvestment": {},
+     "subseqInvestment": {},
+     "subseqIraInvestment": {},
+     "subseqAipInvestment": {},
+     "brokerages": []
+    },
+    "topHoldings": {
+     "n": 10,
+     "top": [
+      {
+       "symbol": "AAPL",
+       "holdingName": "Apple Inc",
+       "holdingPercent": {
+        "raw": 0.056238998,
+        "fmt": "5.62%"
+       }
+      },
+      {
+       "symbol": "NVDA",
+       "holdingName": "NVIDIA Corp",
+       "holdingPercent": {
+        "raw": 0.0522722,
+        "fmt": "5.23%"
+       }
+      },
+      {
+       "symbol": "MSFT",
+       "holdingName": "Microsoft Corp",
+       "holdingPercent": {
+        "raw": 0.040922098,
+        "fmt": "4.09%"
+       }
+      }
+     ],
+     "equityHoldings": {
+      "priceToEarnings": {
+       "raw": 0.04583,
+       "fmt": "0.05"
+      },
+      "priceToBook": {
+       "raw": 0.26222,
+       "fmt": "0.26"
+      },
+      "priceToSales": {
+       "raw": 0.36426,
+       "fmt": "0.36"
+      },
+      "priceToCashflow": {
+       "raw": 0.06266,
+       "fmt": "0.06"
+      },
+      "medianMarketCap": {},
+      "threeYearEarningsGrowth": {},
+      "priceToEarningsCat": {},
+      "priceToBookCat": {},
+      "priceToSalesCat": {},
+      "priceToCashflowCat": {},
+      "medianMarketCapCat": {},
+      "threeYearEarningsGrowthCat": {}
+     },
+     "sectorWeightings": 11
+    },
+    "summaryDetail": {
+     "dividendYield": {},
+     "fiveYearAvgDividendYield": {},
+     "beta": {},
+     "averageVolume": {
+      "raw": 324365,
+      "fmt": "324.37k",
+      "longFmt": "324,365"
+     },
+     "averageVolume10days": {
+      "raw": 459798,
+      "fmt": "459.8k",
+      "longFmt": "459,798"
+     },
+     "yield": {},
+     "ytdReturn": {},
+     "totalAssets": {},
+     "trailingAnnualDividendYield": {},
+     "navPrice": {
+      "raw": 139.6695,
+      "fmt": "139.67"
+     }
+    },
+    "defaultKeyStatistics": {
+     "category": null,
+     "annualReportExpenseRatio": {},
+     "ytdReturn": {},
+     "beta3Year": {},
+     "totalAssets": {},
+     "yield": {},
+     "fundFamily": "BlackRock Asset Management Ireland - ETF",
+     "fundInceptionDate": {
+      "raw": 1253836800,
+      "fmt": "2009-09-25"
+     },
+     "legalType": "Exchange Traded Fund",
+     "threeYearAverageReturn": {},
+     "fiveYearAverageReturn": {}
+    },
+    "fundPerformance": {
+     "trailing": {
+      "asOfDate": {
+       "raw": 0,
+       "fmt": "1970-01-01"
+      },
+      "ytd": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "oneMonth": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "threeMonth": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "oneYear": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "threeYear": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "fiveYear": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "tenYear": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "lastBullMkt": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "lastBearMkt": {
+       "raw": 0,
+       "fmt": "0.00%"
+      }
+     },
+     "risk": []
+    }
+   }
+  },
+  "qs_via_allorigins": {
+   "status": 522,
+   "head": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endi"
+  },
+  "qs_via_codetabs": {
+   "status": 522,
+   "head": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endi"
+  },
+  "qs_via_corsproxy": {
+   "status": 401,
+   "head": "{\"error\":\"A valid API key is required. Get one at https://console.corsproxy.io/\"}"
+  },
+  "jina_quote": {
+   "status": 200,
+   "len": 32904,
+   "hits": [
+    "Beta"
+   ],
+   "snippet": ""
+  },
+  "jina_holdings": {
+   "status": 200,
+   "len": 36408,
+   "hits": [
+    "Top 10 Holdings",
+    "Sector Weightings",
+    "Price/Earnings",
+    "Price/Book",
+    "Overall Portfolio Composition",
+    "Bond Ratings"
+   ],
+   "snippet": "Overall Portfolio Composition (%)\n\nStocks 99.50%\nBonds 0.00%\n\n### Equity Holdings\n\nPrice/Earnings 0.05\nPrice/Book 0.26\nPrice/Sales 0.36\nPrice/Cashflow 0.06\nMedian Market Cap--\n3 Year Earnings Growth--\n\n### Bond Ratings\n\nUS Government 0.00%\nAAA--\nAA--\nA--\nBBB--\nBB--\nB--\nBelow B--\nOther--\n\n### ETF Summary\n\nETF Summary Information Not Available\n\n### ETF Overview\n\nCategory--\nFund Family BlackRock Asset Management Ireland - ETF\nNet Assets--\nYTD Daily Total Return--\nYield--\nLegal Type Exchange Traded Fund\n\n### Related Tickers\n\n[](https://finance.yahoo.com/)\n\nCopyright © 2026 Yahoo. All rights reserved.\n\n[](https://twitter.com/YahooFinance \"Follow on Twitter\")[](https://facebook.com/yahoofinance \"Follow on Facebook\")[](https://www.linkedin.com/company/yahoo-finance \"Follow on LinkedIn\")\n\nTrending Topics\n\n[Dow Jones](https://finance.yahoo.com/quote/%5EDJI/)[S&P 500](https://finance.yahoo.com/quote/SPY/)[DAX Index](https://finance.yahoo.com/quote/%5EGDAXI/)[Nvidia](https://finance.yahoo.com/quote/NVDA/)[Tesla](https://finance.yahoo.com/quote/TSLA/)[DJT](https://finance.yahoo.com/quote/DJT/)[Tariffs](https://finance.yahoo.com/topic/tariffs/)\n\nExplore Further\n\n[Mortgages](https://finance.yahoo.com/personal-finance/mortgages/)[Credit Cards](https://finance.yahoo.com/personal-finance/credit-cards/)[Sectors](https://finance.yahoo.com/sectors/)[Crypto Heatmap](https://finance.yahoo.com/crypto/heatmap/)[Financial News](https://finance.yahoo.com/news/)\n\nAbout\n\n[Data Disclaimer](https://help.yahoo.com/kb/finance-for-web/SLN2310.html?locale=en_US)[Help](https://help.yahoo.com/kb/finance-for-web)[Feedback](https://yahoo.uservoice.com/forums/952723-finance-b3)[Sitemap](https://finance.yahoo.com/sitemap/)[Licensing](https://info.wrightsmedia.com/yahoo-finance-licensing)[What's New](https://finance.yahoo.com/about/whatsnew/)[About Our Ads](https://policies.oath.com/us/en/oath/privacy/adinfo/index.html)[Premium Plans](https://finance.yahoo.com/about/plans/)\n\n[Terms](https://guce.yahoo.com/terms?locale=en-US) and [Privacy Policy](https://guce.yahoo.com/privacy-policy?locale=en-US)\n\n[Your Privacy Choices ![Image 2](https://s.yimg.com/dv/static/siteApp/img/privacy-choice-control.png)](https://guce.yahoo.com/state-con"
+  },
+  "jina_perf": {
+   "status": 200,
+   "len": 36993,
+   "snippet": "Trailing Returns (%) Vs. Benchmarks\n\nMonthly Total Returns\n\nEUNL.DE\n\nCategory\n\nYTD 0.00%0.00%\n\n1-Month 0.00%0.00%\n\n3-Month 0.00%0.00%\n\n1-Year 0.00%0.00%\n\n3-Year 0.00%0.00%\n\n5-Year 0.00%0.00%\n\n10-Year 0.00%0.00%\n\nLast Bull Market 0.00%0.00%\n\nLast Bear Market 0.00%0.00%\n\n## Annual Total Return (%) History\n\nYear\n\nEUNL.DE\n\nCategory\n\n2025 21.03%--\n\n2024 19.11%--\n\n2023 24.27%--\n\n2022-18.11%--\n\n2021 22.19%--\n\n2020 16.06%--\n\n2019 27.13%--\n\n2018-9.01%--\n\n### Show More\n\n2017 22.75%--\n\n2016 7.51%--\n\n2015-1.13%--\n\n2014 6.15%--\n\n2013 26.05%--\n\n2012 17.07%--\n\n2011-6.42%--\n\n2010 13.01%--\n\n## ETF Summary\n\nETF Summary Information Not Available\n\n## ETF Overview\n\nCategory--\nFund Family BlackRock Asset Management Ireland - ETF\nNet Assets--\nYTD Daily Total Return--\nYield--\nLegal Type Exchange Traded Fund\n\n## Related Tickers\n\nINCO Columbia India Consumer ETF\n\n**63.48**0.00%\n\n[](https://finance.yahoo.com/quote/INCO/ \"INCO\")\n\nEPI WisdomTree India Earnings Fund\n\n**44.65**0.00%\n\n[](https://finance.yahoo.com/quote/EPI/ \"EPI\")\n\nNFTY First Trust India NIFTY 50 Equal Weight ETF\n\n**56.50**0.00%\n\n[](https://finance.yahoo.com/quote/NFTY/ \"NFTY\")\n\nCOMT iShares GSCI Commodity Dynamic Roll Strategy ETF\n\n**34.07**0.00%\n\n[](https://finance.yahoo.com/quote/COMT/ \"COMT\")\n\nGSG iShares S&P GSCI Commodity-Indexed Trust\n\n**32.14**0.00%\n\n[](https://finance.yahoo.com/quote/GSG/ \"GSG\")\n\nDBC Invesco DB Commodity Index Tracking Fund\n\n**29.45**0.00%\n\n[](https://finance.yahoo.com/quote/DBC/ \"DBC\")\n\nSMIN iShares MSCI India Small-Cap ETF\n\n**71"
+  }
+ },
+ "VDE": {
+  "chart": {
+   "status": 200,
+   "instrumentType": "ETF",
+   "currency": "USD",
+   "name": "Vanguard Energy Index Fund ETF Shares",
+   "exch": "NYSEArca",
+   "n": 263
+  },
+  "qs_nocrumb": {
+   "status": 401,
+   "ms": 244,
+   "len": 89,
+   "head": "{\"finance\":{\"result\":null,\"error\":{\"code\":\"Unauthorized\",\"description\":\"Invalid Crumb\"}}}"
+  },
+  "qs_crumb": {
+   "status": 200,
+   "len": 16370,
+   "modules": [
+    "assetProfile",
+    "fundProfile",
+    "summaryDetail",
+    "price",
+    "defaultKeyStatistics",
+    "topHoldings",
+    "fundPerformance"
+   ],
+   "sample": {
+    "fundProfile": {
+     "maxAge": 1,
+     "styleBoxUrl": "https://s.yimg.com/lq/i/fi/3_0stylelargeeq1.gif",
+     "family": "Vanguard",
+     "categoryName": "Equity Energy",
+     "legalType": "Exchange Traded Fund",
+     "managementInfo": {
+      "managerName": null,
+      "managerBio": null,
+      "startdate": {}
+     },
+     "feesExpensesInvestment": {
+      "annualReportExpenseRatio": {
+       "raw": 0.00090000004,
+       "fmt": "0.09%"
+      },
+      "frontEndSalesLoad": {},
+      "deferredSalesLoad": {},
+      "twelveBOne": {},
+      "netExpRatio": {},
+      "grossExpRatio": {},
+      "annualHoldingsTurnover": {
+       "raw": 0.08,
+       "fmt": "8.00%"
+      },
+      "totalNetAssets": {
+       "raw": 126044.3,
+       "fmt": "126,044.30"
+      },
+      "projectionValues": {}
+     },
+     "feesExpensesInvestmentCat": {
+      "annualReportExpenseRatio": {
+       "raw": 0.0092652,
+       "fmt": "0.93%"
+      },
+      "frontEndSalesLoad": {},
+      "deferredSalesLoad": {},
+      "twelveBOne": {},
+      "annualHoldingsTurnover": {
+       "raw": 0.5106,
+       "fmt": "51.06%"
+      },
+      "totalNetAssets": {
+       "raw": 126044.3,
+       "fmt": "126,044.30"
+      },
+      "projectionValuesCat": {}
+     },
+     "initInvestment": {},
+     "initIraInvestment": {},
+     "initAipInvestment": {},
+     "subseqInvestment": {},
+     "subseqIraInvestment": {},
+     "subseqAipInvestment": {},
+     "brokerages": []
+    },
+    "topHoldings": {
+     "n": 10,
+     "top": [
+      {
+       "symbol": "XOM",
+       "holdingName": "ExxonMobil Holdings Corp",
+       "holdingPercent": {
+        "raw": 0.23222281,
+        "fmt": "23.22%"
+       }
+      },
+      {
+       "symbol": "CVX",
+       "holdingName": "Chevron Corp",
+       "holdingPercent": {
+        "raw": 0.1466683,
+        "fmt": "14.67%"
+       }
+      },
+      {
+       "symbol": "COP",
+       "holdingName": "ConocoPhillips",
+       "holdingPercent": {
+        "raw": 0.063737705,
+        "fmt": "6.37%"
+       }
+      }
+     ],
+     "equityHoldings": {
+      "priceToEarnings": {
+       "raw": 0.06188,
+       "fmt": "0.06"
+      },
+      "priceToBook": {
+       "raw": 0.37937,
+       "fmt": "0.38"
+      },
+      "priceToSales": {
+       "raw": 0.62484,
+       "fmt": "0.62"
+      },
+      "priceToCashflow": {
+       "raw": 0.12282,
+       "fmt": "0.12"
+      },
+      "medianMarketCap": {},
+      "threeYearEarningsGrowth": {},
+      "priceToEarningsCat": {},
+      "priceToBookCat": {},
+      "priceToSalesCat": {},
+      "priceToCashflowCat": {},
+      "medianMarketCapCat": {},
+      "threeYearEarningsGrowthCat": {}
+     },
+     "sectorWeightings": 11
+    },
+    "summaryDetail": {
+     "dividendYield": {},
+     "fiveYearAvgDividendYield": {},
+     "beta": {},
+     "trailingPE": {
+      "raw": 13.96069,
+      "fmt": "13.96"
+     },
+     "averageVolume": {
+      "raw": 525456,
+      "fmt": "525.46k",
+      "longFmt": "525,456"
+     },
+     "averageVolume10days": {
+      "raw": 478630,
+      "fmt": "478.63k",
+      "longFmt": "478,630"
+     },
+     "yield": {
+      "raw": 0.0209,
+      "fmt": "2.09%"
+     },
+     "ytdReturn": {},
+     "totalAssets": {
+      "raw": 14455033856,
+      "fmt": "14.46B",
+      "longFmt": "14,455,033,856"
+     },
+     "trailingAnnualDividendYield": {
+      "raw": 0.014506464,
+      "fmt": "1.45%"
+     },
+     "navPrice": {
+      "raw": 170.23,
+      "fmt": "170.23"
+     }
+    },
+    "defaultKeyStatistics": {
+     "category": "Equity Energy",
+     "annualReportExpenseRatio": {},
+     "ytdReturn": {
+      "raw": 0.3767966,
+      "fmt": "37.68%"
+     },
+     "beta3Year": {
+      "raw": -0.2,
+      "fmt": "-0.20"
+     },
+     "totalAssets": {
+      "raw": 14455033856,
+      "fmt": "14.46B",
+      "longFmt": "14,455,033,856"
+     },
+     "yield": {
+      "raw": 0.0209,
+      "fmt": "2.09%"
+     },
+     "fundFamily": "Vanguard",
+     "fundInceptionDate": {
+      "raw": 1095897600,
+      "fmt": "2004-09-23"
+     },
+     "legalType": "Exchange Traded Fund",
+     "threeYearAverageReturn": {
+      "raw": 0.161711,
+      "fmt": "16.17%"
+     },
+     "fiveYearAverageReturn": {
+      "raw": 0.20225,
+      "fmt": "20.23%"
+     }
+    },
+    "fundPerformance": {
+     "trailing": {
+      "asOfDate": {
+       "raw": 1794960000,
+       "fmt": "2026-11-18"
+      },
+      "ytd": {
+       "raw": 0.58145857,
+       "fmt": "58.15%"
+      },
+      "oneMonth": {
+       "raw": 0.1356375,
+       "fmt": "13.56%"
+      },
+      "threeMonth": {
+       "raw": 0.17090441,
+       "fmt": "17.09%"
+      },
+      "oneYear": {
+       "raw": 0.6124017,
+       "fmt": "61.24%"
+      },
+      "threeYear": {
+       "raw": 0.2127976,
+       "fmt": "21.28%"
+      },
+      "fiveYear": {
+       "raw": 0.2328821,
+       "fmt": "23.29%"
+      },
+      "tenYear": {
+       "raw": 0.1137868,
+       "fmt": "11.38%"
+      },
+      "lastBullMkt": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "lastBearMkt": {
+       "raw": 0,
+       "fmt": "0.00%"
+      }
+     },
+     "risk": [
+      {
+       "year": "5y",
+       "alpha": {
+        "raw": 17.35,
+        "fmt": "17.35"
+       },
+       "beta": {
+        "raw": 0.45,
+        "fmt": "0.45"
+       },
+       "meanAnnualReturn": {
+        "raw": 2.03,
+        "fmt": "2.03"
+       },
+       "rSquared": {
+        "raw": 6.37,
+        "fmt": "6.37"
+       },
+       "stdDev": {
+        "raw": 25.98,
+        "fmt": "25.98"
+       },
+       "sharpeRatio": {
+        "raw": 0.78,
+        "fmt": "0.78"
+       },
+       "treynorRatio": {
+        "raw": 42.83,
+        "fmt": "42.83"
+       }
+      },
+      {
+       "year": "3y",
+       "alpha": {
+        "raw": 20.33,
+        "fmt": "20.33"
+       },
+       "beta": {
+        "raw": -0.2,
+        "fmt": "-0.2"
+       },
+       "meanAnnualReturn": {
+        "raw": 1.8,
+        "fmt": "1.8"
+       },
+       "rSquared": {
+        "raw": 1.23,
+        "fmt": "1.23"
+       },
+       "stdDev": {
+        "raw": 21.12,
+        "fmt": "21.12"
+       },
+       "sharpeRatio": {
+        "raw": 0.81,
+        "fmt": "0.81"
+       },
+       "treynorRatio": {
+        "raw": -83.82,
+        "fmt": "-83.82"
+       }
+      },
+      {
+       "year": "10y",
+       "alpha": {
+        "raw": 1.48,
+        "fmt": "1.48"
+       },
+       "beta": {
+        "raw": 1.14,
+        "fmt": "1.14"
+       },
+       "meanAnnualReturn": {
+        "raw": 1.3,
+        "fmt": "1.3"
+       },
+       "rSquared": {
+        "raw": 28.94,
+        "fmt": "28.94"
+       },
+       "stdDev": {
+        "raw": 30.95,
+        "fmt": "30.95"
+       },
+       "sharpeRatio": {
+        "raw": 0.42,
+        "fmt": "0.42"
+       },
+       "treynorRatio": {
+        "raw": 7.73,
+        "fmt": "7.73"
+       }
+      }
+     ]
+    }
+   }
+  },
+  "qs_via_allorigins": {
+   "status": 500,
+   "head": "<html>\r\n<head><title>500 Internal Server Error</title></head>\r\n<body>\r\n<center><h1>500 Internal Server Error</h1></center>\r\n<hr><center>nginx/1.22.1</center>\r\n<"
+  },
+  "qs_via_codetabs": {
+   "status": 522,
+   "head": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endi"
+  },
+  "qs_via_corsproxy": {
+   "status": 401,
+   "head": "{\"error\":\"A valid API key is required. Get one at https://console.corsproxy.io/\"}"
+  },
+  "jina_quote": {
+   "status": 200,
+   "len": 53274,
+   "hits": [
+    "Expense Ratio",
+    "Net Assets",
+    "NAV",
+    "PE Ratio",
+    "Yield",
+    "Beta",
+    "YTD",
+    "Inception",
+    "Avg. Volume"
+   ],
+   "snippet": "Previous Close 170.20\n*   Open 171.44\n*   Bid--\n*   Ask--\n*   Day's Range 168.54 - 171.94\n*   52 Week Range 122.79 - 195.80\n*   Volume 549,039\n*   Avg. Volume 525,456\n*   Net Assets 14.46B\n*   NAV 170.23\n*   PE Ratio (TTM)13.96\n*   Yield 2.09%\n*   YTD Daily Total Return 37.68%\n*   Beta (5Y Monthly)-0.20\n*   Expense Ratio (net)0.09%\n\n## Vanguard Energy Index Fund ETF Shares Overview Vanguard / Equity Energy\n\nThe fund employs an indexing investment approach designed to track the performance of the index, an index made up of stocks of large, mid-size, and small U.S. companies within the energy sector, as classified under the GICS. The Advisor attempts to replicate the target index by seeking to invest all, or substantially all, of its assets in the stocks that make up the index, in order to hold each stock in approximately the same proportion as its weighting in the index. The fund is non-diversified.\n\nVanguard\n\n### Fund Family\n\nEquity Energy\n\n### Fund Category\n\n14.46B\n\n### Net Assets\n\n2004-09-23\n\n### Inception Date\n\n[More about Vanguard Energy Index Fund ETF Shares](https://finance.yahoo.com/quote/VDE/profile/)\n\n### Performance Overview\n\n[View More](https://finance.yahoo.com/quote/VDE/performance/ \"View More\")\nTrailing returns as of 11/18/2026. Category is Equity Energy.\n\n### YTD Return\n\nVDE\n\n37.68%\n\nCategory\n\n33.40%\n\n[](https://finance.yahoo.com/quote/VDE/performance/ \"YTD Return\")\n\n### 1-Yea"
+  },
+  "jina_holdings": {
+   "status": 200,
+   "len": 316,
+   "hits": [],
+   "snippet": ""
+  },
+  "jina_perf": {
+   "status": 200,
+   "len": 27631,
+   "snippet": "Trailing Returns (%) Vs. Benchmarks\n\nMonthly Total Returns\n\nVDE\n\nCategory\n\nYTD 58.15%33.40%\n\n1-Month 13.56%2.32%\n\n3-Month 17.09%18.69%\n\n1-Year 61.24%64.81%\n\n3-Year 21.28%17.73%\n\n5-Year 23.29%20.41%\n\n10-Year 11.38%6.80%\n\nLast Bull Market 0.00%0.00%\n\nLast Bear Market 0.00%0.00%\n\n### Annual Total Return (%) History\n\nYear\n\nVDE\n\nCategory\n\n2025 7.07%11.96%\n\n2024 6.75%1.17%\n\n2023 0.00%1.61%\n\n2022 62.86%45.02%\n\n2021 56.21%44.81%\n\n2020-33.06%-24.54%\n\n2019 9.27%7.25%\n\n2018-19.96%-27.27%\n\n### Show More\n\n2017-2.50%-4.84%\n\n2016 29.19%29.22%\n\n2015-23.23%-27.39%\n\n2014-9.94%-16.65%\n\n2013 25.83%22.85%\n\n2012 3.38%1.21%\n\n2011 2.79%-7.54%\n\n2010 21.06%17.14%\n\n2009 25.53%44.36%\n\n2008-39.54%-51.12%\n\n2007 34.66%42.09%\n\n2006 19.03%12.05%\n\n2005 39.05%46.33%\n\n### ETF Summary\n\nThe fund employs an indexing investment approach designed to track the performance of the index, an index made up of stocks of large, mid-size, and small U.S. companies within the energy sector, as classified under the GICS. The Advisor attempts to replicate the target index by seeking to invest all, or substantially all, of its assets in the stocks that make up the index, in order to hold each stock in approximately the same proportion as its weighting in the index. The fund is non-diversified.\n\n### ETF Overview\n\nCategory Equity Energy\nFund Family Vanguard\nNet Assets 14.46B\nYTD Daily Total Return 37.68%\nYield 2.09%\nLegal Type Exchange Traded Fund\n\n### Related Tickers\n\n[](https://finance.yahoo.com/)\n\nCopyright © 2026 Yahoo. All rights reserved.\n\n"
+  },
+  "nasdaq_info": {
+   "status": 200,
+   "len": 894,
+   "head": "{\"data\":{\"symbol\":\"VDE\",\"companyName\":\"Vanguard Energy ETF\",\"stockType\":null,\"exchange\":\"PSE\",\"isNasdaqListed\":false,\"isNasdaq100\":false,\"isHeld\":false,\"primaryData\":{\"lastSalePrice\":\"$170.99\",\"netChange\":\"+2.10\",\"percentageChange\":\"+1.24%\",\"deltaIndicator\":\"up\",\"lastTradeTimestamp\":\"Nov 20, 2026 4:01 AM ET\",\"isRealTime\":true,\"bidPrice\":\"$160.00\",\"askPrice\":\"$175.72\",\"bidSize\":\"10\",\"askSize\":\"4\",\""
+  },
+  "nasdaq_summary": {
+   "status": 200,
+   "len": 1171,
+   "head": "{\"data\":{\"symbol\":\"VDE\",\"summaryData\":{\"TodayHighLow\":{\"label\":\"Today's High/Low\",\"value\":\"N/A\"},\"ShareVolume\":{\"label\":\"Share Volume\",\"value\":\"17.295167\"},\"FiftyDayAvgDailyVol\":{\"label\":\"50 Day Avg. Daily Volume\",\"value\":\"712,795\"},\"PreviousClose\":{\"label\":\"Previous Close\",\"value\":\"$168.89\"},\"FiftTwoWeekHighLow\":{\"label\":\"52 Week High/Low\",\"value\":\"$195.8/$122.785\"},\"MarketCap\":{\"label\":\"Market C"
+  },
+  "nasdaq_holdings": {
+   "status": 404,
+   "len": 0,
+   "head": ""
+  }
+ },
+ "MEUD.PA": {
+  "chart": {
+   "status": 200,
+   "instrumentType": "ETF",
+   "currency": "EUR",
+   "name": "Amundi Core Stoxx Europe 600 UCITS ETF Acc",
+   "exch": "Paris",
+   "n": 145
+  },
+  "qs_nocrumb": {
+   "status": 401,
+   "ms": 154,
+   "len": 89,
+   "head": "{\"finance\":{\"result\":null,\"error\":{\"code\":\"Unauthorized\",\"description\":\"Invalid Crumb\"}}}"
+  },
+  "qs_crumb": {
+   "status": 200,
+   "len": 12089,
+   "modules": [
+    "assetProfile",
+    "fundProfile",
+    "summaryDetail",
+    "price",
+    "defaultKeyStatistics",
+    "topHoldings",
+    "fundPerformance"
+   ],
+   "sample": {
+    "fundProfile": {
+     "maxAge": 1,
+     "styleBoxUrl": "https://s.yimg.com/lq/i/fi/3_0stylelargeeq2.gif",
+     "family": "Amundi Luxembourg S.A.",
+     "categoryName": null,
+     "legalType": "Exchange Traded Fund",
+     "managementInfo": {
+      "managerName": null,
+      "managerBio": null,
+      "startdate": {}
+     },
+     "feesExpensesInvestment": {
+      "annualReportExpenseRatio": {
+       "raw": 0.0007,
+       "fmt": "0.07%"
+      },
+      "frontEndSalesLoad": {},
+      "deferredSalesLoad": {},
+      "twelveBOne": {},
+      "netExpRatio": {},
+      "grossExpRatio": {},
+      "annualHoldingsTurnover": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "totalNetAssets": {
+       "raw": 63623.67,
+       "fmt": "63,623.67"
+      },
+      "projectionValues": {}
+     },
+     "feesExpensesInvestmentCat": {
+      "annualReportExpenseRatio": {},
+      "frontEndSalesLoad": {},
+      "deferredSalesLoad": {},
+      "twelveBOne": {},
+      "annualHoldingsTurnover": {},
+      "totalNetAssets": {
+       "raw": 63623.67,
+       "fmt": "63,623.67"
+      },
+      "projectionValuesCat": {}
+     },
+     "initInvestment": {},
+     "initIraInvestment": {},
+     "initAipInvestment": {},
+     "subseqInvestment": {},
+     "subseqIraInvestment": {},
+     "subseqAipInvestment": {},
+     "brokerages": []
+    },
+    "topHoldings": {
+     "n": 10,
+     "top": [
+      {
+       "symbol": "ASML.AS",
+       "holdingName": "ASML Holding NV",
+       "holdingPercent": {
+        "raw": 0.0433308,
+        "fmt": "4.33%"
+       }
+      },
+      {
+       "symbol": "ROP.SW",
+       "holdingName": "Roche Holding AG Ordinary Shares new",
+       "holdingPercent": {
+        "raw": 0.022682,
+        "fmt": "2.27%"
+       }
+      },
+      {
+       "symbol": "NOVN.SW",
+       "holdingName": "Novartis AG Registered Shares",
+       "holdingPercent": {
+        "raw": 0.020158501,
+        "fmt": "2.02%"
+       }
+      }
+     ],
+     "equityHoldings": {
+      "priceToEarnings": {
+       "raw": 0.05716,
+       "fmt": "0.06"
+      },
+      "priceToBook": {
+       "raw": 0.43193,
+       "fmt": "0.43"
+      },
+      "priceToSales": {
+       "raw": 0.61414,
+       "fmt": "0.61"
+      },
+      "priceToCashflow": {
+       "raw": 0.09716,
+       "fmt": "0.1"
+      },
+      "medianMarketCap": {},
+      "threeYearEarningsGrowth": {},
+      "priceToEarningsCat": {},
+      "priceToBookCat": {},
+      "priceToSalesCat": {},
+      "priceToCashflowCat": {},
+      "medianMarketCapCat": {},
+      "threeYearEarningsGrowthCat": {}
+     },
+     "sectorWeightings": 11
+    },
+    "summaryDetail": {
+     "dividendYield": {},
+     "fiveYearAvgDividendYield": {},
+     "beta": {},
+     "trailingPE": {
+      "raw": 17.001057,
+      "fmt": "17.00"
+     },
+     "averageVolume": {
+      "raw": 37394,
+      "fmt": "37.39k",
+      "longFmt": "37,394"
+     },
+     "averageVolume10days": {
+      "raw": 28279,
+      "fmt": "28.28k",
+      "longFmt": "28,279"
+     },
+     "yield": {
+      "raw": 0,
+      "fmt": "0.00%"
+     },
+     "ytdReturn": {},
+     "totalAssets": {},
+     "trailingAnnualDividendYield": {
+      "raw": 0,
+      "fmt": "0.00%"
+     },
+     "navPrice": {
+      "raw": 317.6559,
+      "fmt": "317.66"
+     }
+    },
+    "defaultKeyStatistics": {
+     "category": null,
+     "annualReportExpenseRatio": {},
+     "ytdReturn": {
+      "raw": 0.117308594,
+      "fmt": "11.73%"
+     },
+     "beta3Year": {
+      "raw": 1,
+      "fmt": "1.00"
+     },
+     "totalAssets": {},
+     "yield": {
+      "raw": 0,
+      "fmt": "0.00%"
+     },
+     "fundFamily": "Amundi Luxembourg S.A.",
+     "fundInceptionDate": {
+      "raw": 1787011200,
+      "fmt": "2026-08-18"
+     },
+     "legalType": "Exchange Traded Fund",
+     "threeYearAverageReturn": {},
+     "fiveYearAverageReturn": {}
+    },
+    "fundPerformance": {
+     "trailing": {
+      "asOfDate": {
+       "raw": 1794960000,
+       "fmt": "2026-11-18"
+      },
+      "ytd": {
+       "raw": 0.1195923,
+       "fmt": "11.96%"
+      },
+      "oneMonth": {
+       "raw": 0.019698,
+       "fmt": "1.97%"
+      },
+      "threeMonth": {
+       "raw": -0.000053,
+       "fmt": "-0.01%"
+      },
+      "oneYear": {
+       "raw": 0.1621279,
+       "fmt": "16.21%"
+      },
+      "threeYear": {
+       "raw": 0.175661,
+       "fmt": "17.57%"
+      },
+      "fiveYear": {
+       "raw": 0.0939928,
+       "fmt": "9.40%"
+      },
+      "tenYear": {
+       "raw": 0.097132996,
+       "fmt": "9.71%"
+      },
+      "lastBullMkt": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "lastBearMkt": {
+       "raw": 0,
+       "fmt": "0.00%"
+      }
+     },
+     "risk": [
+      {
+       "year": "5y",
+       "alpha": {
+        "raw": -0.12,
+        "fmt": "-0.12"
+       },
+       "beta": {
+        "raw": 1.01,
+        "fmt": "1.01"
+       },
+       "meanAnnualReturn": {
+        "raw": 0.82,
+        "fmt": "0.82"
+       },
+       "rSquared": {
+        "raw": 99.79,
+        "fmt": "99.79"
+       },
+       "stdDev": {
+        "raw": 12.58,
+        "fmt": "12.58"
+       },
+       "sharpeRatio": {
+        "raw": 0.62,
+        "fmt": "0.62"
+       },
+       "treynorRatio": {
+        "raw": 7.22,
+        "fmt": "7.22"
+       }
+      },
+      {
+       "year": "3y",
+       "alpha": {
+        "raw": 0.33,
+        "fmt": "0.33"
+       },
+       "beta": {
+        "raw": 1,
+        "fmt": "1"
+       },
+       "meanAnnualReturn": {
+        "raw": 1.4,
+        "fmt": "1.4"
+       },
+       "rSquared": {
+        "raw": 99.64,
+        "fmt": "99.64"
+       },
+       "stdDev": {
+        "raw": 10.08,
+        "fmt": "10.08"
+       },
+       "sharpeRatio": {
+        "raw": 1.4,
+        "fmt": "1.4"
+       },
+       "treynorRatio": {
+        "raw": 14.86,
+        "fmt": "14.86"
+       }
+      },
+      {
+       "year": "10y",
+       "alpha": {
+        "raw": 0.16,
+        "fmt": "0.16"
+       },
+       "beta": {
+        "raw": 1.01,
+        "fmt": "1.01"
+       },
+       "meanAnnualReturn": {
+        "raw": 0.85,
+        "fmt": "0.85"
+       },
+       "rSquared": {
+        "raw": 99.84,
+        "fmt": "99.84"
+       },
+       "stdDev": {
+        "raw": 13.38,
+        "fmt": "13.38"
+       },
+       "sharpeRatio": {
+        "raw": 0.7,
+        "fmt": "0.7"
+       },
+       "treynorRatio": {
+        "raw": 8.87,
+        "fmt": "8.87"
+       }
+      }
+     ]
+    }
+   }
+  },
+  "qs_via_allorigins": {
+   "status": 500,
+   "head": "<html>\r\n<head><title>500 Internal Server Error</title></head>\r\n<body>\r\n<center><h1>500 Internal Server Error</h1></center>\r\n<hr><center>nginx/1.22.1</center>\r\n<"
+  },
+  "qs_via_codetabs": {
+   "status": 522,
+   "head": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endi"
+  },
+  "qs_via_corsproxy": {
+   "status": 401,
+   "head": "{\"error\":\"A valid API key is required. Get one at https://console.corsproxy.io/\"}"
+  },
+  "jina_quote": {
+   "status": 200,
+   "len": 47198,
+   "hits": [
+    "Expense Ratio",
+    "Net Assets",
+    "NAV",
+    "PE Ratio",
+    "Yield",
+    "Beta",
+    "YTD",
+    "Inception",
+    "Avg. Volume"
+   ],
+   "snippet": "Previous Close 315.50\n*   Open 313.05\n*   Bid--\n*   Ask--\n*   Day's Range 312.20 - 313.05\n*   52 Week Range 267.86 - 329.40\n*   Volume 1,627\n*   Avg. Volume 37,394\n*   Net Assets--\n*   NAV 317.66\n*   PE Ratio (TTM)17.03\n*   Yield 0.00%\n*   YTD Daily Total Return 11.73%\n*   Beta (5Y Monthly)1.00\n*   Expense Ratio (net)0.07%\n\n## Amundi Core Stoxx Europe 600 UCITS ETF Acc Overview Amundi Luxembourg S.A.\n\nAmundi Luxembourg S.A.\n\n### Fund Family\n\n--\n\n### Fund Category\n\n--\n\n### Net Assets\n\n2026-08-18\n\n### Inception Date\n\n[More about Amundi Core Stoxx Europe 600 UCITS ETF Acc](https://finance.yahoo.com/quote/MEUD.PA/profile/)\n\n### Performance Overview\n\n[View More](https://finance.yahoo.com/quote/MEUD.PA/performance/ \"View More\")\nTrailing returns as of 11/18/2026.\n\n### YTD Return\n\nMEUD.PA\n\n11.73%\n\nCategory\n\n--\n\n[](https://finance.yahoo.com/quote/MEUD.PA/performance/ \"YTD Return\")\n\n### 1-Year Return\n\nMEUD.PA\n\n17.88%\n\nCategory\n\n--\n\n[](https://finance.yahoo.com/quote/MEUD.PA/performance/ \"1-Year Return\")\n\n### 3-Year Return\n\nMEUD.PA\n\n0.00%\n\nCategory\n\n--\n\n[](https://finance.yahoo.com/quote/MEUD.PA/performance/ \"3-Year Return\")\n\n[View More](https://finance.yahoo.com/quote/MEUD.PA/performance/ \"View More\")\n\n### People Also Watch\n\nCSSPX.MI iShares Core S&P 500 UCITS ETF USD (Acc)\n\n**704.05**-2.07%\n\n[](https://finance.yahoo.com/quote/CSSPX.MI/ \"CSSPX.MI\")\n\nEMIM.AS iShares Core MSCI EM IMI UCITS ETF USD (Acc)"
+  },
+  "jina_holdings": {
+   "status": 200,
+   "len": 36394,
+   "hits": [
+    "Top 10 Holdings",
+    "Sector Weightings",
+    "Price/Earnings",
+    "Price/Book",
+    "Overall Portfolio Composition",
+    "Bond Ratings"
+   ],
+   "snippet": "Overall Portfolio Composition (%)\n\nStocks 99.76%\nBonds 0.00%\n\n### Equity Holdings\n\nPrice/Earnings 0.06\nPrice/Book 0.43\nPrice/Sales 0.61\nPrice/Cashflow 0.1\nMedian Market Cap--\n3 Year Earnings Growth--\n\n### Bond Ratings\n\nUS Government 0.00%\nAAA--\nAA--\nA--\nBBB--\nBB--\nB--\nBelow B--\nOther--\n\n### ETF Summary\n\nETF Summary Information Not Available\n\n### ETF Overview\n\nCategory--\nFund Family Amundi Luxembourg S.A.\nNet Assets--\nYTD Daily Total Return 11.73%\nYield 0.00%\nLegal Type Exchange Traded Fund\n\n### Related Tickers\n\n[](https://finance.yahoo.com/)\n\nCopyright © 2026 Yahoo. All rights reserved.\n\n[](https://twitter.com/YahooFinance \"Follow on Twitter\")[](https://facebook.com/yahoofinance \"Follow on Facebook\")[](https://www.linkedin.com/company/yahoo-finance \"Follow on LinkedIn\")\n\nTrending Topics\n\n[Dow Jones](https://finance.yahoo.com/quote/%5EDJI/)[S&P 500](https://finance.yahoo.com/quote/SPY/)[DAX Index](https://finance.yahoo.com/quote/%5EGDAXI/)[Nvidia](https://finance.yahoo.com/quote/NVDA/)[Tesla](https://finance.yahoo.com/quote/TSLA/)[DJT](https://finance.yahoo.com/quote/DJT/)[Tariffs](https://finance.yahoo.com/topic/tariffs/)\n\nExplore Further\n\n[Mortgages](https://finance.yahoo.com/personal-finance/mortgages/)[Credit Cards](https://finance.yahoo.com/personal-finance/credit-cards/)[Sectors](https://finance.yahoo.com/sectors/)[Crypto Heatmap](https://finance.yahoo.com/crypto/heatmap/)[Financial News](https://finance.yahoo.com/news/)\n\nAbout\n\n[Data Disclaimer](https://help.yahoo.com/kb/finance-for-web/SLN2310.html?locale=en_US)[Help](https://help.yahoo.com/kb/finance-for-web)[Feedback](https://yahoo.uservoice.com/forums/952723-finance-b3)[Sitemap](https://finance.yahoo.com/sitemap/)[Licensing](https://info.wrightsmedia.com/yahoo-finance-licensing)[What's New](https://finance.yahoo.com/about/whatsnew/)[About Our Ads](https://policies.oath.com/us/en/oath/privacy/adinfo/index.html)[Premium Plans](https://finance.yahoo.com/about/plans/)\n\n[Terms](https://guce.yahoo.com/terms?locale=en-US) and [Privacy Policy](https://guce.yahoo.com/privacy-policy?locale=en-US)\n\n[Your Privacy Choices ![Image 2](https://s.yimg.com/dv/static/siteApp/img/privacy-choice-control.png)](https://guce.yahoo.com/state-controls?loca"
+  },
+  "jina_perf": {
+   "status": 200,
+   "len": 34894,
+   "snippet": "Trailing Returns (%) Vs. Benchmarks\n\nMonthly Total Returns\n\nMEUD.PA\n\nCategory\n\nYTD 11.96%0.00%\n\n1-Month 1.97%0.00%\n\n3-Month-0.01%0.00%\n\n1-Year 16.21%0.00%\n\n3-Year 17.57%0.00%\n\n5-Year 9.40%0.00%\n\n10-Year 9.71%0.00%\n\nLast Bull Market 0.00%0.00%\n\nLast Bear Market 0.00%0.00%\n\n### Annual Total Return (%) History\n\nYear\n\nMEUD.PA\n\nCategory\n\n2025 19.54%--\n\n2023 15.76%--\n\n2022-10.22%--\n\n2021 25.55%--\n\n2020-1.79%--\n\n2019 26.17%--\n\n2018-9.75%--\n\n2017 10.64%--\n\n### Show More\n\n2016 1.22%--\n\n2015 10.71%--\n\n2014 8.66%--\n\n### ETF Summary\n\nETF Summary Information Not Available\n\n### ETF Overview\n\nCategory--\nFund Family Amundi Luxembourg S.A.\nNet Assets--\nYTD Daily Total Return 11.73%\nYield 0.00%\nLegal Type Exchange Traded Fund\n\n### Related Tickers\n\n[](https://finance.yahoo.com/)\n\nCopyright © 2026 Yahoo. All rights reserved.\n\n[](https://twitter.com/YahooFinance \"Follow on Twitter\")[](https://facebook.com/yahoofinance \"Follow on Facebook\")[](https://www.linkedin.com/company/yahoo-finance \"Follow on LinkedIn\")\n\nTrending Topics\n\n[Dow Jones](https://finance.yahoo.com/quote/%5EDJI/)[S&P 500](https://finance.yahoo.com/quote/SPY/)[DAX Index](https://finance.yahoo.com/quote/%5EGDAXI/)[Nvidia](https://finance.yahoo.com/quote/NVDA/)[Tesla](https://finance.yahoo.com/quote/TSLA/)[DJT](https://finance.yahoo.com/quote/DJT/)[Tariffs](https://finance.yahoo.com/topic/tariffs/)\n\nExplore Further\n\n[Mortgages](https://finance.yahoo.com/personal-finance/mortgages/)[Credit Cards](https://finance.yahoo.com/personal-finance/credit-card"
+  }
+ },
+ "EXV4.DE": {
+  "chart": {
+   "status": 200,
+   "instrumentType": "ETF",
+   "currency": "EUR",
+   "name": "iShares STOXX Europe 600 Health Care UCITS ETF (DE)",
+   "exch": "XETRA",
+   "n": 262
+  },
+  "qs_nocrumb": {
+   "status": 401,
+   "ms": 84,
+   "len": 89,
+   "head": "{\"finance\":{\"result\":null,\"error\":{\"code\":\"Unauthorized\",\"description\":\"Invalid Crumb\"}}}"
+  },
+  "qs_crumb": {
+   "status": 200,
+   "len": 12728,
+   "modules": [
+    "assetProfile",
+    "fundProfile",
+    "summaryDetail",
+    "price",
+    "defaultKeyStatistics",
+    "topHoldings",
+    "fundPerformance"
+   ],
+   "sample": {
+    "fundProfile": {
+     "maxAge": 1,
+     "styleBoxUrl": "https://s.yimg.com/lq/i/fi/3_0stylelargeeq2.gif",
+     "family": "BlackRock Asset Management Deutschland AG - ETF",
+     "categoryName": null,
+     "legalType": "Exchange Traded Fund",
+     "managementInfo": {
+      "managerName": null,
+      "managerBio": null,
+      "startdate": {}
+     },
+     "feesExpensesInvestment": {
+      "annualReportExpenseRatio": {
+       "raw": 0.0046,
+       "fmt": "0.46%"
+      },
+      "frontEndSalesLoad": {},
+      "deferredSalesLoad": {},
+      "twelveBOne": {},
+      "netExpRatio": {},
+      "grossExpRatio": {},
+      "annualHoldingsTurnover": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "totalNetAssets": {
+       "raw": 96833.03,
+       "fmt": "96,833.03"
+      },
+      "projectionValues": {}
+     },
+     "feesExpensesInvestmentCat": {
+      "annualReportExpenseRatio": {},
+      "frontEndSalesLoad": {},
+      "deferredSalesLoad": {},
+      "twelveBOne": {},
+      "annualHoldingsTurnover": {},
+      "totalNetAssets": {
+       "raw": 96833.03,
+       "fmt": "96,833.03"
+      },
+      "projectionValuesCat": {}
+     },
+     "initInvestment": {},
+     "initIraInvestment": {},
+     "initAipInvestment": {},
+     "subseqInvestment": {},
+     "subseqIraInvestment": {},
+     "subseqAipInvestment": {},
+     "brokerages": []
+    },
+    "topHoldings": {
+     "n": 10,
+     "top": [
+      {
+       "symbol": "ROP.SW",
+       "holdingName": "Roche Holding AG Ordinary Shares new",
+       "holdingPercent": {
+        "raw": 0.16800399,
+        "fmt": "16.80%"
+       }
+      },
+      {
+       "symbol": "NOVN.SW",
+       "holdingName": "Novartis AG Registered Shares",
+       "holdingPercent": {
+        "raw": 0.1503412,
+        "fmt": "15.03%"
+       }
+      },
+      {
+       "symbol": "AZN.L",
+       "holdingName": "AstraZeneca PLC",
+       "holdingPercent": {
+        "raw": 0.14151591,
+        "fmt": "14.15%"
+       }
+      }
+     ],
+     "equityHoldings": {
+      "priceToEarnings": {
+       "raw": 0.04587,
+       "fmt": "0.05"
+      },
+      "priceToBook": {
+       "raw": 0.27957,
+       "fmt": "0.28"
+      },
+      "priceToSales": {
+       "raw": 0.31312,
+       "fmt": "0.31"
+      },
+      "priceToCashflow": {
+       "raw": 0.07281,
+       "fmt": "0.07"
+      },
+      "medianMarketCap": {},
+      "threeYearEarningsGrowth": {},
+      "priceToEarningsCat": {},
+      "priceToBookCat": {},
+      "priceToSalesCat": {},
+      "priceToCashflowCat": {},
+      "medianMarketCapCat": {},
+      "threeYearEarningsGrowthCat": {}
+     },
+     "sectorWeightings": 11
+    },
+    "summaryDetail": {
+     "dividendYield": {},
+     "fiveYearAvgDividendYield": {},
+     "beta": {},
+     "trailingPE": {
+      "raw": 21.573103,
+      "fmt": "21.57"
+     },
+     "averageVolume": {
+      "raw": 9424,
+      "fmt": "9.42k",
+      "longFmt": "9,424"
+     },
+     "averageVolume10days": {
+      "raw": 20231,
+      "fmt": "20.23k",
+      "longFmt": "20,231"
+     },
+     "yield": {
+      "raw": 0.0148,
+      "fmt": "1.48%"
+     },
+     "ytdReturn": {},
+     "totalAssets": {
+      "raw": 728892736,
+      "fmt": "728.89M",
+      "longFmt": "728,892,736"
+     },
+     "trailingAnnualDividendYield": {},
+     "navPrice": {
+      "raw": 125.2019,
+      "fmt": "125.20"
+     }
+    },
+    "defaultKeyStatistics": {
+     "category": null,
+     "annualReportExpenseRatio": {},
+     "ytdReturn": {
+      "raw": 0.1149787,
+      "fmt": "11.50%"
+     },
+     "beta3Year": {
+      "raw": 1.04,
+      "fmt": "1.04"
+     },
+     "totalAssets": {
+      "raw": 728892736,
+      "fmt": "728.89M",
+      "longFmt": "728,892,736"
+     },
+     "yield": {
+      "raw": 0.0148,
+      "fmt": "1.48%"
+     },
+     "fundFamily": "BlackRock Asset Management Deutschland AG - ETF",
+     "fundInceptionDate": {
+      "raw": 988156800,
+      "fmt": "2001-04-25"
+     },
+     "legalType": "Exchange Traded Fund",
+     "threeYearAverageReturn": {
+      "raw": 0.0859858,
+      "fmt": "8.60%"
+     },
+     "fiveYearAverageReturn": {
+      "raw": 0.050454702,
+      "fmt": "5.05%"
+     }
+    },
+    "fundPerformance": {
+     "trailing": {
+      "asOfDate": {
+       "raw": 1794960000,
+       "fmt": "2026-11-18"
+      },
+      "ytd": {
+       "raw": 0.114545,
+       "fmt": "11.45%"
+      },
+      "oneMonth": {
+       "raw": 0.140378,
+       "fmt": "14.04%"
+      },
+      "threeMonth": {
+       "raw": 0.0954671,
+       "fmt": "9.55%"
+      },
+      "oneYear": {
+       "raw": 0.1830733,
+       "fmt": "18.31%"
+      },
+      "threeYear": {
+       "raw": 0.0927279,
+       "fmt": "9.27%"
+      },
+      "fiveYear": {
+       "raw": 0.0531986,
+       "fmt": "5.32%"
+      },
+      "tenYear": {
+       "raw": 0.0820492,
+       "fmt": "8.20%"
+      },
+      "lastBullMkt": {
+       "raw": 0,
+       "fmt": "0.00%"
+      },
+      "lastBearMkt": {
+       "raw": 0,
+       "fmt": "0.00%"
+      }
+     },
+     "risk": [
+      {
+       "year": "5y",
+       "alpha": {
+        "raw": -0.37,
+        "fmt": "-0.37"
+       },
+       "beta": {
+        "raw": 1.05,
+        "fmt": "1.05"
+       },
+       "meanAnnualReturn": {
+        "raw": 0.49,
+        "fmt": "0.49"
+       },
+       "rSquared": {
+        "raw": 80.19,
+        "fmt": "80.19"
+       },
+       "stdDev": {
+        "raw": 16.53,
+        "fmt": "16.53"
+       },
+       "sharpeRatio": {
+        "raw": 0.11,
+        "fmt": "0.11"
+       },
+       "treynorRatio": {
+        "raw": 0.47,
+        "fmt": "0.47"
+       }
+      },
+      {
+       "year": "3y",
+       "alpha": {
+        "raw": -2.48,
+        "fmt": "-2.48"
+       },
+       "beta": {
+        "raw": 1.04,
+        "fmt": "1.04"
+       },
+       "meanAnnualReturn": {
+        "raw": 1,
+        "fmt": "1"
+       },
+       "rSquared": {
+        "raw": 74.16,
+        "fmt": "74.16"
+       },
+       "stdDev": {
+        "raw": 15.75,
+        "fmt": "15.75"
+       },
+       "sharpeRatio": {
+        "raw": 0.47,
+        "fmt": "0.47"
+       },
+       "treynorRatio": {
+        "raw": 6.45,
+        "fmt": "6.45"
+       }
+      },
+      {
+       "year": "10y",
+       "alpha": {
+        "raw": -0.89,
+        "fmt": "-0.89"
+       },
+       "beta": {
+        "raw": 0.96,
+        "fmt": "0.96"
+       },
+       "meanAnnualReturn": {
+        "raw": 0.77,
+        "fmt": "0.77"
+       },
+       "rSquared": {
+        "raw": 77.66,
+        "fmt": "77.66"
+       },
+       "stdDev": {
+        "raw": 14.8,
+        "fmt": "14.8"
+       },
+       "sharpeRatio": {
+        "raw": 0.45,
+        "fmt": "0.45"
+       },
+       "treynorRatio": {
+        "raw": 6.05,
+        "fmt": "6.05"
+       }
+      }
+     ]
+    }
+   }
+  },
+  "qs_via_allorigins": {
+   "status": 522,
+   "head": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endi"
+  },
+  "qs_via_codetabs": {
+   "status": 522,
+   "head": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endi"
+  },
+  "qs_via_corsproxy": {
+   "status": 401,
+   "head": "{\"error\":\"A valid API key is required. Get one at https://console.corsproxy.io/\"}"
+  },
+  "jina_quote": {
+   "status": 200,
+   "len": 32960,
+   "hits": [
+    "Beta",
+    "YTD"
+   ],
+   "snippet": ""
+  },
+  "jina_holdings": {
+   "status": 200,
+   "len": 36474,
+   "hits": [
+    "Top 10 Holdings",
+    "Sector Weightings",
+    "Price/Earnings",
+    "Price/Book",
+    "Overall Portfolio Composition",
+    "Bond Ratings"
+   ],
+   "snippet": "Overall Portfolio Composition (%)\n\nStocks 99.60%\nBonds 0.00%\n\n### Equity Holdings\n\nPrice/Earnings 0.05\nPrice/Book 0.28\nPrice/Sales 0.31\nPrice/Cashflow 0.07\nMedian Market Cap--\n3 Year Earnings Growth--\n\n### Bond Ratings\n\nUS Government 0.00%\nAAA--\nAA--\nA--\nBBB--\nBB--\nB--\nBelow B--\nOther--\n\n### ETF Summary\n\nETF Summary Information Not Available\n\n### ETF Overview\n\nCategory--\nFund Family BlackRock Asset Management Deutschland AG - ETF\nNet Assets 728.89M\nYTD Daily Total Return 11.50%\nYield 1.48%\nLegal Type Exchange Traded Fund\n\n### Related Tickers\n\n[](https://finance.yahoo.com/)\n\nCopyright © 2026 Yahoo. All rights reserved.\n\n[](https://twitter.com/YahooFinance \"Follow on Twitter\")[](https://facebook.com/yahoofinance \"Follow on Facebook\")[](https://www.linkedin.com/company/yahoo-finance \"Follow on LinkedIn\")\n\nTrending Topics\n\n[Dow Jones](https://finance.yahoo.com/quote/%5EDJI/)[S&P 500](https://finance.yahoo.com/quote/SPY/)[DAX Index](https://finance.yahoo.com/quote/%5EGDAXI/)[Nvidia](https://finance.yahoo.com/quote/NVDA/)[Tesla](https://finance.yahoo.com/quote/TSLA/)[DJT](https://finance.yahoo.com/quote/DJT/)[Tariffs](https://finance.yahoo.com/topic/tariffs/)\n\nExplore Further\n\n[Mortgages](https://finance.yahoo.com/personal-finance/mortgages/)[Credit Cards](https://finance.yahoo.com/personal-finance/credit-cards/)[Sectors](https://finance.yahoo.com/sectors/)[Crypto Heatmap](https://finance.yahoo.com/crypto/heatmap/)[Financial News](https://finance.yahoo.com/news/)\n\nAbout\n\n[Data Disclaimer](https://help.yahoo.com/kb/finance-for-web/SLN2310.html?locale=en_US)[Help](https://help.yahoo.com/kb/finance-for-web)[Feedback](https://yahoo.uservoice.com/forums/952723-finance-b3)[Sitemap](https://finance.yahoo.com/sitemap/)[Licensing](https://info.wrightsmedia.com/yahoo-finance-licensing)[What's New](https://finance.yahoo.com/about/whatsnew/)[About Our Ads](https://policies.oath.com/us/en/oath/privacy/adinfo/index.html)[Premium Plans](https://finance.yahoo.com/about/plans/)\n\n[Terms](https://guce.yahoo.com/terms?locale=en-US) and [Privacy Policy](https://guce.yahoo.com/privacy-policy?locale=en-US)\n\n[Your Privacy Choices ![Image 2](https://s.yimg.com/dv/static/siteApp/img/privacy-choice-control.png)](https://gu"
+  },
+  "jina_perf": {
+   "status": 200,
+   "len": 35052,
+   "snippet": "Trailing Returns (%) Vs. Benchmarks\n\nMonthly Total Returns\n\nEXV4.DE\n\nCategory\n\nYTD 11.45%0.00%\n\n1-Month 14.04%0.00%\n\n3-Month 9.55%0.00%\n\n1-Year 18.31%0.00%\n\n3-Year 9.27%0.00%\n\n5-Year 5.32%0.00%\n\n10-Year 8.20%0.00%\n\nLast Bull Market 0.00%0.00%\n\nLast Bear Market 0.00%0.00%\n\n### Annual Total Return (%) History\n\nYear\n\nEXV4.DE\n\nCategory\n\n2025 7.24%--\n\n2024 3.85%--\n\n2023 7.52%--\n\n2022-6.30%--\n\n2021 25.36%--\n\n2020-2.49%--\n\n2019 32.63%--\n\n2018-1.01%--\n\n### Show More\n\n2017 4.34%--\n\n2016-9.21%--\n\n2015 18.07%--\n\n2014 21.54%--\n\n2013 22.56%--\n\n2012 15.15%--\n\n2011 13.47%--\n\n2010 9.69%--\n\n2009 15.86%--\n\n2008-15.47%--\n\n### ETF Summary\n\nETF Summary Information Not Available\n\n### ETF Overview\n\nCategory--\nFund Family BlackRock Asset Management Deutschland AG - ETF\nNet Assets 728.89M\nYTD Daily Total Return 11.50%\nYield 1.48%\nLegal Type Exchange Traded Fund\n\n### Related Tickers\n\n[](https://finance.yahoo.com/)\n\nCopyright © 2026 Yahoo. All rights reserved.\n\n[](https://twitter.com/YahooFinance \"Follow on Twitter\")[](https://facebook.com/yahoofinance \"Follow on Facebook\")[](https://www.linkedin.com/company/yahoo-finance \"Follow on LinkedIn\")\n\nTrending Topics\n\n[Dow Jones](https://finance.yahoo.com/quote/%5EDJI/)[S&P 500](https://finance.yahoo.com/quote/SPY/)[DAX Index](https://finance.yahoo.com/quote/%5EGDAXI/)[Nvidia](https://finance.yahoo.com/quote/NVDA/)[Tesla](https://finance.yahoo.com/quote/TSLA/)[DJT](https://finance.yahoo.com/quote/DJT/)[Tariffs](https://finance.yahoo.com/topic/tariffs/)\n\nExplore Further\n\n[Mor"
+  }
+ },
+ "^GSPC": {
+  "chart": {
+   "status": 200,
+   "instrumentType": "INDEX",
+   "currency": "USD",
+   "name": "S&P 500",
+   "exch": "SNP",
+   "n": 263
+  },
+  "qs_nocrumb": {
+   "status": 401,
+   "ms": 126,
+   "len": 89,
+   "head": "{\"finance\":{\"result\":null,\"error\":{\"code\":\"Unauthorized\",\"description\":\"Invalid Crumb\"}}}"
+  },
+  "qs_crumb": {
+   "status": 200,
+   "len": 4790,
+   "modules": [
+    "summaryDetail",
+    "defaultKeyStatistics",
+    "price"
+   ],
+   "sample": {
+    "summaryDetail": {
+     "dividendYield": {},
+     "fiveYearAvgDividendYield": {},
+     "beta": {},
+     "averageVolume": {
+      "raw": 5207290312,
+      "fmt": "5.21B",
+      "longFmt": "5,207,290,312"
+     },
+     "averageVolume10days": {
+      "raw": 5349742000,
+      "fmt": "5.35B",
+      "longFmt": "5,349,742,000"
+     },
+     "yield": {},
+     "ytdReturn": {},
+     "totalAssets": {},
+     "trailingAnnualDividendYield": {},
+     "navPrice": {}
+    },
+    "defaultKeyStatistics": {
+     "category": null,
+     "annualReportExpenseRatio": {},
+     "ytdReturn": {},
+     "beta3Year": {},
+     "totalAssets": {},
+     "yield": {},
+     "fundFamily": null,
+     "fundInceptionDate": {},
+     "legalType": null,
+     "threeYearAverageReturn": {},
+     "fiveYearAverageReturn": {}
+    }
+   }
+  },
+  "qs_via_allorigins": {
+   "status": 522,
+   "head": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endi"
+  },
+  "qs_via_codetabs": {
+   "status": 522,
+   "head": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endi"
+  },
+  "qs_via_corsproxy": {
+   "status": 401,
+   "head": "{\"error\":\"A valid API key is required. Get one at https://console.corsproxy.io/\"}"
+  },
+  "jina_quote": {
+   "status": 200,
+   "len": 224,
+   "hits": [],
+   "snippet": ""
+  },
+  "jina_holdings": {
+   "status": 200,
+   "len": 74850,
+   "hits": [],
+   "snippet": ""
+  },
+  "jina_perf": {
+   "status": 200,
+   "len": 32597,
+   "snippet": ""
+  }
+ },
+ "BTC-USD": {
+  "chart": {
+   "status": 200,
+   "instrumentType": "CRYPTOCURRENCY",
+   "currency": "USD",
+   "name": "Bitcoin USD",
+   "exch": "CCC",
+   "n": 263
+  },
+  "qs_nocrumb": {
+   "status": 401,
+   "ms": 159,
+   "len": 89,
+   "head": "{\"finance\":{\"result\":null,\"error\":{\"code\":\"Unauthorized\",\"description\":\"Invalid Crumb\"}}}"
+  },
+  "qs_crumb": {
+   "status": 200,
+   "len": 5196,
+   "modules": [
+    "assetProfile",
+    "summaryDetail",
+    "price"
+   ],
+   "sample": {
+    "summaryDetail": {
+     "dividendYield": {},
+     "fiveYearAvgDividendYield": {},
+     "beta": {},
+     "averageVolume": {
+      "raw": 30237032883,
+      "fmt": "30.24B",
+      "longFmt": "30,237,032,883"
+     },
+     "averageVolume10days": {
+      "raw": 32977713817,
+      "fmt": "32.98B",
+      "longFmt": "32,977,713,817"
+     },
+     "yield": {},
+     "ytdReturn": {},
+     "totalAssets": {},
+     "trailingAnnualDividendYield": {},
+     "navPrice": {}
+    }
+   }
+  },
+  "qs_via_allorigins": {
+   "status": 520,
+   "head": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endi"
+  },
+  "qs_via_codetabs": {
+   "status": 522,
+   "head": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endi"
+  },
+  "qs_via_corsproxy": {
+   "status": 401,
+   "head": "{\"error\":\"A valid API key is required. Get one at https://console.corsproxy.io/\"}"
+  },
+  "jina_quote": {
+   "status": 200,
+   "len": 49656,
+   "hits": [
+    "Beta",
+    "YTD"
+   ],
+   "snippet": "Previous Close 61,904.76\n*   Open 61,904.76\n*   Day Low 61,326.04\n*   Day High 62,437.70\n*   52 Week Low 57,747.77\n*   52 Week High 97,860.60\n*   All-time low 171.51\n*   All-time high 126,198.07\n*   Circulating Supply  The portion of total supply that is publicly available and actively circulating in the market.  20.11M\n*   Total Supply  The number of tokens that currently exist, minus any coins that have been burned. This is similar to “shares outstanding” in equities.  20.11M\n*   Max Supply  The maximum number of coins that could ever exist, based on the project’s code or rules.\n\nFor some cryptocurrencies, this is a fixed number (e.g., Bitcoin’s 21M cap). For others, the supply may be unlimited or undefined, in which case max supply is shown as “∞”.  21.00M\n*   Start Date 2010-07-13\n\nData provided by [Coinbase](https://www.coinbase.com/price/bitcoin?utm_source=yahoo_finance&utm_campaign=cx_o_m_w_m_m_yah_gro_dis_yf&utm_medium=display&utm_content=promo%3DYAHOO_1_MONTH) and [CoinMarketCap](https://coinmarketcap.com/currencies/bitcoin).\n\n## Bitcoin USD Overview\n\nBitcoin (BTC) is a cryptocurrency launched in 2010. Users are able to generate BTC through the process of mining. Bitcoin has a current supply of 20,114,434. The last known price of Bitcoin is 61,694.39203328 USD and is down -2.83 over the last 24 hours. It is currently trading on 12784 active market(s) with $37,580,028,025.27 traded o"
+  },
+  "jina_holdings": {
+   "status": 200,
+   "len": 255,
+   "hits": [],
+   "snippet": ""
+  },
+  "jina_perf": {
+   "status": 200,
+   "len": 50324,
+   "snippet": ""
+  }
+ },
+ "AAPL": {
+  "chart": {
+   "status": 200,
+   "instrumentType": "EQUITY",
+   "currency": "USD",
+   "name": "Apple Inc.",
+   "exch": "NasdaqGS",
+   "n": 263
+  },
+  "qs_nocrumb": {
+   "status": 401,
+   "ms": 143,
+   "len": 89,
+   "head": "{\"finance\":{\"result\":null,\"error\":{\"code\":\"Unauthorized\",\"description\":\"Invalid Crumb\"}}}"
+  },
+  "qs_crumb": {
+   "status": 200,
+   "len": 12057,
+   "modules": [
+    "assetProfile",
+    "summaryDetail",
+    "defaultKeyStatistics",
+    "price"
+   ],
+   "sample": {
+    "summaryDetail": {
+     "dividendYield": {
+      "raw": 0.0031,
+      "fmt": "0.31%"
+     },
+     "fiveYearAvgDividendYield": {
+      "raw": 0.46,
+      "fmt": "0.46"
+     },
+     "beta": {
+      "raw": 1.089,
+      "fmt": "1.09"
+     },
+     "trailingPE": {
+      "raw": 38.887527,
+      "fmt": "38.89"
+     },
+     "averageVolume": {
+      "raw": 42445762,
+      "fmt": "42.45M",
+      "longFmt": "42,445,762"
+     },
+     "averageVolume10days": {
+      "raw": 42715750,
+      "fmt": "42.72M",
+      "longFmt": "42,715,750"
+     },
+     "yield": {},
+     "ytdReturn": {},
+     "totalAssets": {},
+     "trailingAnnualDividendYield": {
+      "raw": 0.0030075186,
+      "fmt": "0.30%"
+     },
+     "navPrice": {}
+    },
+    "defaultKeyStatistics": {
+     "beta": {
+      "raw": 1.089,
+      "fmt": "1.09"
+     },
+     "category": null,
+     "annualReportExpenseRatio": {},
+     "ytdReturn": {},
+     "beta3Year": {},
+     "totalAssets": {},
+     "yield": {},
+     "fundFamily": null,
+     "fundInceptionDate": {},
+     "legalType": null,
+     "threeYearAverageReturn": {},
+     "fiveYearAverageReturn": {}
+    }
+   }
+  },
+  "qs_via_allorigins": {
+   "status": 522,
+   "head": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endi"
+  },
+  "qs_via_codetabs": {
+   "status": 522,
+   "head": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endi"
+  },
+  "qs_via_corsproxy": {
+   "status": 401,
+   "head": "{\"error\":\"A valid API key is required. Get one at https://console.corsproxy.io/\"}"
+  },
+  "jina_quote": {
+   "status": 200,
+   "len": 47898,
+   "hits": [
+    "PE Ratio",
+    "Yield",
+    "Beta",
+    "YTD",
+    "Avg. Volume"
+   ],
+   "snippet": "Previous Close 352.45\n*   Open 352.91\n*   Bid 344.02 x 400\n*   Ask 351.91 x 200\n*   Day's Range 346.47 - 355.28\n*   52 Week Range 243.42 - 360.83\n*   Volume 40,469,518\n*   Avg. Volume 42,445,762\n*   Market Cap (intraday)5.075T\n*   Beta (5Y Monthly)1.09\n*   PE Ratio (TTM)38.89\n*   EPS (TTM)8.98\n*   Earnings Date (est.)Jan 28, 2027\n*   Forward Dividend & Yield 1.08 (0.31%)\n*   1y Target Est 345.63\n*    [Morningstar Rating](https://finance.yahoo.com/plus/silver/?.done=https%3A%2F%2Ffinance.yahoo.com%2Fresearch%2Freports%2FMS_0P000000GY_AnalystReport_1793671153000&ncid=100001249)[Rating available with Stock Picks access](https://finance.yahoo.com/plus/silver/?.done=https%3A%2F%2Ffinance.yahoo.com%2Fresearch%2Freports%2FMS_0P000000GY_AnalystReport_1793671153000&ncid=100001249)\n\n## Apple Inc. Overview Consumer Electronics / Technology\n\nApple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories. The company offers iPhone, a line of smartphones; Mac, a line of personal computers; iPad, a line of multi-purpose tablets; and wearables, home, and accessories, including Apple Watch, AirPods, Beats products, Apple Vision Pro, Apple TV 4K, HomePod, and Apple HomeView, as well as Apple branded and third-party accessories. It also provides advertising services comprising third-party licensing arrangements and own advertising platforms; AppleCare and clo"
+  },
+  "jina_holdings": {
+   "status": 200,
+   "len": 32619,
+   "hits": [
+    "Price/Book"
+   ],
+   "snippet": ""
+  },
+  "jina_perf": {
+   "status": 200,
+   "len": 86867,
+   "snippet": ""
+  },
+  "nasdaq_info": {
+   "status": 200,
+   "len": 142,
+   "head": "{\"data\":null,\"message\":null,\"status\":{\"rCode\":400,\"bCodeMessage\":[{\"code\":1001,\"errorMessage\":\"Symbol not exists.\"}],\"developerMessage\":null}}"
+  },
+  "nasdaq_summary": {
+   "status": 200,
+   "len": 142,
+   "head": "{\"data\":null,\"message\":null,\"status\":{\"rCode\":400,\"bCodeMessage\":[{\"code\":1001,\"errorMessage\":\"Symbol not exists.\"}],\"developerMessage\":null}}"
+  },
+  "nasdaq_holdings": {
+   "status": 404,
+   "len": 0,
+   "head": ""
+  }
+ }
+}
