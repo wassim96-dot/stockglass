@@ -42,6 +42,12 @@ input.btn{font-weight:500;min-width:0;flex:1 1 140px}
 .trk{height:6px;border-radius:4px;background:var(--trk);overflow:hidden}.trk div{height:100%;border-radius:4px}
 .meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--ink3);font-size:12px;margin-top:8px}
 svg.sp{width:100%;height:56px;display:block;margin-top:8px}
+.kind{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--ln);border-radius:6px;padding:0 5px;margin-left:4px;vertical-align:2px}
+details.ind{margin-top:10px}details.ind summary{cursor:pointer;font-weight:600;font-size:12.5px;color:var(--acc)}
+table.it{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}table.it td,table.it th{padding:4px 4px;border-bottom:1px solid var(--ln);text-align:right;white-space:nowrap}
+table.it td:first-child,table.it th:first-child{text-align:left;white-space:normal}table.it th{color:var(--ink3);font-weight:600;font-size:11px}table.it tr.gh td{color:var(--ink2);font-weight:700;text-align:left;padding-top:9px}
+table.it td.cx{color:var(--ink3);font-style:italic}svg.mini{width:64px;height:16px;vertical-align:middle}.itw{overflow-x:auto}
+@media(max-width:520px){table.it .pv{display:none}svg.mini{width:48px}}
 .empty{background:var(--card2);border:1px dashed var(--ln);border-radius:14px;padding:18px;color:var(--ink2)}
 footer{color:var(--ink3);font-size:11.5px;margin-top:18px}
 </style>
@@ -63,11 +69,12 @@ footer{color:var(--ink3);font-size:11.5px;margin-top:18px}
    <option value="dlt">Long-term change</option><option value="dtm">Timing change</option>
    <option value="w">1-week price change</option><option value="sym">Ticker</option>
   </select>
+  <select class="btn" id="kind" aria-label="Type"><option value="">All types</option><option value="equity">Stocks</option><option value="fund">ETFs</option><option value="index">Indices</option><option value="crypto">Crypto</option></select>
   <select class="btn" id="run" aria-label="Week"></select>
   <button class="btn" id="csv">CSV</button>
  </div>
  <div class="list" id="list"><div class="empty">Loading…</div></div>
- <footer>Run every Friday at 18:00 Paris by a GitHub Action that opens StockGlass for each ticker in <code>watchlist.txt</code>. Changes compare with the previous weekly run. Rule-based screen on public data, not investment advice.</footer>
+ <footer>Run every Friday at 18:00 Paris by a GitHub Action that opens StockGlass for each ticker in <code>watchlist.txt</code>. Changes compare with the previous weekly run. Stocks, ETFs, indices and crypto each use their own indicator set; every indicator value is saved weekly. Rule-based screen on public data, not investment advice.</footer>
 </div>
 <script>
 "use strict";
@@ -75,7 +82,9 @@ const $=i=>document.getElementById(i),isN=v=>typeof v==="number"&&isFinite(v);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const light=()=>document.documentElement.dataset.theme==="light";
 const col=s=>light()?`hsl(${s<=5?4+s/5*44:48+(s-5)/5*102} 66% 40%)`:`hsl(${s<=5?4+s/5*44:48+(s-5)/5*102} 88% 64%)`;
-const GR=[["growth","Growth"],["profit","Profitability"],["health","Financial health"],["value","Valuation"],["quality","Quality"],["div","Dividend"],["tech","Technicals"],["mkt","Market & sentiment"]];
+const GN={growth:"Growth",profit:"Profitability",health:"Financial health",value:"Valuation",quality:"Quality",div:"Dividend",tech:"Technicals",mkt:"Market & sentiment",cost:"Cost",size:"Size & liquidity",divers:"Diversification",risk:"Risk & return"};
+const KL={fund:"ETF",index:"Index",crypto:"Crypto"};
+const kindOf=r=>r.kind||(r.sym.startsWith("^")?"index":/-USD$/.test(r.sym)?"crypto":"equity");
 const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let RUNS=[],DATA={},cur=null;
 $("theme").onclick=()=>{const t=light()?"dark":"light";document.documentElement.dataset.theme=t;store("sg_theme",t);render()};
@@ -92,7 +101,7 @@ async function init(){
  await Promise.all(RUNS.map(async d=>{try{DATA[d]=await getJSON(`data/runs/${d}.json`)}catch(e){}}));
  RUNS=RUNS.filter(d=>DATA[d]);cur=RUNS[RUNS.length-1];
  $("run").innerHTML=RUNS.slice().reverse().map(d=>`<option value="${d}">${fmtD(d)}</option>`).join("");
- $("run").onchange=e=>{cur=e.target.value;render()};$("sort").onchange=render;$("f").oninput=render;
+ $("run").onchange=e=>{cur=e.target.value;render()};$("sort").onchange=render;$("f").oninput=render;$("kind").onchange=render;
  $("csv").onclick=()=>{const R=rows(),H=["ticker","name","currency","price","chg_1w","long_term","lt_change","lt_label","timing","tm_change","tm_label","next_earnings","status"];
   const q=v=>v==null?"":/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:String(v);
   const t=[H.join(","),...R.map(x=>[x.sym,x.name,x.cur,x.price,x.chg_1w,x.lt,x.dlt,x.long_term.label,x.tm,x.dtm,x.timing.label,x.next_earnings&&x.next_earnings.date,x.status].map(q).join(","))].join("\n");
@@ -123,17 +132,30 @@ function render(){
   <div class="tile"><b>Top long-term</b><span>${top}</span></div>
   <div class="tile"><b>Biggest moves</b><span>${mv.length?`${esc(mv[0].sym)} ${delta(mv[0].dlt)} · ${esc(mv[mv.length-1].sym)} ${delta(mv[mv.length-1].dlt)}`:"after next run"}</span></div>`;
  const f=$("f").value.trim().toLowerCase();if(f)R=R.filter(r=>(r.sym+" "+r.name).toLowerCase().includes(f));
+ const kf=$("kind").value;if(kf)R=R.filter(r=>kindOf(r)===kf);
  const k=$("sort").value,num=(v,dir=-1)=>isN(v)?v*dir:Infinity;
  R.sort((a,b)=>k==="sym"?a.sym.localeCompare(b.sym):k==="w"?num(a.chg_1w)-num(b.chg_1w):num(a[k])-num(b[k]));
  const pill=(lab,v,d)=>`<div class="pill"><i>${lab}</i><strong style="color:${isN(v)?col(v):"var(--ink3)"}">${isN(v)?v.toFixed(1):"∅"}</strong>${delta(d)}</div>`;
  $("list").innerHTML=R.map(r=>`<div class="row" data-s="${esc(r.sym)}">
-  <div class="top"><div class="nm"><b>${esc(r.sym)}</b> <span class="sub">${money(r.price,r.cur)}${pct(r.chg_1w)}</span><small>${esc(r.name)}</small></div>${pill("Long-term",r.lt,r.dlt)}${pill("Timing",r.tm,r.dtm)}</div>
+  <div class="top"><div class="nm"><b>${esc(r.sym)}</b>${KL[kindOf(r)]?`<span class="kind">${KL[kindOf(r)]}</span>`:""} <span class="sub">${money(r.price,r.cur)}${pct(r.chg_1w)}</span><small>${esc(r.name)}</small></div>${pill("Long-term",r.lt,r.dlt)}${pill("Timing",r.tm,r.dtm)}</div>
   <div class="lab">${esc(r.long_term&&r.long_term.label||r.status)}${r.timing&&r.timing.label?" · "+esc(r.timing.label):""}${r.warning?`<br><span style="color:var(--dn)">⚠ ${esc(r.warning)}</span>`:""}</div>
-  <div class="more">${GR.map(([g,n])=>{const v=r.groups&&r.groups[g]?r.groups[g].lt:null;return`<div class="g"><span>${n}</span><div class="trk"><div style="width:${isN(v)?v*10:0}%;background:${isN(v)?col(v):"transparent"}"></div></div><span>${isN(v)?v.toFixed(1):"∅"}</span></div>`}).join("")}
+  <div class="more">${Object.entries(r.groups||{}).map(([g,o])=>{const v=o?o.lt:null;return`<div class="g"><span>${esc(o&&o.n||GN[g]||g)}</span><div class="trk"><div style="width:${isN(v)?v*10:0}%;background:${isN(v)?col(v):"transparent"}"></div></div><span>${isN(v)?v.toFixed(1):"∅"}</span></div>`}).join("")}
+   ${indTable(r)}
    ${spark(r.sym)}
    <div class="meta">${r.next_earnings?`<span>Next earnings ${esc(r.next_earnings.date)}${r.next_earnings.confirmed?"":" (est.)"}</span>`:""}${isN(r.chg_1m)?`<span>1 month ${r.chg_1m>=0?"+":""}${r.chg_1m.toFixed(1)}%</span>`:""}${isN(r.chg_1y)?`<span>1 year ${r.chg_1y>=0?"+":""}${r.chg_1y.toFixed(1)}%</span>`:""}<a href="index.html?s=${encodeURIComponent(r.sym)}" style="color:var(--acc)">Open in StockGlass →</a></div>
   </div></div>`).join("")||'<div class="empty">No match.</div>';
- document.querySelectorAll(".row").forEach(el=>el.onclick=e=>{if(e.target.closest("a"))return;el.classList.toggle("open")})}
+ document.querySelectorAll(".row").forEach(el=>el.onclick=e=>{if(e.target.closest("a,details"))return;el.classList.toggle("open")})}
+/* every saved indicator: value now, previous week, change, and its path over all weekly runs */
+function hist(sym){return RUNS.slice(0,RUNS.indexOf(cur)+1).map(d=>(DATA[d].results.find(x=>x.sym===sym)||{}))}
+function mini(vals){const p=vals.map((v,i)=>[i,v]).filter(x=>isN(x[1]));if(p.length<2)return"";const lo=Math.min(...p.map(x=>x[1])),hi=Math.max(...p.map(x=>x[1])),W=64,H=16,n=vals.length-1;
+ const d=p.map(([i,v],k)=>(k?"L":"M")+(n?2+i*(W-4)/n:W/2).toFixed(1)+" "+(hi>lo?H-2-(v-lo)/(hi-lo)*(H-4):H/2).toFixed(1)).join("");return`<svg class="mini" viewBox="0 0 ${W} ${H}"><path d="${d}" fill="none" stroke="var(--acc)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
+function indTable(r){
+ const H=hist(r.sym),M=r.metrics||{},keys=Object.keys(M);if(!keys.length)return"";const P=H.length>1?H[H.length-2].metrics||{}:{};
+ const groups=[...new Set(keys.map(k=>M[k].g||"other"))],gname=g=>(r.groups&&r.groups[g]&&r.groups[g].n)||GN[g]||"Other";
+ const dv=(a,b)=>{if(!isN(a)||!isN(b))return"";const x=a-b;if(Math.abs(x)<1e-9)return"<span class='sub'>=</span>";const big=Math.abs(b)>=100||Math.abs(a)>=100;return`<span class="d ${x>0?"u":"n"}">${x>0?"+":""}${big?x.toFixed(1):x.toFixed(2)}</span>`};
+ const rows=groups.map(g=>`<tr class="gh"><td colspan="5">${esc(gname(g))}</td></tr>`+keys.filter(k=>(M[k].g||"other")===g).map(k=>{const m=M[k],p=P[k]||{};
+  return`<tr><td class="${m.ctx?"cx":""}">${esc(m.l||k)}</td><td>${esc(m.d)}</td><td class="sub pv">${esc(p.d||"")}</td><td>${dv(m.v,p.v)}</td><td>${mini(H.map(x=>x.metrics&&x.metrics[k]?x.metrics[k].v:null))}</td></tr>`}).join("")).join("");
+ return`<details class="ind"><summary>Indicators (${keys.length}) · evolution</summary><div class="itw"><table class="it"><tr><th>Indicator</th><th>Now</th><th class="pv">Prev. week</th><th>Change</th><th>Trend</th></tr>${rows}</table></div><div class="meta">Italic = shown for context, not scored. Change is in the indicator's own unit (fund size in millions). Trend lines start once two weekly runs exist.</div></details>`}
 init();
 </script>
 </body>
