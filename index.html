@@ -974,7 +974,7 @@ const r2=(v,d=2)=>isN(v)?+v.toFixed(d):null;
 function snap(){
  const V=S.v||{},m={},g={},c=S.closes||[];
  /* every indicator of the asset's model, found or not, so each one can be followed week by week */
- REG.forEach(r=>{const x=V[r.k]||{},w=WI[r.k]||[0,0];m[r.k]={l:r.l,g:r.g,v:r2(x.v,4),d:x.d||"∅",sc:x.s==="ok"?r2(x.sc):null,ctx:!w[0]&&!w[1]?1:0}});
+ const WS=S.isFin&&(!S.kind||S.kind==="equity")?{...WI,...FIN_OVR}:WI;REG.forEach(r=>{const x=V[r.k]||{},w=WS[r.k]||[0,0];m[r.k]={l:r.l,g:r.g,v:r2(x.v,4),d:x.d||"∅",sc:x.s==="ok"?r2(x.sc):null,ctx:!w[0]&&!w[1]?1:0}});
  GR.forEach(([k,n])=>{const G=S.groups&&S.groups[k];g[k]={n,lt:G?r2(G.s,1):null,tm:G?r2(G.sT,1):null,cov:G?r2(G.cov):0}});
  const ret=n=>c.length>n&&S.price!=null?r2((S.price/c[c.length-1-n].c-1)*100,1):null,Q=S.fq;
  return{sym:S.sym,kind:S.kind||"equity",name:S.name||S.sym,cur:S.cur,exchange:S.ex,sector:S.sector||null,industry:S.industry||null,fin:S.isFin?1:0,price:r2(S.price,4),
