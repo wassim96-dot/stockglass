@@ -1,0 +1,65 @@
+name: Weekly watchlist
+
+# Every Friday at 18:00 Paris time. GitHub cron runs in UTC, so two triggers cover
+# winter (17:00 UTC) and summer time (16:00 UTC); the guard step keeps only the one at 18:00 Paris.
+# Run it any time from the Actions tab (also in the GitHub mobile app): "Run workflow".
+on:
+  schedule:
+    - cron: "0 16 * * 5"
+    - cron: "0 17 * * 5"
+  workflow_dispatch:
+    inputs:
+      watchlist:
+        description: "Optional: comma-separated tickers (blank = watchlist.txt)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-watchlist
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Keep only the 18:00 Paris trigger
+        id: guard
+        run: |
+          H=$(TZ=Europe/Paris date +%H)
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" != "18" ]; then echo "go=false" >> "$GITHUB_OUTPUT"; echo "Paris hour is $H, skipping"; else echo "go=true" >> "$GITHUB_OUTPUT"; fi
+
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.go == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.guard.outputs.go == 'true'
+        with:
+          node-version: "20"
+
+      - name: Install headless Chromium
+        if: steps.guard.outputs.go == 'true'
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.47.2
+          npx playwright install --with-deps chromium
+
+      - name: Run every watchlist ticker through StockGlass
+        if: steps.guard.outputs.go == 'true'
+        env:
+          WATCHLIST: ${{ github.event.inputs.watchlist }}
+        run: node scripts/run-watchlist.mjs
+
+      - name: Commit results
+        if: steps.guard.outputs.go == 'true'
+        run: |
+          git config user.name "stockglass-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet && { echo "No changes"; exit 0; }
+          git commit -m "Weekly watchlist run $(TZ=Europe/Paris date +%F)"
+          git pull --rebase origin main
+          git push
