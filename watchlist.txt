@@ -42,7 +42,7 @@ CS.PA     # AXA
 DG.PA     # Vinci
 ESSITY-B.ST
 IBE.MC    # Iberdrola
-ROG.SW    # Roche (screenshot read as ROP.SW; check)
+ROP.SW    # Roche participation shares (replaced ROG.SW in 2026)
 SAF.PA    # Safran
 SAN.PA    # Sanofi
 SIVE.ST   # Sivers Semiconductors

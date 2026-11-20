@@ -9,7 +9,7 @@ on:
     - cron: "0 17 * * 5"
   push:   # TEMP: test run on this branch, removed before merge
     branches: [weekly-watchlist]
-    paths: [".github/workflows/weekly-watchlist.yml"]
+    paths: [".github/workflows/weekly-watchlist.yml", "index.html", "watchlist.txt"]
   workflow_dispatch:
     inputs:
       watchlist:

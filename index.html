@@ -811,13 +811,15 @@ function snap(){
  REG.forEach(r=>{const x=V[r.k];if(x&&x.s==="ok")m[r.k]={v:r2(x.v,4),d:x.d,sc:r2(x.sc)}});
  GR.forEach(([k])=>{const G=S.groups&&S.groups[k];if(G)g[k]={lt:r2(G.s,1),tm:r2(G.sT,1),cov:r2(G.cov)}});
  const ret=n=>c.length>n&&S.price!=null?r2((S.price/c[c.length-1-n].c-1)*100,1):null;
+ /* ETFs, indices, crypto: no company accounts, so only a price-trend score is reported (no long-term label) */
+ const fund=GR.some(([k])=>k!=="tech"&&g[k]&&g[k].lt!=null),trendOnly=!fund&&g.tech&&g.tech.tm!=null;
  return{sym:S.sym,name:S.name||S.sym,cur:S.cur,exchange:S.ex,sector:S.sector||null,industry:S.industry||null,price:r2(S.price,4),
   chg_1d:ret(1),chg_1w:ret(5),chg_1m:ret(21),chg_1y:ret(252),
-  long_term:{score:S.score,label:S.sent?S.sent[0]:null,confidence:S.score!=null?S.conf:null},
-  timing:{score:S.tscore,label:S.tsent?S.tsent[0]:null,confidence:S.tscore!=null?S.tconf:null},
+  long_term:trendOnly?{score:null,label:null,confidence:null}:{score:S.score,label:S.sent?S.sent[0]:null,confidence:S.score!=null?S.conf:null},
+  timing:trendOnly?{score:g.tech.tm,label:"Trend only (no company data)",confidence:"low"}:{score:S.tscore,label:S.tsent?S.tsent[0]:null,confidence:S.tscore!=null?S.tconf:null},
   groups:g,metrics:m,coverage:S.cov||null,filing_check:S.fil&&S.fil.lab||null,
   next_earnings:S.nextEarn?{date:new Date(S.nextEarn.t).toISOString().slice(0,10),confirmed:S.nextEarn.confirmed}:null,
-  expectations:S.xp||null,sources:S.via||{},status:S.score!=null?"scored":S.price!=null?"price only":"no data"}}
+  expectations:S.xp||null,sources:S.via||{},status:trendOnly?"trend only":S.score!=null?"scored":S.price!=null?"price only":"no data"}}
 async function watchlist(){
  const q=QS.get("watchlist");if(q)return q.split(/[,\s]+/).map(x=>x.trim().toUpperCase()).filter(Boolean);
  const t=await (await fetch("watchlist.txt",{cache:"no-store"})).text();
