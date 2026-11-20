@@ -1,0 +1,19 @@
+name: ETF data probe (temporary)
+on:
+  push:
+    branches: [etf-probe]
+    paths: ["probe/**", ".github/workflows/etf-probe.yml"]
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: node probe/probe.mjs
+      - run: |
+          git config user.name "stockglass-bot"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add probe/result.json && git commit -m "Probe results" && git push origin HEAD:etf-probe
