@@ -9,6 +9,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ap = argparse.ArgumentParser()
 for h in ("start", "month", "week"): ap.add_argument(f"--notes-{h}")
 ap.add_argument("--notes", help="(old option) same as --notes-week"); ap.add_argument("--out", default=ROOT)
+ap.add_argument("--interp", help="JSON {ticker: 'one or two sentences'} written from review.json → tickers; shown on each ticker's card")
 A = ap.parse_args()
 RUNS = json.load(open(os.path.join(ROOT, "data/runs/index.json")))["runs"]
 DATA = {d: {r["sym"]: r for r in json.load(open(os.path.join(ROOT, f"data/runs/{d}.json")))["results"]} for d in RUNS}
@@ -115,8 +116,45 @@ for s, r in CUR.items():
         watch.append({"sym": s, "name": r.get("name"), "kind": kind(r), "lt": lt, "tm": tm, "ltl": lab(r, "long_term"),
                       "streak": (st.get(s) or {}).get("streak") or 0})
 watch = sorted(watch, key=lambda x: -(x["lt"] + x["tm"]))[:6]
+# ---------- one card per ticker: scores, their changes, groups and the indicator changes behind them ----------
+KEYF = {"fund": ["ter", "aum", "ipe", "top10", "mdd", "cagr3"], "index": ["mdd", "sharpe", "cagr3", "e200", "mom"], "crypto": ["mdd", "sharpe", "cagr3", "e200", "mom"],
+        "equity": ["peFwd", "fcfY", "roic", "op", "revCagr3", "e200"]}
+def base_of(k): return H[k].get("from") if H[k]["available"] else None
+def ind_moves(r, b, n=3):
+    if not b: return [], []
+    ch = []
+    for k, m in (r.get("metrics") or {}).items():
+        q = (b.get("metrics") or {}).get(k) or {}
+        if not m.get("ctx") and num(m.get("sc")) and num(q.get("sc")) and abs(m["sc"] - q["sc"]) >= .5:
+            ch.append([m.get("l", k), q.get("d"), m.get("d"), round(m["sc"] - q["sc"], 1)])
+    ch.sort(key=lambda x: -abs(x[3]))
+    return [x for x in ch if x[3] > 0][:n], [x for x in ch if x[3] < 0][:n]
+TK = []
+for s, r in CUR.items():
+    kd = kind(r); d = {}
+    for hk in ("week", "month", "start"):
+        bd = base_of(hk); b = DATA[bd].get(s) if bd else None
+        d[hk] = {"lt": round(sc(r, "long_term") - sc(b, "long_term"), 1) if b and num(sc(r, "long_term")) and num(sc(b, "long_term")) else None,
+                 "tm": round(sc(r, "timing") - sc(b, "timing"), 1) if b and num(sc(r, "timing")) and num(sc(b, "timing")) else None,
+                 "px": round((r["price"] / b["price"] - 1) * 100, 1) if b and num(r.get("price")) and num(b.get("price")) and b["price"] > 0 and r.get("cur") == b.get("cur") else None,
+                 "label_was": lab(b, "long_term") if b and lab(b, "long_term") != lab(r, "long_term") else None}
+    wb = DATA[base_of("week")].get(s) if base_of("week") else None; sb = DATA[base_of("start")].get(s) if base_of("start") else None
+    gr = {}
+    for g, o in (r.get("groups") or {}).items():
+        if not num((o or {}).get("lt")): continue
+        gw = ((wb or {}).get("groups") or {}).get(g) or {}; gs = ((sb or {}).get("groups") or {}).get(g) or {}
+        gr[o.get("n") or g] = [o["lt"], round(o["lt"] - gw["lt"], 1) if num(gw.get("lt")) else None, round(o["lt"] - gs["lt"], 1) if num(gs.get("lt")) else None]
+    scored = [(m.get("l", k), m.get("d"), m["sc"]) for k, m in (r.get("metrics") or {}).items() if num(m.get("sc")) and not m.get("ctx")]
+    up_w, dn_w = ind_moves(r, wb); up_s, dn_s = ind_moves(r, sb)
+    M = r.get("metrics") or {}
+    TK.append({"sym": s, "name": r.get("name"), "kind": kd, "price": r.get("price"), "cur": r.get("cur"),
+               "lt": sc(r, "long_term"), "tm": sc(r, "timing"), "ltl": lab(r, "long_term"), "tml": lab(r, "timing"), "chg": d, "groups": gr,
+               "strong": [[a, b2] for a, b2, _ in sorted(scored, key=lambda x: -x[2])[:3]], "weak": [[a, b2] for a, b2, c in sorted(scored, key=lambda x: x[2])[:3] if c < 5],
+               "ind_week": {"up": up_w, "down": dn_w}, "ind_start": {"up": up_s, "down": dn_s},
+               "key": {M[k].get("l", k): M[k].get("d") for k in KEYF[kd] if k in M and M[k].get("d") not in (None, "∅")},
+               "warning": r.get("warning"), "earnings": (r.get("next_earnings") or {}).get("date")})
 facts = {"date": cur_d, "first_run": RUNS[0], "runs": len(RUNS), "count": len(CUR), "watch": watch, "alerts": alerts,
-         "horizons": {k: {kk: vv for kk, vv in v.items() if kk != "rows"} for k, v in H.items()}}
+         "horizons": {k: {kk: vv for kk, vv in v.items() if kk != "rows"} for k, v in H.items()}, "tickers": TK}
 json.dump(facts, open(os.path.join(A.out, "review.json"), "w"), indent=1, ensure_ascii=False)
 
 # ---------- page ----------
@@ -182,6 +220,43 @@ for kd, n in KN.items():
 watch_html = ul([li(x, f'<i style="color:{col(x["lt"])}">{f1(x["lt"])}</i> <i style="color:{col(x["tm"])}">{f1(x["tm"])}</i>', f'{x["name"]} · {x["ltl"]}' + (f' · improving {x["streak"]} weeks' if x["streak"] >= 2 else "")) for x in watch],
                 "No name combines a favourable long-term score with favourable timing this week.")
 alert_html = ul([li(x, "", "; ".join(x["flags"])) for x in alerts], "Nothing notable.")
+INTERP = {}
+if A.interp and os.path.exists(A.interp):
+    try: INTERP = {k.upper(): v for k, v in json.load(open(A.interp, encoding="utf-8")).items()}
+    except Exception: INTERP = {}
+def tcard(t):
+    c = t["chg"]; parts = []
+    def ch(hk, nm):
+        x = c[hk]; bits = [f"long-term {dl(x['lt'])}" if num(x["lt"]) and abs(x["lt"]) >= .05 else "", f"timing {dl(x['tm'])}" if num(x["tm"]) and abs(x["tm"]) >= .05 else "", pc(x["px"]) if num(x["px"]) else ""]
+        bits = [b for b in bits if b]
+        return f'<span class="hz2"><em>{nm}</em> {" · ".join(bits) if bits else "<span class=sub>no change</span>"}</span>' if (H[hk]["available"]) else ""
+    hz = "".join(ch(hk, nm) for hk, nm in (("week", "Week"), ("month", "Month"), ("start", "Since start")))
+    grs = sorted(t["groups"].items(), key=lambda g: -g[1][0])
+    gtxt = " · ".join(f'{e(n)} <b style="color:{col(v[0])}">{v[0]:.1f}</b>{dl(v[1])}' for n, v in grs)
+    def mv(lst, cls): return "; ".join(f'{e(a)} {e(b)} → {e(n)}' for a, b, n, _ in lst)
+    iw, ist = t["ind_week"], t["ind_start"]
+    chg = ""
+    if iw["up"] or iw["down"]:
+        chg += f'<p class="ic"><em>This week</em> {"<span class=u>▲ " + mv(iw["up"], "u") + "</span>" if iw["up"] else ""}{" " if iw["up"] and iw["down"] else ""}{"<span class=n>▼ " + mv(iw["down"], "n") + "</span>" if iw["down"] else ""}</p>'
+    if (ist["up"] or ist["down"]) and H["start"]["available"] and H["start"]["runs"] > 2:
+        chg += f'<p class="ic"><em>Since start</em> {"<span class=u>▲ " + mv(ist["up"], "u") + "</span>" if ist["up"] else ""}{" " if ist["up"] and ist["down"] else ""}{"<span class=n>▼ " + mv(ist["down"], "n") + "</span>" if ist["down"] else ""}</p>'
+    key = " · ".join(f'{e(k)} <b>{e(v)}</b>' for k, v in t["key"].items())
+    lbl = e(t["ltl"] or "") + (f' <span class="sub">(was {e(c["week"]["label_was"])})</span>' if c["week"]["label_was"] else "")
+    notes = []
+    if t["earnings"]: notes.append(f"Next earnings {e(t['earnings'])}")
+    if t["warning"]: notes.append(f'<span class="n">⚠ {e(t["warning"])}</span>')
+    it = INTERP.get(t["sym"].upper())
+    return (f'<article class="tc" id="t-{e(t["sym"])}"><div class="th"><div class="tn"><b>{e(t["sym"])}</b>{badge(t)}<small>{e(t["name"])}</small></div>'
+            f'<div class="ts"><span><i>LT</i><b style="color:{col(t["lt"])}">{f1(t["lt"])}</b>{dl(c["week"]["lt"])}</span><span><i>Timing</i><b style="color:{col(t["tm"])}">{f1(t["tm"])}</b>{dl(c["week"]["tm"])}</span></div></div>'
+            f'<p class="tl">{lbl}{" · " + e(t["tml"]) if t["tml"] else ""}</p>'
+            + (f'<p class="it">{e(it)}</p>' if it else "")
+            + (f'<p class="hzl">{hz}</p>' if hz else "") + f'<p class="gl">{gtxt}</p>' + chg
+            + (f'<p class="kl">{key}</p>' if key else "") + (f'<p class="kl">{" · ".join(notes)}</p>' if notes else "") + "</article>")
+cards = ""
+for kd, n in KN.items():
+    ts = sorted([t for t in TK if t["kind"] == kd], key=lambda t: -(t["lt"] if num(t["lt"]) else -1))
+    if ts: cards += f'<h3 class="kh" id="each-{kd}">{n} <span class="sub">{len(ts)}</span></h3><div class="tg">' + "".join(tcard(t) for t in ts) + "</div>"
+interp_note = "" if INTERP else '<p class="sub">The written interpretation for each ticker is added by the Friday evening review.</p>'
 page = f"""<title>Watchlist Review</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -205,13 +280,21 @@ li b{{font-weight:800}}.nm{{color:var(--ink3);font-size:12px;min-width:0}}.r{{ma
 .tw{{overflow-x:auto}}table{{width:100%;border-collapse:collapse;font-size:12.5px}}td,th{{padding:5px 6px;border-bottom:1px solid var(--ln);text-align:right;white-space:nowrap}}td{{color:var(--ink2)}}
 td:first-child,th:first-child{{text-align:left;white-space:normal}}th{{color:var(--ink3);font-size:10.5px;font-weight:600}}td b{{color:var(--ink);font-weight:800}}
 td small{{display:block;color:var(--ink3);font-size:11px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
-svg.sp{{width:100%;height:64px;display:block;margin-top:8px}}a{{color:var(--acc)}}.ft{{color:var(--ink3);font-size:11px;margin-top:16px}}
+svg.sp{{width:100%;height:64px;display:block;margin-top:8px}}
+.kh{{margin:16px 0 8px}}.tg{{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));gap:12px}}
+.tc{{background:linear-gradient(150deg,rgba(84,120,172,.42),rgba(38,66,110,.34));border:1px solid rgba(160,200,245,.22);border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 12px 34px rgba(3,10,30,.4);padding:12px 14px;min-width:0}}
+.th{{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}}.tn{{min-width:0}}.tn b{{font-size:16px;font-weight:800}}.tn small{{display:block;color:var(--ink3);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.ts{{display:flex;gap:12px;white-space:nowrap}}.ts span{{display:flex;flex-direction:column;align-items:flex-end}}.ts i{{font-style:normal;font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em}}.ts b{{font-size:19px;font-weight:800;line-height:1.1}}
+.tc p{{margin:6px 0 0;font-size:12.5px;color:var(--ink2)}}.tc p.tl{{color:var(--ink);font-weight:600}}.tc p.it{{color:var(--ink);background:rgba(255,255,255,.06);border-left:3px solid var(--tm);border-radius:6px;padding:6px 9px}}
+.tc em{{font-style:normal;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-right:4px}}
+.hz2{{display:inline-block;margin-right:12px}}.tc .u{{color:var(--good)}}.tc .n{{color:var(--bad)}}.tc p.gl b,.tc p.kl b{{color:var(--ink);font-weight:700}}a{{color:var(--acc)}}.ft{{color:var(--ink3);font-size:11px;margin-top:16px}}
 </style>
 <div class="w">
 <div class="top"><h1>Watchlist review</h1><span class="sub">{fd(cur_d)} · {len(CUR)} tickers · {len(RUNS)} weekly run{"s" if len(RUNS) != 1 else ""} since {fd(RUNS[0])}</span></div>
-<nav class="nav"><a href="#start">Since the start</a><a href="#month">Last month</a><a href="#week">Last week</a><a href="#all">All scores</a></nav>
+<nav class="nav"><a href="#start">Since the start</a><a href="#month">Last month</a><a href="#week">Last week</a><a href="#each">Each ticker</a><a href="#all">All scores</a></nav>
 <div class="g2">{card("Worth a closer look", watch_html, "Long-term ≥ 6.2 with timing ≥ 6.2 or up 1+ point this week. Scores: long-term · timing.")}{card("Alerts", alert_html, "Earnings within 14 days and data warnings.")}</div>
 {section(H["start"])}{section(H["month"])}{section(H["week"])}
+<h2 id="each">Each ticker <span class="sub">interpretation · score changes · groups · indicators that moved</span></h2>{interp_note}{cards}
 <h2 id="all">All scores <span class="sub">change vs last week · since start</span></h2>{tables}
 <p class="ft">Every indicator's history: <a href="https://wassim96-dot.github.io/stockglass/history.html" target="_blank" rel="noopener">StockGlass watchlist history</a>. Scores from the weekly GitHub run of StockGlass (Yahoo Finance, SEC, Nasdaq). Rule-based screen on public data, not investment advice.</p>
 </div>"""
