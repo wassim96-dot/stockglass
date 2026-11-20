@@ -128,7 +128,7 @@ function render(){
  const pill=(lab,v,d)=>`<div class="pill"><i>${lab}</i><strong style="color:${isN(v)?col(v):"var(--ink3)"}">${isN(v)?v.toFixed(1):"∅"}</strong>${delta(d)}</div>`;
  $("list").innerHTML=R.map(r=>`<div class="row" data-s="${esc(r.sym)}">
   <div class="top"><div class="nm"><b>${esc(r.sym)}</b> <span class="sub">${money(r.price,r.cur)}${pct(r.chg_1w)}</span><small>${esc(r.name)}</small></div>${pill("Long-term",r.lt,r.dlt)}${pill("Timing",r.tm,r.dtm)}</div>
-  <div class="lab">${esc(r.long_term&&r.long_term.label||r.status)}${r.timing&&r.timing.label?" · "+esc(r.timing.label):""}</div>
+  <div class="lab">${esc(r.long_term&&r.long_term.label||r.status)}${r.timing&&r.timing.label?" · "+esc(r.timing.label):""}${r.warning?`<br><span style="color:var(--dn)">⚠ ${esc(r.warning)}</span>`:""}</div>
   <div class="more">${GR.map(([g,n])=>{const v=r.groups&&r.groups[g]?r.groups[g].lt:null;return`<div class="g"><span>${n}</span><div class="trk"><div style="width:${isN(v)?v*10:0}%;background:${isN(v)?col(v):"transparent"}"></div></div><span>${isN(v)?v.toFixed(1):"∅"}</span></div>`}).join("")}
    ${spark(r.sym)}
    <div class="meta">${r.next_earnings?`<span>Next earnings ${esc(r.next_earnings.date)}${r.next_earnings.confirmed?"":" (est.)"}</span>`:""}${isN(r.chg_1m)?`<span>1 month ${r.chg_1m>=0?"+":""}${r.chg_1m.toFixed(1)}%</span>`:""}${isN(r.chg_1y)?`<span>1 year ${r.chg_1y>=0?"+":""}${r.chg_1y.toFixed(1)}%</span>`:""}<a href="index.html?s=${encodeURIComponent(r.sym)}" style="color:var(--acc)">Open in StockGlass →</a></div>

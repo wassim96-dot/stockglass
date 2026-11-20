@@ -819,7 +819,7 @@ function snap(){
   timing:trendOnly?{score:g.tech.tm,label:"Trend only (no company data)",confidence:"low"}:{score:S.tscore,label:S.tsent?S.tsent[0]:null,confidence:S.tscore!=null?S.tconf:null},
   groups:g,metrics:m,coverage:S.cov||null,filing_check:S.fil&&S.fil.lab||null,
   next_earnings:S.nextEarn?{date:new Date(S.nextEarn.t).toISOString().slice(0,10),confirmed:S.nextEarn.confirmed}:null,
-  expectations:S.xp||null,sources:S.via||{},status:trendOnly?"trend only":S.score!=null?"scored":S.price!=null?"price only":"no data"}}
+  expectations:S.xp||null,sources:S.via||{},warning:(()=>{for(let i=Math.max(1,c.length-260);i<c.length;i++){const j=c[i].c/c[i-1].c;if(j>2||j<.5)return"Price history jumps >50% in one day around "+new Date(c[i].t).toISOString().slice(0,10)+" (split or bad data): trend figures may be wrong"}return null})(),status:trendOnly?"trend only":S.score!=null?"scored":S.price!=null?"price only":"no data"}}
 async function watchlist(){
  const q=QS.get("watchlist");if(q)return q.split(/[,\s]+/).map(x=>x.trim().toUpperCase()).filter(Boolean);
  const t=await (await fetch("watchlist.txt",{cache:"no-store"})).text();
