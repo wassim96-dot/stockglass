@@ -45,11 +45,10 @@ IBE.MC    # Iberdrola
 ROP.SW    # Roche participation shares (replaced ROG.SW in 2026)
 SAF.PA    # Safran
 SAN.PA    # Sanofi
-SIVE.ST   # Sivers Semiconductors
+SIVE.ST   # Sivers Semiconductors (2DG.F is its Frankfurt listing: same company)
 SOI.PA    # Soitec
 SU.PA     # Schneider Electric
 TTE.PA    # TotalEnergies (US listing TTE is the same company)
-2DG.F
 
 # --- ETFs ---
 EUNL.DE
