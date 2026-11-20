@@ -120,9 +120,9 @@ facts = {"date": cur_d, "first_run": RUNS[0], "runs": len(RUNS), "count": len(CU
 json.dump(facts, open(os.path.join(A.out, "review.json"), "w"), indent=1, ensure_ascii=False)
 
 # ---------- page ----------
-def col(s):
+def col(s):  # same tier colours as Stock Verdict History
     if not num(s): return "var(--ink3)"
-    return f"hsl({4 + s / 5 * 44 if s <= 5 else 48 + (s - 5) / 5 * 102:.0f} 70% var(--lum))"
+    return "var(--good)" if s >= 7.5 else "var(--ok)" if s >= 6.2 else "var(--warn)" if s >= 4.5 else "#ff9a6b" if s >= 3 else "var(--bad)"
 dl = lambda v: "" if not num(v) or abs(v) < .05 else f'<span class="d {"u" if v > 0 else "n"}">{"▲" if v > 0 else "▼"}{abs(v):.1f}</span>'
 pc = lambda v: "" if not num(v) else f'<span class="d {"u" if v >= 0 else "n"}">{v:+.1f}%</span>'
 f1 = lambda v: f"{v:.1f}" if num(v) else "∅"
@@ -139,7 +139,7 @@ def spark(path):
     lo, hi = min(vals) - .3, max(vals) + .3
     W, Hh = 300, 60; n = len(pts) - 1; y = lambda v: Hh - 6 - (v - lo) / (hi - lo) * (Hh - 12)
     line = lambda j, c: '<path d="' + "".join(("M" if i == 0 else "L") + f"{6 + i * (W - 12) / n:.1f} {y(p[j]):.1f}" for i, p in enumerate(pts) if num(p[j])) + f'" fill="none" stroke="{c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
-    return f'<svg class="sp" viewBox="0 0 {W} {Hh}" preserveAspectRatio="none" role="img" aria-label="Average scores over time"><line x1="0" x2="{W}" y1="{y(5):.1f}" y2="{y(5):.1f}" stroke="var(--ln)" stroke-dasharray="3 4"/>{line(1, "var(--acc)")}{line(2, "var(--ink3)")}</svg><p class="sub"><span style="color:var(--acc)">— average long-term</span> · — average timing · scale {lo + .3:.1f}–{hi - .3:.1f}</p>'
+    return f'<svg class="sp" viewBox="0 0 {W} {Hh}" preserveAspectRatio="none" role="img" aria-label="Average scores over time"><line x1="0" x2="{W}" y1="{y(5):.1f}" y2="{y(5):.1f}" stroke="rgba(150,190,240,.25)" stroke-dasharray="3 4"/>{line(1, "var(--lt)")}{line(2, "var(--tm)")}</svg><p class="sub"><span style="color:var(--lt)">— average long-term</span> · <span style="color:var(--tm)">— average timing</span> · scale {lo + .3:.1f}–{hi - .3:.1f}</p>'
 def notes_for(k):
     f = getattr(A, f"notes_{k}") or (A.notes if k == "week" else None)
     return open(f, encoding="utf-8").read() if f and os.path.exists(f) else ""
@@ -187,23 +187,25 @@ page = f"""<title>Watchlist Review</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{{--bg:#eceff3;--card:#fff;--ink:#16191d;--ink2:#47505b;--ink3:#6b7480;--ln:rgba(0,0,0,.09);--up:#0e8a57;--dn:#c4314b;--acc:#1f6fc5;--lum:38%}}
-@media (prefers-color-scheme: dark){{:root:not([data-theme="light"]){{--bg:#14171b;--card:#1d2127;--ink:#eef1f5;--ink2:#b6bec9;--ink3:#828b96;--ln:rgba(255,255,255,.1);--up:#3ddc97;--dn:#ff7a8a;--acc:#5db3ff;--lum:64%;color-scheme:dark}}}}
-:root[data-theme="dark"]{{--bg:#14171b;--card:#1d2127;--ink:#eef1f5;--ink2:#b6bec9;--ink3:#828b96;--ln:rgba(255,255,255,.1);--up:#3ddc97;--dn:#ff7a8a;--acc:#5db3ff;--lum:64%;color-scheme:dark}}
-body{{background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}}
-.w{{max-width:880px;margin:0 auto;padding-block:16px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}}
-h1{{font-size:20px;margin:0;letter-spacing:-.01em;text-wrap:balance}}h2{{font-size:17px;margin:22px 0 10px;text-wrap:balance}}h3{{font-size:12.5px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2)}}
+:root{{--bg:#12243d;--ink:#eef5ff;--ink2:#b7c9e2;--ink3:#8199ba;--ln:rgba(150,190,240,.2);--good:#3ddc97;--ok:#9be36b;--warn:#ffb84a;--bad:#ff6b81;--lt:#3ddc97;--tm:#5aa9ff;--acc:#9fd0ff;color-scheme:dark}}
+*{{box-sizing:border-box}}
+body{{margin:0;font:13.5px/1.5 Inter,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);background-image:linear-gradient(160deg,#10203a 0%,#152a49 55%,#183153 100%);background-attachment:fixed;min-height:100vh;font-variant-numeric:tabular-nums}}
+.w{{max-width:900px;margin:0 auto;padding-block:18px 36px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}}
+h1{{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}}h2{{font-size:17px;font-weight:800;letter-spacing:-.01em;margin:24px 0 10px;text-wrap:balance}}
+h3{{font-size:11px;font-weight:700;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}}
 .sub{{color:var(--ink3);font-size:12px;font-weight:500}}.top{{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;margin-bottom:10px}}
-.nav{{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px}}.nav a{{text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--ln);border-radius:9px;padding:4px 10px;font-size:12.5px;font-weight:600}}
-.c{{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:12px 14px;margin-bottom:10px;min-width:0}}.c p{{margin:.3em 0 .6em;max-width:72ch}}
-.g2{{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}}.g2 .c{{margin:0}}
-ul{{list-style:none;margin:0;padding:0}}li{{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--ln)}}li:last-child{{border:0}}
-.nm{{color:var(--ink2);font-size:12.5px;min-width:0}}.r{{margin-left:auto;white-space:nowrap}}.r i{{font-style:normal;font-weight:700;margin-left:6px}}.mt{{color:var(--ink3)}}
-.k{{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink3);border:1px solid var(--ln);border-radius:5px;padding:0 4px}}
-.d{{font-size:11.5px;font-weight:600;margin-left:3px}}.d.u{{color:var(--up)}}.d.n{{color:var(--dn)}}
-.tw{{overflow-x:auto}}table{{width:100%;border-collapse:collapse;font-size:13px}}td,th{{padding:5px 4px;border-bottom:1px solid var(--ln);text-align:right;white-space:nowrap}}td:first-child,th:first-child{{text-align:left;white-space:normal}}
-th{{color:var(--ink3);font-size:11px;font-weight:600}}td small{{display:block;color:var(--ink3);font-size:11px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
-svg.sp{{width:100%;height:60px;display:block;margin-top:8px}}a{{color:var(--acc)}}.ft{{color:var(--ink3);font-size:11.5px;margin-top:14px}}
+.nav{{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}}.nav a{{text-decoration:none;color:var(--ink);background:rgba(255,255,255,.08);border:1px solid var(--ln);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:600}}
+.c{{background:linear-gradient(150deg,rgba(84,120,172,.42),rgba(38,66,110,.34));border:1px solid rgba(160,200,245,.22);border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 12px 34px rgba(3,10,30,.4);padding:14px 16px;margin-bottom:12px;min-width:0}}
+.c p{{margin:.3em 0 .6em;max-width:72ch;color:var(--ink)}}.c p.sub{{color:var(--ink3);font-size:11.5px}}
+.g2{{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:12px}}.g2 .c{{margin:0}}
+ul{{list-style:none;margin:0;padding:0}}li{{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--ln)}}li:last-child{{border:0}}
+li b{{font-weight:800}}.nm{{color:var(--ink3);font-size:12px;min-width:0}}.r{{margin-left:auto;white-space:nowrap}}.r i{{font-style:normal;font-weight:800;margin-left:6px}}.mt{{color:var(--ink3)}}
+.k{{font-size:10px;padding:0 7px;border-radius:99px;border:1px solid var(--ln);color:var(--ink3);font-weight:600}}
+.d{{font-size:11px;font-weight:800;margin-left:5px}}.d.u{{color:var(--good)}}.d.n{{color:var(--bad)}}
+.tw{{overflow-x:auto}}table{{width:100%;border-collapse:collapse;font-size:12.5px}}td,th{{padding:5px 6px;border-bottom:1px solid var(--ln);text-align:right;white-space:nowrap}}td{{color:var(--ink2)}}
+td:first-child,th:first-child{{text-align:left;white-space:normal}}th{{color:var(--ink3);font-size:10.5px;font-weight:600}}td b{{color:var(--ink);font-weight:800}}
+td small{{display:block;color:var(--ink3);font-size:11px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+svg.sp{{width:100%;height:64px;display:block;margin-top:8px}}a{{color:var(--acc)}}.ft{{color:var(--ink3);font-size:11px;margin-top:16px}}
 </style>
 <div class="w">
 <div class="top"><h1>Watchlist review</h1><span class="sub">{fd(cur_d)} · {len(CUR)} tickers · {len(RUNS)} weekly run{"s" if len(RUNS) != 1 else ""} since {fd(RUNS[0])}</span></div>
