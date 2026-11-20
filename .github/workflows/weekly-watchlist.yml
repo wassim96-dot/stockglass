@@ -7,9 +7,6 @@ on:
   schedule:
     - cron: "0 16 * * 5"
     - cron: "0 17 * * 5"
-  push:   # TEMP: test run on this branch, removed before merge
-    branches: [etf-mode]
-    paths: [".github/workflows/weekly-watchlist.yml", "index.html", "scripts/**"]
   workflow_dispatch:
     inputs:
       watchlist:
@@ -64,5 +61,5 @@ jobs:
           git add data
           git diff --cached --quiet && { echo "No changes"; exit 0; }
           git commit -m "Weekly watchlist run $(TZ=Europe/Paris date +%F)"
-          git pull --rebase origin "${GITHUB_REF_NAME}"
-          git push origin HEAD:"${GITHUB_REF_NAME}"
+          git pull --rebase origin main
+          git push
