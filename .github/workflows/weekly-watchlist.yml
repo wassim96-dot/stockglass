@@ -51,6 +51,10 @@ jobs:
         if: steps.guard.outputs.go == 'true'
         run: node scripts/market-fear.mjs || echo "market fear unavailable, continuing"
 
+      - name: Crypto cycle (on-chain, funding, fear & greed)
+        if: steps.guard.outputs.go == 'true'
+        run: node scripts/crypto-data.mjs || echo "crypto data unavailable, continuing"
+
       - name: Run every watchlist ticker through StockGlass
         if: steps.guard.outputs.go == 'true'
         env:

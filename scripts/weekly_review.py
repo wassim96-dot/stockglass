@@ -17,6 +17,8 @@ cur_d = RUNS[-1]; CUR = DATA[cur_d]; D = dt.date.fromisoformat
 # market fear (VIX, variance risk premium): daily series from scripts/market-fear.mjs; each run file also keeps its reading
 try: _mh = json.load(open(os.path.join(ROOT, "data/market-history.json"))); MH, MHC = _mh["rows"], _mh.get("columns") or []
 except Exception: MH, MHC = [], []
+try: CRY = json.load(open(os.path.join(ROOT, "data/crypto.json")))
+except Exception: CRY = None
 RUNMKT = {d: json.load(open(os.path.join(ROOT, f"data/runs/{d}.json"))).get("market") for d in RUNS}
 PH3 = {"calm": (5, "Calm"), "early": (5, "Early fear"), "peak": (5.5, "Peak stress"), "fading": (7.5, "Fading fear (confirmed)"),
        "fading_unconfirmed": (5.5, "Fading fear (unconfirmed)"), "after": (4.5, "After fear")}
@@ -185,9 +187,10 @@ for s, r in CUR.items():
                "strong": [[a, b2] for a, b2, _ in sorted(scored, key=lambda x: -x[2])[:3]], "weak": [[a, b2] for a, b2, c in sorted(scored, key=lambda x: x[2])[:3] if c < 5],
                "ind_week": {"up": up_w, "down": dn_w}, "ind_start": {"up": up_s, "down": dn_s},
                "key": {M[k].get("l", k): M[k].get("d") for k in KEYF[kd] if k in M and M[k].get("d") not in (None, "∅")},
-               "warning": r.get("warning"), "earnings": (r.get("next_earnings") or {}).get("date"), "direction": (r.get("timing") or {}).get("direction")})
+               "warning": r.get("warning"), "earnings": (r.get("next_earnings") or {}).get("date"), "direction": (r.get("timing") or {}).get("direction"), "crypto": r.get("crypto")})
 facts = {"date": cur_d, "first_run": RUNS[0], "runs": len(RUNS), "count": len(CUR), "watch": watch, "alerts": alerts,
          "horizons": {k: {kk: vv for kk, vv in v.items() if kk != "rows"} for k, v in H.items()}, "tickers": TK,
+         "crypto_cycle": ({a: {k: v for k, v in (r or {}).items()} for a, r in (CRY.get("assets") or {}).items()} | {"fng": CRY.get("fng")}) if CRY else None,
          "market_fear": {"now": fear_at(cur_d), **{hk: fear_at(H[hk]["from"]) if H[hk]["available"] else None for hk in ("week", "month", "start")},
                          "method": "Fear score = 0.3 × (3 + 4 × percentile over 10 years of the variance risk premium, VIX² − HAR-forecast realised variance of the S&P 500) + 0.7 × fear-phase score (calm 5, early fear 5 with a risk flag, peak stress 5.5, fading fear 7.5 when confirmed by credit, no new 20-day low and no bear state, else 5.5, after fear 4.5). Each stock uses 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing (not crypto). Holdout-tested on 2007–2016. Labels: Supportive ≥ 6.5, Unsupportive ≤ 4.5."}}
 os.makedirs(A.out, exist_ok=True)
@@ -283,6 +286,8 @@ def tcard(t):
     key = " · ".join(f'{e(k)} <b>{e(v)}</b>' for k, v in t["key"].items())
     lbl = e(t["ltl"] or "") + (f' <span class="sub">(was {e(c["week"]["label_was"])})</span>' if c["week"]["label_was"] else "")
     notes = []
+    if t.get("crypto") and t["crypto"].get("phase_label"):
+        cy = t["crypto"]; notes.append(f"Cycle: {e(cy['phase_label'])}" + (f" (MVRV {cy['mvrv']:.2f})" if cy.get("mvrv") is not None else " (Bitcoin's cycle)"))
     if t.get("direction"): notes.append(f"Direction: {e(t['direction'])}")
     if t["earnings"]: notes.append(f"Next earnings {e(t['earnings'])}")
     if t["warning"]: notes.append(f'<span class="n">⚠ {e(t["warning"])}</span>')
@@ -326,6 +331,18 @@ if FN:
         + f'<p>VIX {FN["vix"]:.1f}, higher than {FN["vix_pct"]}% of the last {round(FN.get("window_years") or 5)} years' + (f' · VIX/VIX3M {FN["vix_vix3m"]:.2f}' if FN.get("vix_vix3m") else "") + f'. Variance risk premium higher than {FN["vrp_pct"]}% of the last {round(FN.get("window_years") or 5)} years.'
         + (f' {" · ".join(chg)}.' if chg else "") + "</p>" + (f'<p class="sub">{e(FN["note"])}</p>' if FN.get("note") else ""),
         "Fear score = 0.3 premium (HAR variance risk premium, 10-year rank, mapped to 3–7) + 0.7 fear phase; scaled by each stock’s beta, 10% of entry timing (not crypto). Early fear is a high-risk entry, not the bottom; confirmed fading fear (credit easing, no new low, no bear market) was the best phase in both 2007–2016 and 2016–2026.")
+crypto_card = ""
+if CRY and CRY.get("assets"):
+    def _cl(a, nm):
+        r = (CRY["assets"] or {}).get(a)
+        if not r or not r.get("phase"): return ""
+        lab = CRY["phases"][r["phase"]]["label"]
+        return (f'<p><b>{nm}</b>: {e(lab)}' + (f' · MVRV {r["mvrv"]:.2f} · average cost {r["realized_price"]:,.0f} USD · price {r["price"]:,.0f}' if r.get("mvrv") is not None else "") + "</p>")
+    btc = CRY["assets"].get("btc") or {}
+    crypto_card = card("Crypto cycle", _cl("btc", "Bitcoin") + _cl("eth", "Ethereum")
+        + (f'<p class="sub">{e(CRY["phases"][btc["phase"]]["note"])}</p>' if btc.get("phase") else "")
+        + (f'<p class="sub">Crypto Fear &amp; Greed {CRY["fng"]["value"]} ({e(CRY["fng"]["date"])}), context only.</p>' if CRY.get("fng") else ""),
+        "Phase from on-chain data (Coin Metrics): accumulation = price below holders' average cost (MVRV ≤ 1), distribution = MVRV in the top 10% of 4 years, else bull or bear by the 200-day average. Scored in the crypto long-term and timing scores; other coins use Bitcoin's phase.")
 page = f"""<title>Watchlist Review</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -361,7 +378,7 @@ svg.sp{{width:100%;height:64px;display:block;margin-top:8px}}
 <div class="w">
 <div class="top"><h1>Watchlist review</h1><span class="sub">{fd(cur_d)} · {len(CUR)} tickers · {len(RUNS)} weekly run{"s" if len(RUNS) != 1 else ""} since {fd(RUNS[0])}</span></div>
 <nav class="nav"><a href="#start">Since the start</a><a href="#month">Last month</a><a href="#week">Last week</a><a href="#each">Each ticker</a><a href="#all">All scores</a></nav>
-<div class="g2">{card("Worth a closer look", watch_html, "Long-term ≥ 6.2 with timing ≥ 6.2 or up 1+ point this week. Scores: long-term · timing.")}{card("Alerts", alert_html, "Earnings within 14 days and data warnings.")}{fear_card}</div>
+<div class="g2">{card("Worth a closer look", watch_html, "Long-term ≥ 6.2 with timing ≥ 6.2 or up 1+ point this week. Scores: long-term · timing.")}{card("Alerts", alert_html, "Earnings within 14 days and data warnings.")}{fear_card}{crypto_card}</div>
 {section(H["start"])}{section(H["month"])}{section(H["week"])}
 <h2 id="each">Each ticker <span class="sub">interpretation · score changes · groups · indicators that moved</span></h2>{interp_note}{cards}
 <h2 id="all">All scores <span class="sub">change vs last week · since start</span></h2>{tables}
