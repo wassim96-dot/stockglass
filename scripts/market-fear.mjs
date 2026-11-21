@@ -9,9 +9,11 @@
 //    (Bollerslev, Tauchen & Zhou 2009) but out of sample the evidence is mixed (Pyun 2019), so it moves the score little.
 //  Phase: stress day = VIX above VIX3M or the VIX in the top 10% of its last 252 days. Early fear (first 5 stress days,
 //    VIX ≥ 95% of the episode high) = 5 with a risk flag (normal average return but the deepest follow-on drops);
-//    peak stress = 6; fading fear (VIX ≤ 85% of the high) = 8 only when confirmed — credit has stopped widening (HYG/IEF
+//    peak stress = 5.5; fading fear (VIX ≤ 85% of the high) = 7.5 only when confirmed — credit has stopped widening (HYG/IEF
 //    above its 20-day low), no new 20-day S&P 500 low in the last 5 days, and no bear state (S&P 500 > 15% below its
-//    52-week high with a negative 12-month return) — otherwise 6.5; after fear (stress in the last 20 days) = 5; calm = 5.
+//    52-week high with a negative 12-month return) — otherwise 5.5; after fear (stress in the last 20 days) = 4.5; calm = 5.
+//    Scores set from a holdout test: 2007–2016 (not used to design v2) and 2016–2026; ungated fading fear returned +0.1%
+//    over 63 days in 2007–2016 (2008), confirmed fading +2.6% (80% up, worst 21-day −9%) vs +1.6% on all days.
 //    Sources: Whaley (2000, 2009); Fassas & Siriopoulos (2019); Daniel & Moskowitz (2016); Bekaert, Hoerova & Lo Duca (2013).
 //  Context only: VIX percentile, VIX/VIX3M, HY option-adjusted spread (FRED, when reachable), CNN Fear & Greed.
 // Usage: node scripts/market-fear.mjs   (Node 18+, no dependencies)
@@ -24,10 +26,10 @@ const WIN10 = 2520, WIN5 = 1260, RVN = 22, HAR_MIN = 500;
 export const PHASE = {
   calm: [5, "Calm", "No market stress: no signal from the fear cycle."],
   early: [5, "Early fear", "Fear has just begun and the VIX is near its high. Average returns after such days have been normal, but they were followed by the deepest drops: not the bottom, a high-risk entry."],
-  peak: [6, "Peak stress", "Fear has lasted several days with the VIX near its high: forward returns have been above average, with large swings."],
-  fading: [8, "Fading fear (confirmed)", "The VIX is 15%+ below its high, credit has stopped widening and the market made no new low: historically the best entry phase."],
-  fading_unconfirmed: [6.5, "Fading fear (unconfirmed)", "The VIX is 15%+ below its high, but credit is still widening, the market made a new low or it is in a bear market: in 2008 and 2022 such pauses came before further falls."],
-  after: [5, "After fear", "Stress ended within the last month: returns close to normal."]
+  peak: [5.5, "Peak stress", "Fear has lasted several days with the VIX near its high: forward returns slightly above average overall, but below average in 2007–2016, with large swings."],
+  fading: [7.5, "Fading fear (confirmed)", "The VIX is 15%+ below its high, credit has stopped widening and the market made no new low: historically the best entry phase, with the smallest follow-on drops (2007–2016 and 2016–2026)."],
+  fading_unconfirmed: [5.5, "Fading fear (unconfirmed)", "The VIX is 15%+ below its high, but credit is still widening, the market made a new low or it is in a bear market: in 2008 and 2022 such pauses came before further falls."],
+  after: [4.5, "After fear", "Stress ended within the last month: returns have been below average in both 2007–2016 and 2016–2026."]
 };
 
 async function chart(sym, range = "20y") {
@@ -43,9 +45,9 @@ async function chart(sym, range = "20y") {
   throw Error("no data for " + sym);
 }
 async function fredSeries(id) {
-  for (const u of [`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}&cosd=2006-01-01`, `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}`]) {
+  for (const u of [`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}&cosd=2006-01-01`]) {
     try {
-      const r = await fetch(u, { headers: { "user-agent": UA, accept: "text/csv" }, signal: AbortSignal.timeout(30000) });
+      const r = await fetch(u, { headers: { "user-agent": UA, accept: "text/csv" }, signal: AbortSignal.timeout(15000) });
       if (!r.ok) throw Error("HTTP " + r.status);
       const m = new Map((await r.text()).trim().split("\n").slice(1).map(l => l.split(",")).filter(x => x[1] && !isNaN(+x[1])).map(x => [x[0], +x[1]]));
       if (m.size > 100) return m;
@@ -113,7 +115,7 @@ export function reading(S) {
   const last = S[S.length - 1], win = S.slice(-(S.length >= WIN10 ? WIN10 : WIN5));
   const pv = win.filter(s => s.vrp < last.vrp).length / win.length, pk = win.filter(s => s.vix < last.vix).length / win.length;
   const prem = 3 + 4 * pv, ph = PHASE[last.phase][0], score = +(0.3 * prem + 0.7 * ph).toFixed(1);
-  const label = score >= 6.5 ? "Supportive" : score <= 4.6 ? "Unsupportive" : "Neutral";
+  const label = score >= 6.5 ? "Supportive" : score <= 4.5 ? "Unsupportive" : "Neutral";
   const ratio = last.vix3m ? +(last.vix / last.vix3m).toFixed(3) : null;
   const ago24 = S[S.length - 1 - 504]?.spx, w200 = S.slice(-200), ma200 = w200.reduce((a, s) => a + s.spx, 0) / w200.length;
   const note = `${PHASE[last.phase][1]}${last.age ? ` (day ${last.age} of stress, VIX high ${last.peak.toFixed(1)})` : ""}: ${PHASE[last.phase][2]}`
@@ -143,7 +145,7 @@ if (process.argv[1] && process.argv[1].endsWith("market-fear.mjs")) {
   out.credit_proxy = credit ? { series: "HYG/IEF total-return ratio", easing: S[S.length - 1].credit_easing } : null;
   out.cnn_fear_greed = fg;
   out.updated = new Date().toISOString();
-  out.method = "Fear score = 0.3 × (3 + 4 × HAR variance-risk-premium percentile over 10 years) + 0.7 × fear-phase score (calm 5, early fear 5 + risk flag, peak stress 6, fading fear 8 if confirmed by credit, no new low and no bear state, else 6.5, after fear 5). Per stock: 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing. Holdout-tested on 2007–2016.";
+  out.method = "Fear score = 0.3 × (3 + 4 × HAR variance-risk-premium percentile over 10 years) + 0.7 × fear-phase score (calm 5, early fear 5 + risk flag, peak stress 5.5, fading fear 7.5 if confirmed by credit, no new low and no bear state, else 5.5, after fear 4.5). Per stock: 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing. Holdout-tested on 2007–2016.";
   out.history = "data/market-history.json";
   fs.mkdirSync(path.join(ROOT, "data"), { recursive: true });
   fs.writeFileSync(path.join(ROOT, "data", "market.json"), JSON.stringify(out, null, 1));
