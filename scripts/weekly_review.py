@@ -14,6 +14,19 @@ A = ap.parse_args()
 RUNS = json.load(open(os.path.join(ROOT, "data/runs/index.json")))["runs"]
 DATA = {d: {r["sym"]: r for r in json.load(open(os.path.join(ROOT, f"data/runs/{d}.json")))["results"]} for d in RUNS}
 cur_d = RUNS[-1]; CUR = DATA[cur_d]; D = dt.date.fromisoformat
+# market fear (VIX, variance risk premium): daily series from scripts/market-fear.mjs; each run file also keeps its reading
+try: MH = json.load(open(os.path.join(ROOT, "data/market-history.json")))["rows"]
+except Exception: MH = []
+RUNMKT = {d: json.load(open(os.path.join(ROOT, f"data/runs/{d}.json"))).get("market") for d in RUNS}
+def fear_at(d):
+    """VIX and premium on (or just before) date d; percentile over the 5 years before it, score = percentile / 10."""
+    m = RUNMKT.get(d)
+    if m and m.get("vix") is not None: return {k: m.get(k) for k in ("date", "vix", "vix_vix3m", "vrp", "vrp_pct", "vix_pct", "score", "label", "note")}
+    rows = [r for r in MH if r[0] <= d]
+    if len(rows) < 250 or (D(d) - D(rows[-1][0])).days > 7: return None
+    w = rows[-1260:]; x = rows[-1]; pv = sum(1 for r in w if r[5] < x[5]) / len(w); pk = sum(1 for r in w if r[1] < x[1]) / len(w)
+    return {"date": x[0], "vix": x[1], "vix_vix3m": round(x[1] / x[2], 3) if x[2] else None, "vrp": x[5], "vrp_pct": round(pv * 100), "vix_pct": round(pk * 100), "score": round(10 * pv, 1),
+            "label": "High fear premium" if pv >= .8 else "Low fear premium" if pv <= .2 else "Normal fear premium", "note": None}
 num = lambda x: isinstance(x, (int, float)) and not isinstance(x, bool)
 e = lambda s: html.escape(str(s if s is not None else ""))
 KIND = {"fund": "ETF", "index": "Index", "crypto": "Crypto"}
@@ -164,7 +177,9 @@ for s, r in CUR.items():
                "key": {M[k].get("l", k): M[k].get("d") for k in KEYF[kd] if k in M and M[k].get("d") not in (None, "∅")},
                "warning": r.get("warning"), "earnings": (r.get("next_earnings") or {}).get("date")})
 facts = {"date": cur_d, "first_run": RUNS[0], "runs": len(RUNS), "count": len(CUR), "watch": watch, "alerts": alerts,
-         "horizons": {k: {kk: vv for kk, vv in v.items() if kk != "rows"} for k, v in H.items()}, "tickers": TK}
+         "horizons": {k: {kk: vv for kk, vv in v.items() if kk != "rows"} for k, v in H.items()}, "tickers": TK,
+         "market_fear": {"now": fear_at(cur_d), **{hk: fear_at(H[hk]["from"]) if H[hk]["available"] else None for hk in ("week", "month", "start")},
+                         "method": "Variance risk premium = VIX² − 22-day realised variance of the S&P 500; score = its 5-year percentile ÷ 10, 10% of entry timing (not crypto)."}}
 json.dump(facts, open(os.path.join(A.out, "review.json"), "w"), indent=1, ensure_ascii=False)
 
 # ---------- page ----------
@@ -219,7 +234,9 @@ def section(h):
     if cross: grid += card("200-day average crossings", ul(cross, ""))
     extra = ""
     if h["added"] or h["removed"]: extra = f'<p class="sub">{"Added: " + ", ".join(h["added"]) + ". " if h["added"] else ""}{"Removed: " + ", ".join(h["removed"]) + "." if h["removed"] else ""}</p>'
-    return f'<section class="hz" id="{k}"><h2>{h["label"]} <span class="sub">{sub}</span></h2>{f"<div class=c>{nt}</div>" if nt else ""}{body}<div class="g2">{grid}</div>{extra}</section>'
+    fa, fb = fear_at(h["from"]), fear_at(h["to"])
+    fl = (f'<p class="sub">Market fear: VIX {fa["vix"]:.1f} → {fb["vix"]:.1f} · fear score {fa["score"]:.1f} → {fb["score"]:.1f} ({e(fb["label"]).lower()})</p>' if fa and fb else "")
+    return f'<section class="hz" id="{k}"><h2>{h["label"]} <span class="sub">{sub}</span></h2>{f"<div class=c>{nt}</div>" if nt else ""}{fl}{body}<div class="g2">{grid}</div>{extra}</section>'
 
 wkrows = {x["sym"]: x for x in (H["week"].get("rows") or [])}; strows = {x["sym"]: x for x in (H["start"].get("rows") or [])}
 tables = ""
@@ -285,6 +302,17 @@ for kd, n in KN.items():
     ts = sorted([t for t in TK if t["kind"] == kd], key=lambda t: -(t["lt"] if num(t["lt"]) else -1))
     if ts: cards += f'<h3 class="kh" id="each-{kd}">{n} <span class="sub">{len(ts)}</span></h3><div class="tg">' + "".join(tcard(t) for t in ts) + "</div>"
 interp_note = "" if INTERP else '<p class="sub">The written interpretation for each ticker is added by the Friday evening review.</p>'
+FN = fear_at(cur_d); fear_card = ""
+if FN:
+    fc = "var(--good)" if FN["score"] >= 6.5 else "var(--bad)" if FN["score"] <= 3.5 else "var(--warn)"
+    chg = []
+    for hk, nm in (("week", "1 week"), ("start", "since start")):
+        fb = fear_at(H[hk]["from"]) if H[hk]["available"] else None
+        if fb: chg.append(f'VIX {nm} {FN["vix"] - fb["vix"]:+.1f}')
+    fear_card = card("Market fear (VIX)", f'<p><b style="color:{fc}">{e(FN["label"])}</b> · score <b style="color:{fc}">{FN["score"]:.1f}</b>/10</p>'
+        f'<p>VIX {FN["vix"]:.1f}, higher than {FN["vix_pct"]}% of the last 5 years' + (f' · VIX/VIX3M {FN["vix_vix3m"]:.2f}' if FN.get("vix_vix3m") else "") + f'. Variance risk premium higher than {FN["vrp_pct"]}% of the last 5 years.'
+        + (f' {" · ".join(chg)}.' if chg else "") + "</p>" + (f'<p class="sub">{e(FN["note"])}</p>' if FN.get("note") else ""),
+        "10% of every entry-timing score (not crypto). A high premium has preceded above-average market returns over 2–4 months (Bollerslev, Tauchen & Zhou 2009).")
 page = f"""<title>Watchlist Review</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -320,7 +348,7 @@ svg.sp{{width:100%;height:64px;display:block;margin-top:8px}}
 <div class="w">
 <div class="top"><h1>Watchlist review</h1><span class="sub">{fd(cur_d)} · {len(CUR)} tickers · {len(RUNS)} weekly run{"s" if len(RUNS) != 1 else ""} since {fd(RUNS[0])}</span></div>
 <nav class="nav"><a href="#start">Since the start</a><a href="#month">Last month</a><a href="#week">Last week</a><a href="#each">Each ticker</a><a href="#all">All scores</a></nav>
-<div class="g2">{card("Worth a closer look", watch_html, "Long-term ≥ 6.2 with timing ≥ 6.2 or up 1+ point this week. Scores: long-term · timing.")}{card("Alerts", alert_html, "Earnings within 14 days and data warnings.")}</div>
+<div class="g2">{card("Worth a closer look", watch_html, "Long-term ≥ 6.2 with timing ≥ 6.2 or up 1+ point this week. Scores: long-term · timing.")}{card("Alerts", alert_html, "Earnings within 14 days and data warnings.")}{fear_card}</div>
 {section(H["start"])}{section(H["month"])}{section(H["week"])}
 <h2 id="each">Each ticker <span class="sub">interpretation · score changes · groups · indicators that moved</span></h2>{interp_note}{cards}
 <h2 id="all">All scores <span class="sub">change vs last week · since start</span></h2>{tables}

@@ -1,0 +1,17 @@
+{
+ "updated": "2026-11-21T10:54:00.540Z",
+ "date": "2026-11-20",
+ "vix": 35.89,
+ "vix3m": 30.94,
+ "vix_vix3m": 1.16,
+ "rv22": 683.2,
+ "vrp": 604.9,
+ "vrp_pct": 98,
+ "vix_pct": 99,
+ "score": 9.8,
+ "label": "High fear premium",
+ "note": "Option buyers pay far more than recent swings justify: historically followed by above-average market returns over 2–4 months, with larger swings. VIX above VIX3M: the term structure is inverted, a sign of near-term stress.",
+ "window_days": 1260,
+ "method": "VRP = VIX² − 22-day realised variance of the S&P 500 (annualised %²); score = 10 × its percentile over the last 5 years. Bollerslev, Tauchen & Zhou (2009); Bollerslev, Marrone, Xu & Zhou (2014).",
+ "history": "data/market-history.json"
+}

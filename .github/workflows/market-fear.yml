@@ -1,0 +1,38 @@
+name: Market fear (VIX)
+
+# Every weekday after the US close: VIX, VIX3M and the S&P 500 variance risk premium → data/market.json.
+# Used by the StockGlass page (entry timing) and by the stock-verdict skill. Also run inside "Weekly watchlist".
+on:
+  schedule:
+    - cron: "35 22 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-fear
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Compute VIX and variance risk premium
+        run: node scripts/market-fear.mjs
+      - name: Commit
+        run: |
+          git config user.name "stockglass-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market.json data/market-history.json
+          git diff --cached --quiet && { echo "No changes"; exit 0; }
+          git commit -m "Market fear $(date -u +%F)"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"

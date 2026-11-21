@@ -706,7 +706,7 @@ function calcFund(){
  S.tscore=tw&&S.groups.tech.covT>=.5?Math.round(ta/tw*10)/10:null;
  S.conf=clab(GR.reduce((a,[k])=>a+(S.groups[k].cov>=MIN_COV?LW[k]*S.groups[k].cov:0),0)/Object.values(LW).reduce((a,b)=>a+b,0));
  S.tconf=clab(Object.entries(TIMING).reduce((a,[k,wt])=>a+(S.groups[k]&&S.groups[k].covT>=MIN_COV?wt*S.groups[k].covT:0),0)/100);
- const lt=tierOf(S.score,LT_T),tm=tierOf(S.tscore,TM_T),tc=t=>isLight()?t[4]:t[3];S.sent=lt?[lt[1],tc(lt),lt[2]]:null;S.tsent=tm?[tm[1],tc(tm),tm[2]]:null}
+ const lt=tierOf(S.score,LT_T),tm=tierOf(S.tscore,TM_T),tc=t=>isLight()?t[4]:t[3];S.sent=lt?[lt[1],tc(lt),lt[2]]:null;S.tsent=tm?[tm[1],tc(tm),tm[2]]:null;applyFear()}
 
 function calc(){
  if(S.kind&&S.kind!=="equity"){calcFund();return}
@@ -823,8 +823,20 @@ function calc(){
  S.conf=clab(GR.reduce((a,[k])=>a+(S.groups[k].cov>=MIN_COV?LW[k]*S.groups[k].cov:0),0)/100);
  S.tconf=clab(Object.entries(TIMING).reduce((a,[k,wt])=>a+(S.groups[k].covT>=MIN_COV?wt*S.groups[k].covT:0),0)/100);
  const lt=tierOf(S.score,LT_T),tm=tierOf(S.tscore,TM_T);
- const tc=t=>isLight()?t[4]:t[3];S.sent=lt?[lt[1],tc(lt),lt[2]]:null;S.tsent=tm?[tm[1],tc(tm),tm[2]]:null;
+ const tc=t=>isLight()?t[4]:t[3];S.sent=lt?[lt[1],tc(lt),lt[2]]:null;S.tsent=tm?[tm[1],tc(tm),tm[2]]:null;applyFear();
 }
+
+/* ---------- Market fear (VIX): the S&P 500 variance risk premium, 10% of entry timing ----------
+   VRP = VIX² − realised variance of the last 22 days. A high premium has predicted higher market returns over the next
+   2–4 months, in the US and in Europe (Bollerslev, Tauchen & Zhou 2009; Bollerslev, Marrone, Xu & Zhou 2014); the VIX
+   level alone has little predictive power (Johnson 2017), so it is context. Score = the VRP's 5-year percentile ÷ 10.
+   Computed daily by scripts/market-fear.mjs (GitHub Actions) into data/market.json; ignored when older than 8 days.
+   Not applied to crypto (the evidence is for equities). */
+const FEAR_W=.10;let MF=null;
+const mfReady=(async()=>{try{const r=await fetch("data/market.json",{cache:"no-cache"});if(r.ok){const m=await r.json();
+ if(m&&isN(m.score)&&Date.now()-Date.parse(m.date+"T00:00:00Z")<8*864e5)MF=m}}catch(e){}})();
+function applyFear(){S.tbase=S.tscore;S.fear=null;if(S.tscore==null||!MF||S.kind==="crypto")return;S.fear=MF;
+ S.tscore=Math.round(((1-FEAR_W)*S.tscore+FEAR_W*MF.score)*10)/10;const tm=tierOf(S.tscore,TM_T),tc=t=>isLight()?t[4]:t[3];S.tsent=tm?[tm[1],tc(tm),tm[2]]:null}
 
 /* ---------- rendering ---------- */
 let rt=null;const soon=()=>{clearTimeout(rt);rt=setTimeout(draw,250)};
@@ -854,10 +866,13 @@ function render(){
  ringSet("tfg","t1","t2","tnum",S.tscore);pill("tsent",S.tsent);$("tmean").textContent=S.tsent?S.tsent[2]+` Data confidence: ${S.tconf}.`:S.kind&&S.kind!=="equity"?"Needs at least half of the technical indicators.":"Needs at least half of the technical indicators and two valuation ratios.";
  const gp=k=>{const v=S.groups[k]&&S.groups[k].sT;return v!=null?v.toFixed(1):"∅"};
  {const M_=S.mkt,el=$("mreg");if(M_){const cc=M_.lab==="Supportive"?"var(--good)":M_.lab==="Hostile"?"var(--bad)":"var(--warn)";
-  el.innerHTML=`<b style="color:${cc}">Market: ${M_.lab}</b>${esc(M_.n)} ${M_.iv>=0?"+":""}${M_.iv.toFixed(1)}% vs its 200-day, 50-day ${M_.up?"above":"below"} 200-day. Not scored.`}else el.textContent=""}
+  el.innerHTML=`<b style="color:${cc}">Market: ${M_.lab}</b>${esc(M_.n)} ${M_.iv>=0?"+":""}${M_.iv.toFixed(1)}% vs its 200-day, 50-day ${M_.up?"above":"below"} 200-day. Not scored.`}else el.textContent="";
+  if(MF){const F=MF,fc=F.score>=6.5?"var(--good)":F.score<=3.5?"var(--bad)":"var(--warn)";
+   el.innerHTML+=`<br><b style="color:${fc}">Fear: ${esc(F.label)}</b>VIX ${F.vix.toFixed(1)}, higher than ${F.vix_pct}% of the last 5 years${F.vix_vix3m!=null?`, VIX/VIX3M ${F.vix_vix3m.toFixed(2)}`:""}; variance risk premium higher than ${F.vrp_pct}% of the last 5 years → ${F.score.toFixed(1)}/10, `+(S.fear?`${Math.round(FEAR_W*100)}% of entry timing.`:S.kind==="crypto"?"not applied to crypto.":"not applied.")+` ${esc(F.note)} <span class="muted">(${esc(F.date)})</span>`}}
  {const den=100-TIMING.value+TIMING.value*S.vmT,sh=k=>Math.round(100*TIMING[k]*(k==="value"?S.vmT:1)/den);
   const tv=TIMING.value||0,den2=100-tv+tv*S.vmT,sh2=k=>Math.round(100*TIMING[k]*(k==="value"?S.vmT:1)/den2),nm=k=>(GR.find(x=>x[0]===k)||[,k])[1];
-  $("tparts").textContent=Object.keys(TIMING).map(k=>`${k==="mkt"?"Market & earnings":nm(k)} ${gp(k)} (${sh2(k)}%)`).join(" · ")+(S.vmT>1&&tv?" · valuation weight raised because it is weak":"")}
+  const fw=S.fear?FEAR_W:0;
+  $("tparts").textContent=Object.keys(TIMING).map(k=>`${k==="mkt"?"Market & earnings":nm(k)} ${gp(k)} (${Math.round(sh2(k)*(1-fw))}%)`).join(" · ")+(S.fear?` · Market fear (VIX) ${S.fear.score.toFixed(1)} (${Math.round(fw*100)}%)`:"")+(S.vmT>1&&tv?" · valuation weight raised because it is weak":"")}
  {const el=$("txp");el.className="tevt";el.innerHTML="";if(S.xp){if(S.xp.flag)el.classList.add("in");el.innerHTML="<b>Expectations.</b> "+esc(S.xp.note)}}
  const fdt=t=>t?new Date(t+"T00:00:00Z").toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}):"";
  {const el=$("tfil"),FL=S.fil;el.className="tevt";el.innerHTML="";
@@ -954,7 +969,7 @@ function chart(){
 
 /* ---------- orchestration ---------- */
 async function load(sym,fresh){
- sym=sym.trim().toUpperCase();if(!sym)return;const g=++S.gen;
+ sym=sym.trim().toUpperCase();if(!sym)return;const g=++S.gen;await mfReady;
  if(fresh)Object.keys(localStorage).forEach(k=>k.startsWith("sg_")&&k.includes(sym)&&localStorage.removeItem(k));
  Object.assign(S,{kind:null,fq:null,wk:[],sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",industry:"",ySec:"",yInd:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,estQ:null,fil:null,surp:null,nextEarn:null,bench:null,mkt:null,F:null,v:{},groups:{},score:null,sent:null,tscore:null,tsent:null,via:{}});
  $("srcs").innerHTML=[["sec","SEC EDGAR"],["yahoo","Yahoo"],["nasdaq","Nasdaq"],["est","Consensus EPS"],["fil","SEC filings"],["surp","Earnings surprise"],["profile","Sector"],["bench","Benchmark"]].map(([k,l])=>`<span class="st" data-k="${k}">${l}</span>`).join("");
@@ -972,15 +987,19 @@ async function load(sym,fresh){
 /* ---------- batch mode: run every watchlist ticker, then export all results (JSON / CSV) ---------- */
 const r2=(v,d=2)=>isN(v)?+v.toFixed(d):null;
 function snap(){
- const V=S.v||{},m={},g={},c=S.closes||[];
+ const V=S.v||{},m={},g={},c=S.closes||[];const F=MF;
  /* every indicator of the asset's model, found or not, so each one can be followed week by week */
  const WS=S.isFin&&(!S.kind||S.kind==="equity")?{...WI,...FIN_OVR}:WI;REG.forEach(r=>{const x=V[r.k]||{},w=WS[r.k]||[0,0];m[r.k]={l:r.l,g:r.g,v:r2(x.v,4),d:x.d||"∅",sc:x.s==="ok"?r2(x.sc):null,ctx:!w[0]&&!w[1]?1:0}});
  GR.forEach(([k,n])=>{const G=S.groups&&S.groups[k];g[k]={n,lt:G?r2(G.s,1):null,tm:G?r2(G.sT,1):null,cov:G?r2(G.cov):0}});
+ /* market fear: same reading for every asset; the premium is scored in entry timing (not for crypto), VIX level and term structure are context */
+ if(F){const on=!!S.fear;m.vrp={l:"Variance risk premium (S&P 500)",g:"fear",v:F.vrp,d:`pct ${F.vrp_pct}`,sc:F.score,ctx:on?0:1};
+  m.vix={l:"VIX",g:"fear",v:F.vix,d:F.vix.toFixed(1)+` (pct ${F.vix_pct})`,sc:null,ctx:1};
+  m.vixTerm={l:"VIX / VIX3M",g:"fear",v:F.vix_vix3m,d:F.vix_vix3m!=null?F.vix_vix3m.toFixed(2):"∅",sc:null,ctx:1}}
  const ret=n=>c.length>n&&S.price!=null?r2((S.price/c[c.length-1-n].c-1)*100,1):null,Q=S.fq;
  return{sym:S.sym,kind:S.kind||"equity",name:S.name||S.sym,cur:S.cur,exchange:S.ex,sector:S.sector||null,industry:S.industry||null,fin:S.isFin?1:0,price:r2(S.price,4),
   chg_1d:ret(1),chg_1w:ret(5),chg_1m:ret(21),chg_1y:ret(252),
   long_term:{score:S.score,label:S.sent?S.sent[0]:null,confidence:S.score!=null?S.conf:null},
-  timing:{score:S.tscore,label:S.tsent?S.tsent[0]:null,confidence:S.tscore!=null?S.tconf:null},
+  timing:{score:S.tscore,label:S.tsent?S.tsent[0]:null,confidence:S.tscore!=null?S.tconf:null,before_fear:S.fear?S.tbase:null,fear_weight:S.fear?FEAR_W:0},
   groups:g,metrics:m,coverage:S.cov||null,filing_check:S.fil&&S.fil.lab||null,
   next_earnings:S.nextEarn?{date:new Date(S.nextEarn.t).toISOString().slice(0,10),confirmed:S.nextEarn.confirmed}:null,
   fund:Q?{family:Q.fam||null,category:Q.cat||null,source:Q.src,top_holdings:(Q.hold||[]).slice(0,10).map(h=>({s:h.s,n:h.n,w:r2(h.w)})),sectors:(Q.sect||[]).slice(0,6).map(x=>({k:x.k,w:r2(x.w,1)}))}:null,
