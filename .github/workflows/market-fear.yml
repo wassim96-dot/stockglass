@@ -6,8 +6,6 @@ on:
   schedule:
     - cron: "35 22 * * 1-5"
   workflow_dispatch:
-  push:
-    branches: [fear-v2]   # TEMP: test run on the branch
 
 permissions:
   contents: write

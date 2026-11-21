@@ -45,8 +45,11 @@ async function chart(sym, range = "20y") {
 }
 async function fredLast(id) {          // high-yield option-adjusted spread, percent
   try {
-    const r = await fetch(`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}`, { headers: { "user-agent": UA } });
-    if (!r.ok) throw Error("HTTP " + r.status);
+    let r;
+    for (const u of [`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}&cosd=2014-01-01`, `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}`]) {
+      try { r = await fetch(u, { headers: { "user-agent": UA, accept: "text/csv" }, signal: AbortSignal.timeout(30000) }); if (r.ok) break; } catch (e) { console.log("FRED try", e.cause?.code || e.message); }
+    }
+    if (!r || !r.ok) throw Error("HTTP " + (r ? r.status : "no response"));
     const rows = (await r.text()).trim().split("\n").slice(1).map(l => l.split(",")).filter(x => x[1] && x[1] !== "." && !isNaN(+x[1])).map(x => [x[0], +x[1]]);
     const last = rows[rows.length - 1], w = rows.slice(-WIN10);
     return { date: last[0], value: last[1], pct: Math.round(100 * w.filter(x => x[1] < last[1]).length / w.length), years: +(w.length / 252).toFixed(1) };
