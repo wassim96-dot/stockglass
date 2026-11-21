@@ -82,7 +82,7 @@ const $=i=>document.getElementById(i),isN=v=>typeof v==="number"&&isFinite(v);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const light=()=>document.documentElement.dataset.theme==="light";
 const col=s=>light()?`hsl(${s<=5?4+s/5*44:48+(s-5)/5*102} 66% 40%)`:`hsl(${s<=5?4+s/5*44:48+(s-5)/5*102} 88% 64%)`;
-const GN={growth:"Growth",profit:"Profitability",health:"Financial health",value:"Valuation",quality:"Quality",div:"Dividend",tech:"Technicals",mkt:"Market & sentiment",cost:"Cost",size:"Size & liquidity",divers:"Diversification",risk:"Risk & return",fear:"Market fear (VIX)"};
+const GN={growth:"Growth",profit:"Profitability",health:"Financial health",value:"Valuation",quality:"Quality",div:"Dividend",tech:"Technicals",mkt:"Market & sentiment",cost:"Cost",size:"Size & liquidity",divers:"Diversification",risk:"Risk & return",fear:"Market fear (VIX)",chain:"Cycle & on-chain"};
 const KL={fund:"ETF",index:"Index",crypto:"Crypto"};
 const kindOf=r=>r.kind||(r.sym.startsWith("^")?"index":/-USD$/.test(r.sym)?"crypto":"equity");
 const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};

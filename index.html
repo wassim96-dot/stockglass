@@ -367,11 +367,22 @@ M("cagr5","risk","Return 5y (annualised)",pc,[[-10,1],[0,3],[5,5],[10,7],[15,9]]
 M("vol3","risk","Volatility 3y",v=>pc(v,0),null,"Annualised σ of weekly returns over 3 years."),
 M("beta3","risk","Beta 3y",v=>v.toFixed(2),null,"Sensitivity to the fund's benchmark (Yahoo)."),
 ...REG_S.filter(m=>m.g==="tech")];
+/* crypto: cycle phase from on-chain data (data/crypto.json, Coin Metrics Community), see the skill's references/crypto.md */
+const CPH_LT={accumulation:8.5,bull:6,bear:3.5,distribution:3.5},CPH_TM={accumulation:6.5,bull:6,bear:4,distribution:5};
+const REG_C=[
+M("cyc","chain","Cycle phase (1-year view)",v=>String(v),null,"Accumulation (price below holders' average cost, MVRV ≤ 1), bull (above the 200-day average), bear (below it) or distribution (MVRV in the top 10% of 4 years). One-year returns after accumulation were the best of the cycle; after bear and distribution the worst (BTC 2012–2026, ETH 2017–2026)."),
+M("cycT","chain","Cycle phase (3-month view)",v=>String(v),null,"Same phase, scored for the next 2–12 weeks: accumulation and bull lean positive, bear negative; distribution can still run on momentum."),
+M("mvrv","chain","MVRV (price / average cost)",v=>v.toFixed(2),[[.6,9],[.8,8.5],[1,8],[1.5,6.5],[2.5,4.5],[3.5,2],[5,1]],"Market value / realised value: price divided by the average price at which all coins last moved. Below 1, holders are at a loss on average; above 3.5, euphoric profits."),
+M("mvrvP","chain","MVRV vs its last 4 years",v=>v.toFixed(0)+"th pct",null,"Where today's MVRV sits among the last 4 years; peaks have shrunk each cycle, so the rank adapts. Context: the level and the phase carry the signal."),
+M("adg","chain","Active addresses, 1-year change",pc,null,"Network use (Coin Metrics). Context only: in our test it did not predict returns consistently (positive for BTC, negative for ETH)."),
+M("fund","chain","Perpetual funding (annualised)",v=>(v>=0?"+":"")+v.toFixed(1)+"%",null,"What leveraged longs pay shorts on OKX perpetual swaps, last 7 days. Very high = crowded longs. Context only."),
+M("cfng","chain","Crypto Fear & Greed",v=>v.toFixed(0),null,"alternative.me index (0 extreme fear – 100 extreme greed). Context only: extreme fear gave no contrarian edge in 2018–2026.")];
 let REG=REG_S;
-const RM=Object.fromEntries([...REG_S,...REG_F].map(m=>[m.k,m]));
+const RM=Object.fromEntries([...REG_S,...REG_F,...REG_C].map(m=>[m.k,m]));
 const GR_S=[["growth","Growth","#3ddc97"],["profit","Profitability","#b794ff"],["health","Financial health","#5db3ff"],["value","Valuation","#4fd8e8"],["quality","Quality","#ffc04d"],["div","Dividend","#ff9f5a"],["tech","Technicals","#ff7a8a"],["mkt","Market & sentiment","#9ab8e6"]];
 const GR_F=[["cost","Cost","#3ddc97"],["size","Size & liquidity","#5db3ff"],["divers","Diversification","#b794ff"],["value","Valuation (holdings)","#4fd8e8"],["risk","Risk & return","#ffc04d"],["tech","Technicals","#ff7a8a"]];
 const GR_M=[["risk","Risk & return","#ffc04d"],["tech","Technicals","#ff7a8a"]];
+const GR_C=[["chain","Cycle & on-chain","#b794ff"],["risk","Risk & return","#ffc04d"],["tech","Technicals","#ff7a8a"]];
 let GR=GR_S;
 /* Per-indicator weights [long-term, entry-timing]. Within a group the score is a weighted mean of the
    indicators found, so overlapping or noisy indicators count less (e.g. P/FCF and FCF yield carry the same
@@ -395,6 +406,8 @@ const WI_F={ter:[1,0],turn:[0,0],aum:[.75,0],age:[.5,0],adv:[.25,0],prem:[0,0],t
  mdd:[1,0],sharpe:[0,0],cagr3:[0,0],cagr5:[0,0],vol3:[0,0],beta3:[0,0],...TECH_F};
 /* indices and crypto: no fund data, scored on drawdown (with return and Sharpe) and trend */
 const WI_M={...WI_F,mdd:[1,0],sharpe:[.5,0],cagr3:[.25,0]};
+/* crypto: cycle phase carries most of the long-term score; trend (Liu & Tsyvinski 2021; Detzel et al. 2021) most of timing */
+const WI_C={...WI_M,cyc:[1.5,0],cycT:[0,1],mvrv:[1,0],mvrvP:[0,0],adg:[0,0],fund:[0,0],cfng:[0,0]};
 let WI=WI_S;
 const COMPOSITE={revCagr5:"Revenue growth",revCagr3:"Revenue growth",epsCagr5:"Earnings-power growth",fcfCagr5:"Earnings-power growth",gross:"Margins",op:"Margins",
  ndEbitda:"Leverage",intCov:"Leverage",de:"Leverage",peFwd:"Value",pe:"Value",evEbitda:"Value",fcfY:"Value",shY:"Value",
@@ -409,7 +422,7 @@ const RF=4.94,ERP=4.41;      /* Damodaran, 1 Nov 2026: US T-bond rate and implie
 const LW_S={growth:8,profit:21,health:9,value:22,quality:14,div:3,tech:12,mkt:11};   /* long-term group weights */
 /* Entry timing (2–12 weeks): price setup, then earnings news (EPS surprise, counted once), valuation as a risk factor */
 const TIMING_S={tech:65,mkt:20,value:15};
-const LW_F={cost:20,size:12,divers:13,value:25,risk:10,tech:20},TIMING_F={tech:80,value:20},LW_M={risk:40,tech:60},TIMING_M={tech:100};
+const LW_F={cost:20,size:12,divers:13,value:25,risk:10,tech:20},TIMING_F={tech:80,value:20},LW_M={risk:40,tech:60},TIMING_M={tech:100},LW_C={chain:40,risk:20,tech:40},TIMING_C={tech:75,chain:25};
 let LW=LW_S,TIMING=TIMING_S;
 /* Weak valuation weighs more in both scores: below 4/10 its weight × (1 + 2·(4 − v)/4), up to ×3 at 0.
    Stocks priced for high growth fall much harder on disappointments than they rise on beats (Skinner & Sloan 2002). */
@@ -433,12 +446,13 @@ const tiers=L=>L.map((x,i)=>[TH[i],x[0],x[1],...TC[i]]);
 const LT_T_F=tiers([["Strong long-term profile","A cheap, large, well-built fund on a market that is reasonably priced and in a healthy trend."],["Favourable long-term profile","A sound fund; one area (often the market's valuation or trend) holds the score back."],["Mixed long-term profile","The fund or its market has clear weaknesses that offset the strengths."],["Weak long-term profile","Costs, structure or the market's valuation and trend make a long-term case hard."],["Poor long-term profile","Most areas score poorly."]]);
 const TM_T_F=tiers([["Favourable entry conditions","The market held is in a confirmed uptrend with momentum, and its valuation adds no unusual downside risk."],["Mostly favourable entry conditions","The trend leans positive, but stretch, a weak trend or a rich valuation argues for patience."],["Neutral entry conditions","Trend and valuation do not line up."],["Unfavourable entry conditions","The market is below its trend, or richly valued with fading momentum."],["Poor entry conditions","Downtrend with no valuation support."]]);
 const LT_T_M=tiers([["Strong trend & risk profile","Long-run return, drawdowns and trend are all healthy. No valuation data: price behaviour only."],["Favourable trend & risk profile","Trend and risk are mostly healthy; one of them holds the score back. Price behaviour only."],["Mixed trend & risk profile","Trend and risk send mixed signals. Price behaviour only."],["Weak trend & risk profile","Weak trend or deep drawdowns. Price behaviour only."],["Poor trend & risk profile","Downtrend with deep drawdowns. Price behaviour only."]]);
+const LT_T_C=tiers([["Strong cycle & trend profile","Early in the crypto cycle (holders near or below their average cost) with a healthy trend and tolerable drawdowns."],["Favourable cycle & trend profile","The cycle or the trend is supportive; the other holds the score back."],["Mixed cycle & trend profile","Cycle, trend and risk point in different directions."],["Weak cycle & trend profile","Late or bearish cycle phase with a weak trend."],["Poor cycle & trend profile","Bear or distribution phase, downtrend and deep drawdowns."]]);
 const TM_T_M=tiers([["Favourable entry conditions","Confirmed uptrend with momentum."],["Mostly favourable entry conditions","The trend leans positive, but stretch or a weak trend argues for patience."],["Neutral entry conditions","No clear trend."],["Unfavourable entry conditions","Price below its trend with fading momentum."],["Poor entry conditions","Downtrend."]]);
 let LT_T=LT_T_S,TM_T=TM_T_S;
 const KIND_LABEL={equity:"Stock",fund:"ETF / fund",index:"Index",crypto:"Crypto"};
-function setMode(k){const f=k==="fund",m=k==="index"||k==="crypto";
- REG=f?REG_F:m?REG_F.filter(x=>x.g==="risk"||x.g==="tech"):REG_S;GR=f?GR_F:m?GR_M:GR_S;WI=f?WI_F:m?WI_M:WI_S;
- LW=f?LW_F:m?LW_M:LW_S;TIMING=f?TIMING_F:m?TIMING_M:TIMING_S;LT_T=f?LT_T_F:m?LT_T_M:LT_T_S;TM_T=f?TM_T_F:m?TM_T_M:TM_T_S}
+function setMode(k){const f=k==="fund",m=k==="index",c=k==="crypto";
+ REG=f?REG_F:c?[...REG_C,...REG_F.filter(x=>x.g==="risk"||x.g==="tech")]:m?REG_F.filter(x=>x.g==="risk"||x.g==="tech"):REG_S;GR=f?GR_F:c?GR_C:m?GR_M:GR_S;WI=f?WI_F:c?WI_C:m?WI_M:WI_S;
+ LW=f?LW_F:c?LW_C:m?LW_M:LW_S;TIMING=f?TIMING_F:c?TIMING_C:m?TIMING_M:TIMING_S;LT_T=f?LT_T_F:c?LT_T_C:m?LT_T_M:LT_T_S;TM_T=f?TM_T_F:(m||c)?TM_T_M:TM_T_S}
 /* cash rate for the Sharpe ratio by currency (approximate policy rates, Nov 2026); USD = RF */
 const CASH={USD:4.94,EUR:2.5,GBP:4,CHF:.5,SEK:2,NOK:4,DKK:2.3,JPY:.5};
 Object.assign(COMPOSITE,{assetG:"Investment",capexAb:"Investment"});
@@ -687,6 +701,13 @@ function calcFund(){
   let pk=-Infinity,dd=0;w3.forEach(x=>{pk=Math.max(pk,x.c);dd=Math.min(dd,(x.c/pk-1)*100)});
   const c3=an(3),v3=lr.length>100?sd(lr)*Math.sqrt(52)*100:null,cr=CASH[S.cur]??3;
   set("cagr3",c3);set("cagr5",an(5));set("vol3",v3);set("mdd",w3.length>100?dd:null);set("sharpe",c3!=null&&v3>0?(c3-cr)/v3:null,{src:`cash rate ${cr}% (${S.cur})`});set("beta3",Q.beta3)}
+ /* crypto cycle (data/crypto.json): own on-chain phase for BTC/ETH; other coins get Bitcoin's phase, shrunk halfway to neutral */
+ S.cr=null;if(K==="crypto"){const b=String(S.sym||"").replace(/-USD$/i,"").toLowerCase(),r=CR&&CR.assets&&CR.assets[b],own=r&&r.mvrv!=null,bt=CR&&CR.assets&&CR.assets.btc;
+  const ph=r&&r.phase?r.phase:bt&&bt.phase,lab=CR&&ph?CR.phases[ph].label:null,sh=v=>own?v:5+(v-5)/2,src=own?"own on-chain data (Coin Metrics)":"Bitcoin's cycle, shrunk halfway to neutral (no on-chain data for this coin)";
+  S.cr=ph?{ph,lab,own,r:r||null,btc:bt||null,note:CR.phases[ph].note,src,fng:CR.fng||null}:null;
+  if(ph){set("cyc",lab,{force:sh(CPH_LT[ph]),dd:lab,src});set("cycT",lab,{force:sh(CPH_TM[ph]),dd:lab,src})}else{set("cyc",null);set("cycT",null)}
+  set("mvrv",own?r.mvrv:null,own?{src:`realised price ${money(r.realized_price,"USD")}`}:{});set("mvrvP",own?r.mvrv_pct_4y:null);set("adg",r?r.adr_growth_1y:null);
+  set("fund",r?r.funding_annual:null,{src:"OKX perpetual swaps"});set("cfng",CR&&CR.fng?CR.fng.value:null,CR&&CR.fng?{src:CR.fng.date}:{})}
  /* technicals: identical to stock mode */
  set("rsi",t.rsi);
  set("macd",t.hist,t.hist!=null?{force:t.hist>0?(t.hist>=t.hp?8.5:6.5):(t.hist>=t.hp?4.5:2),dd:(t.hist>0?"bull ":"bear ")+t.hist.toFixed(2)}:{});
@@ -847,7 +868,8 @@ function calc(){
    level alone has little predictive power (Johnson 2017), so it is context. Score = the VRP's 5-year percentile ÷ 10.
    Computed daily by scripts/market-fear.mjs (GitHub Actions) into data/market.json; ignored when older than 8 days.
    Not applied to crypto (the evidence is for equities). */
-const FEAR_W=.10;let MF=null;
+const FEAR_W=.10;let MF=null,CR=null;
+const crReady=(async()=>{try{const r=await fetch("data/crypto.json",{cache:"no-cache"});if(r.ok){const m=await r.json();if(m&&m.assets&&Date.now()-Date.parse(m.updated)<8*864e5)CR=m}}catch(e){}})();
 const mfReady=(async()=>{try{const r=await fetch("data/market.json",{cache:"no-cache"});if(r.ok){const m=await r.json();
  if(m&&isN(m.score)&&Date.now()-Date.parse(m.date+"T00:00:00Z")<8*864e5)MF=m}}catch(e){}})();
 /* Long / short setup note under the timing score (not a score; version 2, 21 Nov 2026). A trend counts only when the
@@ -855,7 +877,13 @@ const mfReady=(async()=>{try{const r=await fetch("data/market.json",{cache:"no-c
    revised time-series momentum of Lim, Wang & Yao (2018) and volatility-scaled momentum (Barroso & Santa-Clara 2015).
    Shorts are flagged only in a calm, rising market (S&P 500 above its 200-day average, positive 24-month return): momentum
    crashes happen when losers rebound after high-volatility bear markets, worst for high beta (Daniel & Moskowitz 2016). */
-function dirNote(){if(S.tscore==null)return null;const V=S.v||{},e2=V.e200&&V.e200.v,mo=V.mom&&V.mom.v,be=V.beta&&V.beta.v,F=S.fear||(S.kind!=="crypto"?MF:null),ph=F?F.phase:null,mk=F&&F.market;
+function dirNoteCrypto(){const V=S.v||{},e2=V.e200&&V.e200.v,mo=V.mom&&V.mom.v,ph=S.cr&&S.cr.ph,up=e2!=null&&e2>0&&mo!=null&&mo>.5,dn=e2!=null&&e2<0&&mo!=null&&mo<-.5;let l,n;
+ if(S.tscore>=6&&up){l="Long setups favoured";n="Strong uptrend (momentum above half its volatility) and favourable timing."+(ph==="distribution"?" But the cycle is in distribution: holders sit on large profits, so trail the position tightly.":"")}
+ else if(S.tscore<=4&&dn&&ph==="bear"){l="Short setups favoured";n="Strong downtrend in a crypto bear phase with holders still in profit: historically the weakest phase. The risk is violent short squeezes."}
+ else if(S.tscore<=4&&dn){l="Shorts risky, no long setup";n=ph==="accumulation"?"Downtrend, but price is below holders' average cost (accumulation): the zone where bottoms form and short squeezes are violent. A long entry needs the trend to turn first.":"Downtrend outside a bear phase: no clear edge for shorts. A long entry needs the trend to turn first."}
+ else{l="Neutral";n="No clear edge for longs or shorts: trend, momentum and timing do not line up."+(ph==="accumulation"?" The cycle is in accumulation: historically the best one-year entry zone, but timing within it is uncertain.":ph==="bear"?" The cycle is still in a bear phase: in past cycles the bull market returned only after price fell below holders' average cost (accumulation).":"")}
+ return{label:l,note:n,phase:ph||null}}
+function dirNote(){if(S.tscore==null)return null;if(S.kind==="crypto")return dirNoteCrypto();const V=S.v||{},e2=V.e200&&V.e200.v,mo=V.mom&&V.mom.v,be=V.beta&&V.beta.v,F=S.fear||(S.kind!=="crypto"?MF:null),ph=F?F.phase:null,mk=F&&F.market;
  const up=e2!=null&&e2>0&&mo!=null&&mo>.5,dn=e2!=null&&e2<0&&mo!=null&&mo<-.5,calm=ph==="calm",bull=!mk||(mk.above_200d&&mk.ret_24m>0),hb=be!=null&&be>=1.3,lb=be!=null&&be<=.8,bt=be!=null?` (beta ${be.toFixed(2)})`:"",fad=ph&&ph.startsWith("fading");
  let l,n;if(S.tscore>=6&&up){l="Long setups favoured";n="Strong uptrend (momentum above half its volatility) and favourable timing.";if(ph==="early")n+=" Early fear is a high-risk entry: spreading entries over the coming weeks has historically beaten buying the first days of a panic."}
  else if(S.tscore<=4&&dn&&calm&&bull){l="Short setups favoured";n="Strong downtrend with weak timing in a calm, rising market: trend-following shorts have worked on average; the risk is a squeeze on good news"+(hb?", larger with high beta"+bt:"")+"."}
@@ -961,7 +989,8 @@ function note(pass,tot){
 /* ---------- ETF / index / crypto panels ---------- */
 function fundFacts(){
  const el=$("fwd"),Q=S.fq||{},V=S.v,row=(l,v)=>v!=null&&v!==""?`<tr><td>${esc(l)}</td><td>${v}</td></tr>`:"";el.className="fw";
- if(S.kind!=="fund"){el.innerHTML=`<div><p>${S.kind==="index"?"A market index: no fees, holdings data or company accounts here.":"A crypto asset: no company accounts or cash flows."} Scored on long-run return, drawdowns and price trend only.</p><p class="muted">Long-term = Risk & return ${LW.risk}% + Technicals ${LW.tech}%; entry timing = Technicals.</p></div>`;return}
+ if(S.kind==="crypto"){const C=S.cr,r=C&&C.r;el.innerHTML=`<div><p>A crypto asset: no company accounts or cash flows. Scored on where it stands in the crypto cycle (on-chain data), its long-run risk and its trend.</p>${C?`<p><b>Cycle phase: ${esc(C.lab)}</b> — ${esc(C.note)} <span class="muted">(${esc(C.src)}${r&&r.date?", "+esc(r.date):""})</span></p>`:"<p class=\"muted\">Cycle data unavailable.</p>"}${r&&r.mvrv!=null?`<p>MVRV ${r.mvrv.toFixed(2)} · holders' average cost (realised price) ${money(r.realized_price,"USD")} · 200-day average ${money(r.ma200,"USD")}${r.adr_growth_1y!=null?` · active addresses ${r.adr_growth_1y>=0?"+":""}${r.adr_growth_1y}% in a year`:""}</p>`:C&&C.btc&&C.btc.mvrv!=null?`<p>Bitcoin: MVRV ${C.btc.mvrv.toFixed(2)}, average cost ${money(C.btc.realized_price,"USD")}.</p>`:""}<p class="muted">Long-term = Cycle & on-chain ${LW.chain}% + Risk & return ${LW.risk}% + Technicals ${LW.tech}%; entry timing = Technicals ${TIMING.tech}% + cycle ${TIMING.chain}%. Market fear (VIX) is not applied to crypto. On-chain data: Coin Metrics Community (CC BY-NC 4.0).</p></div>`;return}
+ if(S.kind!=="fund"){el.innerHTML=`<div><p>A market index: no fees, holdings data or company accounts here. Scored on long-run return, drawdowns and price trend only.</p><p class="muted">Long-term = Risk & return ${LW.risk}% + Technicals ${LW.tech}%; entry timing = Technicals.</p></div>`;return}
  const dt=t=>t?new Date(t).toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"}):null;
  const h=(Q.hold||[]).slice(0,10).map(x=>`<li>${esc(x.n||x.s)}${x.s?` <span class="muted">${esc(x.s)}</span>`:""}<b>${x.w.toFixed(2)}%</b></li>`).join("");
  const sc=(Q.sect||[]).slice(0,5).map(x=>`${esc(String(x.k).replace(/_/g," "))} ${x.w.toFixed(1)}%`).join(" · ");
@@ -1004,7 +1033,7 @@ function chart(){
 
 /* ---------- orchestration ---------- */
 async function load(sym,fresh){
- sym=sym.trim().toUpperCase();if(!sym)return;const g=++S.gen;await mfReady;
+ sym=sym.trim().toUpperCase();if(!sym)return;const g=++S.gen;await mfReady;await crReady;
  if(fresh)Object.keys(localStorage).forEach(k=>k.startsWith("sg_")&&k.includes(sym)&&localStorage.removeItem(k));
  Object.assign(S,{kind:null,fq:null,wk:[],sym,name:"",price:null,prev:null,cur:"USD",ex:"",sector:"",industry:"",ySec:"",yInd:"",desc:"",hi52:null,closes:[],divs:[],sec:null,yf:null,nd:null,est:null,estQ:null,fil:null,surp:null,nextEarn:null,bench:null,mkt:null,F:null,v:{},groups:{},score:null,sent:null,tscore:null,tsent:null,via:{}});
  $("srcs").innerHTML=[["sec","SEC EDGAR"],["yahoo","Yahoo"],["nasdaq","Nasdaq"],["est","Consensus EPS"],["fil","SEC filings"],["surp","Earnings surprise"],["profile","Sector"],["bench","Benchmark"]].map(([k,l])=>`<span class="st" data-k="${k}">${l}</span>`).join("");
@@ -1031,7 +1060,8 @@ function snap(){
   m.vix={l:"VIX",g:"fear",v:F.vix,d:F.vix.toFixed(1)+` (pct ${F.vix_pct})`,sc:null,ctx:1};
   m.vixTerm={l:"VIX / VIX3M",g:"fear",v:F.vix_vix3m,d:F.vix_vix3m!=null?F.vix_vix3m.toFixed(2):"∅",sc:null,ctx:1}}
  const ret=n=>c.length>n&&S.price!=null?r2((S.price/c[c.length-1-n].c-1)*100,1):null,Q=S.fq;
- return{sym:S.sym,kind:S.kind||"equity",name:S.name||S.sym,cur:S.cur,exchange:S.ex,sector:S.sector||null,industry:S.industry||null,fin:S.isFin?1:0,price:r2(S.price,4),
+ const crypto=S.cr?{phase:S.cr.ph,phase_label:S.cr.lab,own_data:S.cr.own,mvrv:S.cr.r?S.cr.r.mvrv:null,realized_price:S.cr.r?S.cr.r.realized_price:null,mvrv_pct_4y:S.cr.r?S.cr.r.mvrv_pct_4y:null,date:S.cr.r?S.cr.r.date:null,fng:S.cr.fng?S.cr.fng.value:null}:null;
+ return{sym:S.sym,kind:S.kind||"equity",name:S.name||S.sym,cur:S.cur,exchange:S.ex,sector:S.sector||null,industry:S.industry||null,fin:S.isFin?1:0,crypto,price:r2(S.price,4),
   chg_1d:ret(1),chg_1w:ret(5),chg_1m:ret(21),chg_1y:ret(252),
   long_term:{score:S.score,label:S.sent?S.sent[0]:null,confidence:S.score!=null?S.conf:null},
   timing:{score:S.tscore,label:S.tsent?S.tsent[0]:null,confidence:S.tscore!=null?S.tconf:null,before_fear:S.fear?S.tbase:null,fear_weight:S.fear?FEAR_W:0,fear_adj:S.fear?S.fearAdj:null,fear_beta:S.fear?S.fearBeta:null,direction:S.dir?S.dir.label:null},

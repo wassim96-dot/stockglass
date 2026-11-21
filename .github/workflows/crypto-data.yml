@@ -6,8 +6,6 @@ on:
   schedule:
     - cron: "20 1 * * *"
   workflow_dispatch:
-  push:
-    branches: [crypto]   # TEMP: test run on the branch
 
 permissions:
   contents: write
