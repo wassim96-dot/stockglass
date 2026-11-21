@@ -21,12 +21,16 @@ RUNMKT = {d: json.load(open(os.path.join(ROOT, f"data/runs/{d}.json"))).get("mar
 def fear_at(d):
     """VIX and premium on (or just before) date d; percentile over the 5 years before it, score = percentile / 10."""
     m = RUNMKT.get(d)
-    if m and m.get("vix") is not None: return {k: m.get(k) for k in ("date", "vix", "vix_vix3m", "vrp", "vrp_pct", "vix_pct", "score", "label", "note")}
+    if m and m.get("vix") is not None: return {k: m.get(k) for k in ("date", "vix", "vix_vix3m", "vrp", "vrp_pct", "vix_pct", "score", "label", "note", "phase", "phase_label", "window_years")}
     rows = [r for r in MH if r[0] <= d]
     if len(rows) < 250 or (D(d) - D(rows[-1][0])).days > 7: return None
-    w = rows[-1260:]; x = rows[-1]; pv = sum(1 for r in w if r[5] < x[5]) / len(w); pk = sum(1 for r in w if r[1] < x[1]) / len(w)
-    return {"date": x[0], "vix": x[1], "vix_vix3m": round(x[1] / x[2], 3) if x[2] else None, "vrp": x[5], "vrp_pct": round(pv * 100), "vix_pct": round(pk * 100), "score": round(10 * pv, 1),
-            "label": "High fear premium" if pv >= .8 else "Low fear premium" if pv <= .2 else "Normal fear premium", "note": None}
+    w = rows[-(2520 if len(rows) >= 2520 else 1260):]; x = rows[-1]; pv = sum(1 for r in w if r[5] < x[5]) / len(w); pk = sum(1 for r in w if r[1] < x[1]) / len(w)
+    PH = {"calm": (5, "Calm"), "early": (4.5, "Early fear"), "peak": (6, "Peak stress"), "fading": (8, "Fading fear"), "after": (5.5, "After fear")}
+    ph = x[6] if len(x) > 6 and x[6] in PH else None
+    sc = round((10 * pv + PH[ph][0]) / 2, 1) if ph else round(10 * pv, 1)
+    return {"date": x[0], "vix": x[1], "vix_vix3m": round(x[1] / x[2], 3) if x[2] else None, "vrp": x[5], "vrp_pct": round(pv * 100), "vix_pct": round(pk * 100), "score": sc,
+            "label": "High fear premium" if sc >= 7 else "Low fear premium" if sc <= 3.5 else "Normal fear premium", "note": None,
+            "phase": ph, "phase_label": PH[ph][1] if ph else None, "window_years": round(len(w) / 252, 1)}
 num = lambda x: isinstance(x, (int, float)) and not isinstance(x, bool)
 e = lambda s: html.escape(str(s if s is not None else ""))
 KIND = {"fund": "ETF", "index": "Index", "crypto": "Crypto"}
@@ -175,11 +179,12 @@ for s, r in CUR.items():
                "strong": [[a, b2] for a, b2, _ in sorted(scored, key=lambda x: -x[2])[:3]], "weak": [[a, b2] for a, b2, c in sorted(scored, key=lambda x: x[2])[:3] if c < 5],
                "ind_week": {"up": up_w, "down": dn_w}, "ind_start": {"up": up_s, "down": dn_s},
                "key": {M[k].get("l", k): M[k].get("d") for k in KEYF[kd] if k in M and M[k].get("d") not in (None, "∅")},
-               "warning": r.get("warning"), "earnings": (r.get("next_earnings") or {}).get("date")})
+               "warning": r.get("warning"), "earnings": (r.get("next_earnings") or {}).get("date"), "direction": (r.get("timing") or {}).get("direction")})
 facts = {"date": cur_d, "first_run": RUNS[0], "runs": len(RUNS), "count": len(CUR), "watch": watch, "alerts": alerts,
          "horizons": {k: {kk: vv for kk, vv in v.items() if kk != "rows"} for k, v in H.items()}, "tickers": TK,
          "market_fear": {"now": fear_at(cur_d), **{hk: fear_at(H[hk]["from"]) if H[hk]["available"] else None for hk in ("week", "month", "start")},
-                         "method": "Variance risk premium = VIX² − 22-day realised variance of the S&P 500; score = its 5-year percentile ÷ 10, 10% of entry timing (not crypto)."}}
+                         "method": "Variance risk premium = VIX² − 22-day realised variance of the S&P 500; fear score = ½ × its 10-year percentile ÷ 10 + ½ × fear-phase score (calm 5, early fear 4.5, peak stress 6, fading fear 8, after fear 5.5); 10% of entry timing (not crypto)."}}
+os.makedirs(A.out, exist_ok=True)
 json.dump(facts, open(os.path.join(A.out, "review.json"), "w"), indent=1, ensure_ascii=False)
 
 # ---------- page ----------
@@ -235,7 +240,7 @@ def section(h):
     extra = ""
     if h["added"] or h["removed"]: extra = f'<p class="sub">{"Added: " + ", ".join(h["added"]) + ". " if h["added"] else ""}{"Removed: " + ", ".join(h["removed"]) + "." if h["removed"] else ""}</p>'
     fa, fb = fear_at(h["from"]), fear_at(h["to"])
-    fl = (f'<p class="sub">Market fear: VIX {fa["vix"]:.1f} → {fb["vix"]:.1f} · fear score {fa["score"]:.1f} → {fb["score"]:.1f} ({e(fb["label"]).lower()})</p>' if fa and fb else "")
+    fl = (f'<p class="sub">Market fear: VIX {fa["vix"]:.1f} → {fb["vix"]:.1f} · fear score {fa["score"]:.1f} → {fb["score"]:.1f} ({e(fb["label"]).lower()}' + (f'; phase {e(fa.get("phase_label") or "?").lower()} → {e(fb["phase_label"]).lower()}' if fb.get("phase_label") else "") + ')</p>' if fa and fb else "")
     return f'<section class="hz" id="{k}"><h2>{h["label"]} <span class="sub">{sub}</span></h2>{f"<div class=c>{nt}</div>" if nt else ""}{fl}{body}<div class="g2">{grid}</div>{extra}</section>'
 
 wkrows = {x["sym"]: x for x in (H["week"].get("rows") or [])}; strows = {x["sym"]: x for x in (H["start"].get("rows") or [])}
@@ -272,6 +277,7 @@ def tcard(t):
     key = " · ".join(f'{e(k)} <b>{e(v)}</b>' for k, v in t["key"].items())
     lbl = e(t["ltl"] or "") + (f' <span class="sub">(was {e(c["week"]["label_was"])})</span>' if c["week"]["label_was"] else "")
     notes = []
+    if t.get("direction"): notes.append(f"Direction: {e(t['direction'])}")
     if t["earnings"]: notes.append(f"Next earnings {e(t['earnings'])}")
     if t["warning"]: notes.append(f'<span class="n">⚠ {e(t["warning"])}</span>')
     it = INTERP.get(t["sym"].upper())
@@ -310,9 +316,10 @@ if FN:
         fb = fear_at(H[hk]["from"]) if H[hk]["available"] else None
         if fb: chg.append(f'VIX {nm} {FN["vix"] - fb["vix"]:+.1f}')
     fear_card = card("Market fear (VIX)", f'<p><b style="color:{fc}">{e(FN["label"])}</b> · score <b style="color:{fc}">{FN["score"]:.1f}</b>/10</p>'
-        f'<p>VIX {FN["vix"]:.1f}, higher than {FN["vix_pct"]}% of the last 5 years' + (f' · VIX/VIX3M {FN["vix_vix3m"]:.2f}' if FN.get("vix_vix3m") else "") + f'. Variance risk premium higher than {FN["vrp_pct"]}% of the last 5 years.'
+        + (f'<p>Fear phase: <b>{e(FN["phase_label"])}</b></p>' if FN.get("phase_label") else "")
+        + f'<p>VIX {FN["vix"]:.1f}, higher than {FN["vix_pct"]}% of the last {round(FN.get("window_years") or 5)} years' + (f' · VIX/VIX3M {FN["vix_vix3m"]:.2f}' if FN.get("vix_vix3m") else "") + f'. Variance risk premium higher than {FN["vrp_pct"]}% of the last {round(FN.get("window_years") or 5)} years.'
         + (f' {" · ".join(chg)}.' if chg else "") + "</p>" + (f'<p class="sub">{e(FN["note"])}</p>' if FN.get("note") else ""),
-        "10% of every entry-timing score (not crypto). A high premium has preceded above-average market returns over 2–4 months (Bollerslev, Tauchen & Zhou 2009).")
+        "Fear score = ½ variance-risk-premium rank (10 years) + ½ fear phase; 10% of every entry-timing score (not crypto). Early fear is not the bottom: in 2016–2026 the best 3-month returns followed fading fear.")
 page = f"""<title>Watchlist Review</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

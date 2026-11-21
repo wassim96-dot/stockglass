@@ -321,6 +321,7 @@ M("altman","quality","Altman Z",v=>v.toFixed(1),[[1,.5],[1.8,2],[2.2,3.5],[3,6.5
 M("conv","quality","FCF / net income",v=>pc(v,0),[[0,.5],[50,4],[80,6.5],[100,8],[130,10]],"Cash backing of reported earnings."),
 M("gmStab","quality","Gross margin σ",v=>v.toFixed(1)+" pt",[[1,9.5],[2,9],[3,8],[6,6],[10,3.5],[15,1.5]],"Stability of gross margin over 5y (lower = better)."),
 M("assetG","quality","Asset growth",pc,[[-10,7],[0,8],[5,7.5],[10,6.5],[20,4.5],[35,2.5],[60,.5]],"Total-asset growth over the last year; fast balance-sheet expansion predicts lower returns (Cooper, Gulen & Schill 2008)."),
+M("capexAb","quality","Abnormal capex",pc,[[-40,6],[-15,7.5],[0,8],[15,7],[30,5.5],[50,4],[100,2],[200,.5]],"Capex/revenue this year vs its own average of the 3 previous years; investment surges above the firm's norm predict lower returns (Titman, Wei & Xie 2004). Own-history comparison keeps capital-heavy and capital-light sectors comparable."),
 M("spread","quality","ROIC − WACC",v=>(v>=0?"+":"")+v.toFixed(1)+" pt",[[-3,0],[0,3],[3,6],[8,8.5],[15,10]],"Return on capital minus WACC (CAPM cost of equity, after-tax cost of debt). Banks/insurers: ROE minus cost of equity."),
 M("divY","div","Dividend yield",v=>pc(v,2),[[0,2],[.5,3],[1.5,5],[2.5,6.5],[4,8.5],[6,9.5],[9,6],[12,3]],"TTM dividends / price; >9% = trap risk."),
 M("payout","div","Payout ratio",v=>pc(v,0),[[0,10],[30,9],[50,8],[70,6.5],[90,4],[120,1.5],[150,.5]],"Dividends / EPS. Target ≤70%."),
@@ -385,7 +386,7 @@ const WI_S={revCagr5:[.5,0],revCagr3:[.5,0],epsCagr5:[.5,0],fcfCagr5:[.5,0],revY
  gross:[.25,0],op:[.25,0],net:[0,0],fcfM:[1,0],roe:[0,0],roe5:[0,0],roic:[1.25,0],gpa:[1.5,0],
  ndEbitda:[.75,0],intCov:[.5,0],de:[.25,0],current:[.25,0],quick:[0,0],
  pe:[.225,.225],peFwd:[.4,.4],peg:[0,0],ps:[.25,.25],pfcf:[0,0],evEbitda:[.625,.625],fcfY:[.625,.625],shY:[.625,.625],impG:[0,0],pb:[0,0],
- piotroski:[1,0],beneish:[.5,0],altman:[0,0],conv:[1,0],gmStab:[.75,0],assetG:[.75,0],spread:[0,0],
+ piotroski:[1,0],beneish:[.5,0],altman:[0,0],conv:[1,0],gmStab:[.75,0],assetG:[.375,0],capexAb:[.375,0],spread:[0,0],
  divY:[.5,0],payout:[1,0],divCagr:[.75,0],streak:[0,0],
  rsi:[0,.2],macd:[0,0],adx:[0,0],boll:[0,.1],e200:[.125,.25],stack:[.125,.25],mom:[.25,.5],vol:[1.25,.5],hi52:[.25,.5],rev1m:[0,.5],rs:[0,.25],ext50:[0,.2],rvol:[0,0],
  upside:[0,0],beta:[0,0],dilut:[1.25,0],surprise:[.25,1]};
@@ -417,7 +418,7 @@ const VAL_T=4,VAL_K=2,vmult=v=>v==null||v>=VAL_T?1:1+VAL_K*(VAL_T-Math.max(v,0))
 const EVENT_DAYS=84;          /* earnings within 12 weeks fall inside the entry-timing horizon */
 /* Banks and insurers: these ratios are not meaningful (deposits are liabilities, no gross margin, no EBITDA) */
 const FIN_RX=/\b(bank|banks|banking|insurance|insurer|reinsurance|savings institution|thrift)/i;
-const FIN_NA=["gross","gpa","fcfM","conv","ndEbitda","intCov","de","current","quick","evEbitda","pfcf","fcfY","impG","altman","beneish"];
+const FIN_NA=["gross","gpa","capexAb","fcfM","conv","ndEbitda","intCov","de","current","quick","evEbitda","pfcf","fcfY","impG","altman","beneish"];
 const LT_T_S=[[7.5,"Strong long-term profile","Business quality, growth and balance sheet are strong, and the price is reasonable for them.","#3ddc97","#0e8a57"],
  [6.2,"Favourable long-term profile","The business case is sound; one or two areas (often valuation) hold the score back.","#a6e22e","#5d8a00"],
  [4.5,"Mixed long-term profile","Strengths and weaknesses roughly offset; the long-term case depends on which of them improves.","#ffb84a","#a86a00"],
@@ -441,7 +442,7 @@ function setMode(k){const f=k==="fund",m=k==="index"||k==="crypto";
  LW=f?LW_F:m?LW_M:LW_S;TIMING=f?TIMING_F:m?TIMING_M:TIMING_S;LT_T=f?LT_T_F:m?LT_T_M:LT_T_S;TM_T=f?TM_T_F:m?TM_T_M:TM_T_S}
 /* cash rate for the Sharpe ratio by currency (approximate policy rates, Nov 2026); USD = RF */
 const CASH={USD:4.94,EUR:2.5,GBP:4,CHF:.5,SEK:2,NOK:4,DKK:2.3,JPY:.5};
-Object.assign(COMPOSITE,{});
+Object.assign(COMPOSITE,{assetG:"Investment",capexAb:"Investment"});
 Object.assign(CTXW,{turn:"already inside the fund's return",prem:"price and NAV are often from different hours or days",ipb:"overlaps the P/E",idy:"0 for accumulating funds",
  sharpe:"3-year Sharpe ratios are noisy; drawdown is scored",cagr3:"past return, shown not scored",cagr5:"past return, shown not scored",vol3:"volatility is scored in Technicals",beta3:"volatility carries the low-risk effect"});
 const tierOf=(sc,T)=>sc==null?null:T.find(t=>sc>=t[0]);
@@ -744,6 +745,9 @@ function calc(){
  set("ps",mcap>0&&rev>0?mcap/rev:null);
  {const[gp_]=same("gross");set("gpa",gp_!=null&&as>0?gp_/as*100:null)}
  set("assetG",as>0&&L.assets>0&&P.assets>0?(L.assets/P.assets-1)*100:null);
+ /* abnormal capital investment (Titman, Wei & Xie 2004): capex/revenue in the latest year vs the mean of the 3 previous years */
+ {const q=A.slice(-4).map(x=>x.capex!=null&&x.rev>0?Math.abs(x.capex)/x.rev:null);const b=q.slice(0,3),m=b.every(v=>v!=null)?(b[0]+b[1]+b[2])/3:null;
+  set("capexAb",q.length===4&&q[3]!=null&&m>0?(q[3]/m-1)*100:null)}
  set("pb",mcap>0&&eq>0?mcap/eq:null);
  fcf!=null&&fcf<=0?set("pfcf",null,{dd:"n/m",force:.5}):set("pfcf",mcap>0&&fcf>0?mcap/fcf:null);
  const ev=mcap!=null?mcap+(debt||0)-(cash||0):null;
@@ -835,8 +839,18 @@ function calc(){
 const FEAR_W=.10;let MF=null;
 const mfReady=(async()=>{try{const r=await fetch("data/market.json",{cache:"no-cache"});if(r.ok){const m=await r.json();
  if(m&&isN(m.score)&&Date.now()-Date.parse(m.date+"T00:00:00Z")<8*864e5)MF=m}}catch(e){}})();
-function applyFear(){S.tbase=S.tscore;S.fear=null;if(S.tscore==null||!MF||S.kind==="crypto")return;S.fear=MF;
- S.tscore=Math.round(((1-FEAR_W)*S.tscore+FEAR_W*MF.score)*10)/10;const tm=tierOf(S.tscore,TM_T),tc=t=>isLight()?t[4]:t[3];S.tsent=tm?[tm[1],tc(tm),tm[2]]:null}
+/* Long / short setup note under the timing score (not a score). Trend sign predicts direction for longs and shorts alike
+   (time-series momentum: Moskowitz, Ooi & Pedersen 2012); shorting losers is dangerous when fear is high or fading because
+   losers rebound hardest when a panic recedes, more so with high beta (momentum crashes: Daniel & Moskowitz 2016). */
+function dirNote(){if(S.tscore==null)return null;const V=S.v||{},e2=V.e200&&V.e200.v,mo=V.mom&&V.mom.v,be=V.beta&&V.beta.v,ph=S.fear?S.fear.phase:null;
+ const up=e2!=null&&e2>0&&(mo==null||mo>0),dn=e2!=null&&e2<0&&(mo==null||mo<0),fearful=["early","peak","fading"].includes(ph),hb=be!=null&&be>=1.3,lb=be!=null&&be<=.8,bt=be!=null?` (beta ${be.toFixed(2)})`:"";
+ let l,n;if(S.tscore>=6&&up){l="Long setups favoured";n="Trend up and entry timing favourable.";if(ph==="early")n+=" Fear has only just begun: spreading entries over the coming weeks has historically beaten buying the first days of a panic."}
+ else if(S.tscore<=4&&dn&&!fearful){l="Short setups favoured";n="Downtrend with weak timing in a calm market: trend-following shorts have worked on average; the risk is a squeeze on good news."}
+ else if(S.tscore<=4&&dn){l="Shorts risky, no long setup";n=`Downtrend, but market fear is ${ph==="fading"?"fading":"high"}: losers tend to rebound hardest when a panic recedes${hb?", especially high-beta stocks"+bt:bt}. Shorting now carries momentum-crash risk; a long entry needs the trend to turn first.`}
+ else{l="Neutral";n="No clear edge for longs or shorts: trend and timing do not line up.";if(ph==="fading")n+=" Fear is fading, historically the best market phase for adding long exposure"+(hb?`; high-beta stocks${bt} tend to rebound most.`:".");else if(ph==="early")n+=" Fear has only just begun: bottoms usually come after a period of fear, not at its start."}
+ if(lb&&fearful)n+=` Low beta${bt}: moves less than the market in both directions.`;return{label:l,note:n,phase:ph}}
+function applyFear(){S.tbase=S.tscore;S.fear=null;S.dir=null;if(S.tscore==null||!MF||S.kind==="crypto"){S.dir=dirNote();return}S.fear=MF;
+ S.tscore=Math.round(((1-FEAR_W)*S.tscore+FEAR_W*MF.score)*10)/10;const tm=tierOf(S.tscore,TM_T),tc=t=>isLight()?t[4]:t[3];S.tsent=tm?[tm[1],tc(tm),tm[2]]:null;S.dir=dirNote()}
 
 /* ---------- rendering ---------- */
 let rt=null;const soon=()=>{clearTimeout(rt);rt=setTimeout(draw,250)};
@@ -868,7 +882,9 @@ function render(){
  {const M_=S.mkt,el=$("mreg");if(M_){const cc=M_.lab==="Supportive"?"var(--good)":M_.lab==="Hostile"?"var(--bad)":"var(--warn)";
   el.innerHTML=`<b style="color:${cc}">Market: ${M_.lab}</b>${esc(M_.n)} ${M_.iv>=0?"+":""}${M_.iv.toFixed(1)}% vs its 200-day, 50-day ${M_.up?"above":"below"} 200-day. Not scored.`}else el.textContent="";
   if(MF){const F=MF,fc=F.score>=6.5?"var(--good)":F.score<=3.5?"var(--bad)":"var(--warn)";
-   el.innerHTML+=`<br><b style="color:${fc}">Fear: ${esc(F.label)}</b>VIX ${F.vix.toFixed(1)}, higher than ${F.vix_pct}% of the last 5 years${F.vix_vix3m!=null?`, VIX/VIX3M ${F.vix_vix3m.toFixed(2)}`:""}; variance risk premium higher than ${F.vrp_pct}% of the last 5 years → ${F.score.toFixed(1)}/10, `+(S.fear?`${Math.round(FEAR_W*100)}% of entry timing.`:S.kind==="crypto"?"not applied to crypto.":"not applied.")+` ${esc(F.note)} <span class="muted">(${esc(F.date)})</span>`}}
+   el.innerHTML+=`<br><b style="color:${fc}">Fear: ${esc(F.label)}</b>VIX ${F.vix.toFixed(1)}, higher than ${F.vix_pct}% of the last ${Math.round(F.window_years||5)} years${F.vix_vix3m!=null?`, VIX/VIX3M ${F.vix_vix3m.toFixed(2)}`:""}${F.phase_label?`; fear phase ${esc(F.phase_label)} (${F.phase_score}/10), premium rank ${F.vrp_score.toFixed(1)}/10`:`; variance risk premium higher than ${F.vrp_pct}% of the last 5 years`}${F.credit_spread?`; high-yield spread ${F.credit_spread.value.toFixed(2)}%`:""}${F.cnn_fear_greed?`; CNN Fear &amp; Greed ${F.cnn_fear_greed.score} (${esc(F.cnn_fear_greed.rating)}, context)`:""} → ${F.score.toFixed(1)}/10, `+(S.fear?`${Math.round(FEAR_W*100)}% of entry timing.`:S.kind==="crypto"?"not applied to crypto.":"not applied.")+` ${esc(F.note)} <span class="muted">(${esc(F.date)})</span>`}
+  if(S.dir){const D_=S.dir,dc=D_.label.startsWith("Long")?"var(--good)":D_.label.startsWith("Short setups")?"var(--bad)":D_.label.includes("risky")?"var(--warn)":"var(--ink2)";
+   el.innerHTML+=`<br><b style="color:${dc}">Direction: ${esc(D_.label)}</b>${esc(D_.note)} <span class="muted">Not scored.</span>`}}
  {const den=100-TIMING.value+TIMING.value*S.vmT,sh=k=>Math.round(100*TIMING[k]*(k==="value"?S.vmT:1)/den);
   const tv=TIMING.value||0,den2=100-tv+tv*S.vmT,sh2=k=>Math.round(100*TIMING[k]*(k==="value"?S.vmT:1)/den2),nm=k=>(GR.find(x=>x[0]===k)||[,k])[1];
   const fw=S.fear?FEAR_W:0;
@@ -992,14 +1008,14 @@ function snap(){
  const WS=S.isFin&&(!S.kind||S.kind==="equity")?{...WI,...FIN_OVR}:WI;REG.forEach(r=>{const x=V[r.k]||{},w=WS[r.k]||[0,0];m[r.k]={l:r.l,g:r.g,v:r2(x.v,4),d:x.d||"∅",sc:x.s==="ok"?r2(x.sc):null,ctx:!w[0]&&!w[1]?1:0}});
  GR.forEach(([k,n])=>{const G=S.groups&&S.groups[k];g[k]={n,lt:G?r2(G.s,1):null,tm:G?r2(G.sT,1):null,cov:G?r2(G.cov):0}});
  /* market fear: same reading for every asset; the premium is scored in entry timing (not for crypto), VIX level and term structure are context */
- if(F){const on=!!S.fear;m.vrp={l:"Variance risk premium (S&P 500)",g:"fear",v:F.vrp,d:`pct ${F.vrp_pct}`,sc:F.score,ctx:on?0:1};
+ if(F){const on=!!S.fear;m.vrp={l:"Market fear score (premium + phase)",g:"fear",v:F.score,d:`${F.phase_label||""} · VRP pct ${F.vrp_pct}`,sc:F.score,ctx:on?0:1};
   m.vix={l:"VIX",g:"fear",v:F.vix,d:F.vix.toFixed(1)+` (pct ${F.vix_pct})`,sc:null,ctx:1};
   m.vixTerm={l:"VIX / VIX3M",g:"fear",v:F.vix_vix3m,d:F.vix_vix3m!=null?F.vix_vix3m.toFixed(2):"∅",sc:null,ctx:1}}
  const ret=n=>c.length>n&&S.price!=null?r2((S.price/c[c.length-1-n].c-1)*100,1):null,Q=S.fq;
  return{sym:S.sym,kind:S.kind||"equity",name:S.name||S.sym,cur:S.cur,exchange:S.ex,sector:S.sector||null,industry:S.industry||null,fin:S.isFin?1:0,price:r2(S.price,4),
   chg_1d:ret(1),chg_1w:ret(5),chg_1m:ret(21),chg_1y:ret(252),
   long_term:{score:S.score,label:S.sent?S.sent[0]:null,confidence:S.score!=null?S.conf:null},
-  timing:{score:S.tscore,label:S.tsent?S.tsent[0]:null,confidence:S.tscore!=null?S.tconf:null,before_fear:S.fear?S.tbase:null,fear_weight:S.fear?FEAR_W:0},
+  timing:{score:S.tscore,label:S.tsent?S.tsent[0]:null,confidence:S.tscore!=null?S.tconf:null,before_fear:S.fear?S.tbase:null,fear_weight:S.fear?FEAR_W:0,direction:S.dir?S.dir.label:null},
   groups:g,metrics:m,coverage:S.cov||null,filing_check:S.fil&&S.fil.lab||null,
   next_earnings:S.nextEarn?{date:new Date(S.nextEarn.t).toISOString().slice(0,10),confirmed:S.nextEarn.confirmed}:null,
   fund:Q?{family:Q.fam||null,category:Q.cat||null,source:Q.src,top_holdings:(Q.hold||[]).slice(0,10).map(h=>({s:h.s,n:h.n,w:r2(h.w)})),sectors:(Q.sect||[]).slice(0,6).map(x=>({k:x.k,w:r2(x.w,1)}))}:null,
