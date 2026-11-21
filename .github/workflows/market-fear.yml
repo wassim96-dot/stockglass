@@ -1,6 +1,6 @@
 name: Market fear (VIX)
 
-# Every weekday after the US close: VIX, VIX3M and the S&P 500 variance risk premium → data/market.json.
+# Every weekday after the US close: VIX, VIX3M, S&P 500, HYG/IEF → fear score v3 (HAR premium + fear phase) in data/market.json.
 # Used by the StockGlass page (entry timing) and by the stock-verdict skill. Also run inside "Weekly watchlist".
 on:
   schedule:

@@ -1,29 +1,48 @@
 {
- "updated": "2026-11-21T14:35:05.443Z",
  "date": "2026-11-20",
  "vix": 35.89,
  "vix3m": 30.94,
  "vix_vix3m": 1.16,
  "rv22": 683.2,
- "vrp": 604.9,
+ "rv_expected": 825.4,
+ "vrp": 462.7,
  "vrp_pct": 98,
  "vix_pct": 98,
  "window_years": 10,
  "phase": "early",
  "phase_label": "Early fear",
  "stress_days": 4,
- "vix_peak": 35.89,
- "vrp_score": 9.8,
- "phase_score": 4.5,
- "score": 7.2,
- "label": "High fear premium",
- "note": "Early fear (day 4 of stress, VIX high 35.9): Fear has only just begun and the VIX is still near its high: historically the first days of a panic are not the bottom (deepest follow-on drops); bottoms tend to come after fear has lasted and starts to fade. Variance risk premium higher than 98% of the last 10 years. VIX above VIX3M: the term structure is inverted, a sign of near-term stress.",
+ "vix_peak": 35.88999938964844,
+ "risk_flag": true,
+ "fading_checks": null,
+ "premium_score": 6.9,
+ "phase_score": 5,
+ "score": 5.6,
+ "label": "Neutral",
+ "note": "Early fear (day 4 of stress, VIX high 35.9): Fear has just begun and the VIX is near its high. Average returns after such days have been normal, but they were followed by the deepest drops: not the bottom, a high-risk entry. Variance risk premium (HAR) higher than 98% of the last 10 years. VIX above VIX3M: the term structure is inverted, a sign of near-term stress.",
+ "market": {
+  "index": "S&P 500",
+  "above_200d": false,
+  "ret_24m": 17.7,
+  "bear_state": false
+ },
+ "weights": {
+  "premium": 0.3,
+  "phase": 0.7,
+  "timing_share": 0.1,
+  "beta_scaled": "5 + (score − 5) × clip(beta, 0.5, 1.5)"
+ },
  "credit_spread": null,
+ "credit_proxy": {
+  "series": "HYG/IEF total-return ratio",
+  "easing": false
+ },
  "cnn_fear_greed": {
   "score": 10,
   "rating": "extreme fear",
   "date": "2026-11-20"
  },
- "method": "Fear score = ½ × variance-risk-premium percentile over 10 years ÷ 10 + ½ × fear-phase score (calm 5, early fear 4.5, peak stress 6, fading fear 8, after fear 5.5). Bollerslev, Tauchen & Zhou (2009); Bollerslev, Marrone, Xu & Zhou (2014); Whaley (2009); Daniel & Moskowitz (2016); event study 2016–2026.",
+ "updated": "2026-11-21T15:05:52.228Z",
+ "method": "Fear score = 0.3 × (3 + 4 × HAR variance-risk-premium percentile over 10 years) + 0.7 × fear-phase score (calm 5, early fear 5 + risk flag, peak stress 5.5, fading fear 7.5 if confirmed by credit, no new low and no bear state, else 5.5, after fear 4.5). Per stock: 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing. Holdout-tested on 2007–2016.",
  "history": "data/market-history.json"
 }

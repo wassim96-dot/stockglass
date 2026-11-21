@@ -15,22 +15,28 @@ RUNS = json.load(open(os.path.join(ROOT, "data/runs/index.json")))["runs"]
 DATA = {d: {r["sym"]: r for r in json.load(open(os.path.join(ROOT, f"data/runs/{d}.json")))["results"]} for d in RUNS}
 cur_d = RUNS[-1]; CUR = DATA[cur_d]; D = dt.date.fromisoformat
 # market fear (VIX, variance risk premium): daily series from scripts/market-fear.mjs; each run file also keeps its reading
-try: MH = json.load(open(os.path.join(ROOT, "data/market-history.json")))["rows"]
-except Exception: MH = []
+try: _mh = json.load(open(os.path.join(ROOT, "data/market-history.json"))); MH, MHC = _mh["rows"], _mh.get("columns") or []
+except Exception: MH, MHC = [], []
 RUNMKT = {d: json.load(open(os.path.join(ROOT, f"data/runs/{d}.json"))).get("market") for d in RUNS}
+PH3 = {"calm": (5, "Calm"), "early": (5, "Early fear"), "peak": (5.5, "Peak stress"), "fading": (7.5, "Fading fear (confirmed)"),
+       "fading_unconfirmed": (5.5, "Fading fear (unconfirmed)"), "after": (4.5, "After fear")}
+FKEYS = ("date", "vix", "vix_vix3m", "vrp", "vrp_pct", "vix_pct", "score", "label", "note", "phase", "phase_label", "window_years", "risk_flag", "premium_score", "phase_score")
 def fear_at(d):
-    """VIX and premium on (or just before) date d; percentile over the 5 years before it, score = percentile / 10."""
+    """Market-fear reading on (or just before) date d: the run file's own reading when it is version 3, else recomputed
+    from the daily history (0.3 x (3 + 4 x HAR premium percentile over 10 years) + 0.7 x phase score)."""
     m = RUNMKT.get(d)
-    if m and m.get("vix") is not None: return {k: m.get(k) for k in ("date", "vix", "vix_vix3m", "vrp", "vrp_pct", "vix_pct", "score", "label", "note", "phase", "phase_label", "window_years")}
+    if m and m.get("vix") is not None and m.get("premium_score") is not None: return {k: m.get(k) for k in FKEYS}
     rows = [r for r in MH if r[0] <= d]
     if len(rows) < 250 or (D(d) - D(rows[-1][0])).days > 7: return None
-    w = rows[-(2520 if len(rows) >= 2520 else 1260):]; x = rows[-1]; pv = sum(1 for r in w if r[5] < x[5]) / len(w); pk = sum(1 for r in w if r[1] < x[1]) / len(w)
-    PH = {"calm": (5, "Calm"), "early": (4.5, "Early fear"), "peak": (6, "Peak stress"), "fading": (8, "Fading fear"), "after": (5.5, "After fear")}
-    ph = x[6] if len(x) > 6 and x[6] in PH else None
-    sc = round((10 * pv + PH[ph][0]) / 2, 1) if ph else round(10 * pv, 1)
-    return {"date": x[0], "vix": x[1], "vix_vix3m": round(x[1] / x[2], 3) if x[2] else None, "vrp": x[5], "vrp_pct": round(pv * 100), "vix_pct": round(pk * 100), "score": sc,
-            "label": "High fear premium" if sc >= 7 else "Low fear premium" if sc <= 3.5 else "Normal fear premium", "note": None,
-            "phase": ph, "phase_label": PH[ph][1] if ph else None, "window_years": round(len(w) / 252, 1)}
+    c = {k: i for i, k in enumerate(MHC)}; iv = c.get("vrp", 5); iph = c.get("phase", 6)
+    w = [r for r in rows[-(2520 if len(rows) >= 2520 else 1260):] if r[iv] is not None]; x = rows[-1]
+    pv = sum(1 for r in w if r[iv] < x[iv]) / len(w); pk = sum(1 for r in w if r[1] < x[1]) / len(w)
+    ph = x[iph] if len(x) > iph and x[iph] in PH3 else None
+    prem = 3 + 4 * pv; sc = round(0.3 * prem + 0.7 * PH3[ph][0], 1) if ph else round(prem, 1)
+    return {"date": x[0], "vix": x[1], "vix_vix3m": round(x[1] / x[2], 3) if x[2] else None, "vrp": x[iv], "vrp_pct": round(pv * 100), "vix_pct": round(pk * 100), "score": sc,
+            "label": "Supportive" if sc >= 6.5 else "Unsupportive" if sc <= 4.5 else "Neutral", "note": (m or {}).get("note") if (m or {}).get("premium_score") is not None else None,
+            "phase": ph, "phase_label": PH3[ph][1] if ph else None, "window_years": round(len(w) / 252, 1), "risk_flag": ph == "early",
+            "premium_score": round(prem, 1), "phase_score": PH3[ph][0] if ph else None}
 num = lambda x: isinstance(x, (int, float)) and not isinstance(x, bool)
 e = lambda s: html.escape(str(s if s is not None else ""))
 KIND = {"fund": "ETF", "index": "Index", "crypto": "Crypto"}
@@ -183,7 +189,7 @@ for s, r in CUR.items():
 facts = {"date": cur_d, "first_run": RUNS[0], "runs": len(RUNS), "count": len(CUR), "watch": watch, "alerts": alerts,
          "horizons": {k: {kk: vv for kk, vv in v.items() if kk != "rows"} for k, v in H.items()}, "tickers": TK,
          "market_fear": {"now": fear_at(cur_d), **{hk: fear_at(H[hk]["from"]) if H[hk]["available"] else None for hk in ("week", "month", "start")},
-                         "method": "Variance risk premium = VIX² − 22-day realised variance of the S&P 500; fear score = ½ × its 10-year percentile ÷ 10 + ½ × fear-phase score (calm 5, early fear 4.5, peak stress 6, fading fear 8, after fear 5.5); 10% of entry timing (not crypto)."}}
+                         "method": "Fear score = 0.3 × (3 + 4 × percentile over 10 years of the variance risk premium, VIX² − HAR-forecast realised variance of the S&P 500) + 0.7 × fear-phase score (calm 5, early fear 5 with a risk flag, peak stress 5.5, fading fear 7.5 when confirmed by credit, no new 20-day low and no bear state, else 5.5, after fear 4.5). Each stock uses 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing (not crypto). Holdout-tested on 2007–2016. Labels: Supportive ≥ 6.5, Unsupportive ≤ 4.5."}}
 os.makedirs(A.out, exist_ok=True)
 json.dump(facts, open(os.path.join(A.out, "review.json"), "w"), indent=1, ensure_ascii=False)
 
@@ -310,16 +316,16 @@ for kd, n in KN.items():
 interp_note = "" if INTERP else '<p class="sub">The written interpretation for each ticker is added by the Friday evening review.</p>'
 FN = fear_at(cur_d); fear_card = ""
 if FN:
-    fc = "var(--good)" if FN["score"] >= 6.5 else "var(--bad)" if FN["score"] <= 3.5 else "var(--warn)"
+    fc = "var(--good)" if FN["score"] >= 6.5 else "var(--bad)" if FN["score"] <= 4.5 else "var(--warn)"
     chg = []
     for hk, nm in (("week", "1 week"), ("start", "since start")):
         fb = fear_at(H[hk]["from"]) if H[hk]["available"] else None
         if fb: chg.append(f'VIX {nm} {FN["vix"] - fb["vix"]:+.1f}')
     fear_card = card("Market fear (VIX)", f'<p><b style="color:{fc}">{e(FN["label"])}</b> · score <b style="color:{fc}">{FN["score"]:.1f}</b>/10</p>'
-        + (f'<p>Fear phase: <b>{e(FN["phase_label"])}</b></p>' if FN.get("phase_label") else "")
+        + (f'<p>Fear phase: <b>{e(FN["phase_label"])}</b>' + (f' ({FN["phase_score"]}/10)' if FN.get("phase_score") is not None else "") + (" · high-risk entry" if FN.get("risk_flag") else "") + (f' · premium {FN["premium_score"]}/10' if FN.get("premium_score") is not None else "") + '</p>' if FN.get("phase_label") else "")
         + f'<p>VIX {FN["vix"]:.1f}, higher than {FN["vix_pct"]}% of the last {round(FN.get("window_years") or 5)} years' + (f' · VIX/VIX3M {FN["vix_vix3m"]:.2f}' if FN.get("vix_vix3m") else "") + f'. Variance risk premium higher than {FN["vrp_pct"]}% of the last {round(FN.get("window_years") or 5)} years.'
         + (f' {" · ".join(chg)}.' if chg else "") + "</p>" + (f'<p class="sub">{e(FN["note"])}</p>' if FN.get("note") else ""),
-        "Fear score = ½ variance-risk-premium rank (10 years) + ½ fear phase; 10% of every entry-timing score (not crypto). Early fear is not the bottom: in 2016–2026 the best 3-month returns followed fading fear.")
+        "Fear score = 0.3 premium (HAR variance risk premium, 10-year rank, mapped to 3–7) + 0.7 fear phase; scaled by each stock’s beta, 10% of entry timing (not crypto). Early fear is a high-risk entry, not the bottom; confirmed fading fear (credit easing, no new low, no bear market) was the best phase in both 2007–2016 and 2016–2026.")
 page = f"""<title>Watchlist Review</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
