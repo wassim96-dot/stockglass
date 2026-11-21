@@ -61,7 +61,9 @@ await browser.close(); server.close();
 if (!batch || !batch.results) { console.error("No results produced"); process.exit(1); }
 
 const day = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" }); // YYYY-MM-DD, Paris date
-const out = { date: day, run_at: new Date().toISOString(), seconds: batch.seconds, total: batch.total, results: batch.results };
+let market = null;
+try { const m = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "market.json"), "utf8")); delete m.history; market = m; } catch (e) {}
+const out = { date: day, run_at: new Date().toISOString(), seconds: batch.seconds, total: batch.total, market, results: batch.results };
 const dir = path.join(ROOT, "data", "runs");
 fs.mkdirSync(dir, { recursive: true });
 fs.writeFileSync(path.join(dir, `${day}.json`), JSON.stringify(out));

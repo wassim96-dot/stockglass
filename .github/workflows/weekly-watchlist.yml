@@ -47,6 +47,10 @@ jobs:
           npm install --no-save playwright@1.47.2
           npx playwright install --with-deps chromium
 
+      - name: Market fear (VIX, variance risk premium)
+        if: steps.guard.outputs.go == 'true'
+        run: node scripts/market-fear.mjs || echo "market fear unavailable, continuing"
+
       - name: Run every watchlist ticker through StockGlass
         if: steps.guard.outputs.go == 'true'
         env:
