@@ -183,7 +183,8 @@ for s, r in CUR.items():
 facts = {"date": cur_d, "first_run": RUNS[0], "runs": len(RUNS), "count": len(CUR), "watch": watch, "alerts": alerts,
          "horizons": {k: {kk: vv for kk, vv in v.items() if kk != "rows"} for k, v in H.items()}, "tickers": TK,
          "market_fear": {"now": fear_at(cur_d), **{hk: fear_at(H[hk]["from"]) if H[hk]["available"] else None for hk in ("week", "month", "start")},
-                         "method": "Variance risk premium = VIX² − 22-day realised variance of the S&P 500; score = its 5-year percentile ÷ 10, 10% of entry timing (not crypto)."}}
+                         "method": "Variance risk premium = VIX² − 22-day realised variance of the S&P 500; fear score = ½ × its 10-year percentile ÷ 10 + ½ × fear-phase score (calm 5, early fear 4.5, peak stress 6, fading fear 8, after fear 5.5); 10% of entry timing (not crypto)."}}
+os.makedirs(A.out, exist_ok=True)
 json.dump(facts, open(os.path.join(A.out, "review.json"), "w"), indent=1, ensure_ascii=False)
 
 # ---------- page ----------
