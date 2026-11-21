@@ -340,7 +340,7 @@ M("ext50","tech","ATR multiple from 50-day",v=>(v>=0?"+":"")+v.toFixed(1)+"×",[
 M("rvol","tech","Relative volume 1m",v=>v.toFixed(2)+"×",[[.5,3.5],[.8,4.5],[1,5.5],[1.3,7],[1.8,8],[3,7]],"Average volume of the last month vs the prior months (high-volume return premium, Gervais, Kaniel & Mingelgrin 2001). Entry timing only."),
 M("rs","tech","Relative strength 12m",v=>(v>=0?"+":"")+v.toFixed(1)+" pt",[[-30,1],[-10,3.5],[0,5],[10,7],[25,9],[50,10]],"12-month return minus the sector ETF (US) or STOXX 600 (Europe) 12-month return."),
 M("upside","mkt","Analyst upside",pc,[[-20,1],[-5,3],[0,4.5],[10,6.5],[20,8.5],[40,10]],"Nasdaq 1-year target vs price. Low weight: weak predictor."),
-M("beta","mkt","Beta",v=>v.toFixed(2),[[.5,8.5],[.8,7.5],[1,6.5],[1.3,5],[1.7,3],[2.5,1]],"Sensitivity to the market (Nasdaq). Lower is better."),
+M("beta","mkt","Beta",v=>v.toFixed(2),[[.5,8.5],[.8,7.5],[1,6.5],[1.3,5],[1.7,3],[2.5,1]],"Sensitivity to the market: Nasdaq's beta, else 52 weekly returns vs the S&P 500 (US) or STOXX Europe 600. Lower is better."),
 M("dilut","mkt","Share count Δ / yr",pc,[[-5,10],[-2,8.5],[0,6],[2,3.5],[5,1]],"3y share-count CAGR; negative = net buybacks."),
 M("surprise","mkt","Earnings surprise",pc,[[-15,1],[-5,3],[0,5],[3,6.5],[8,8.5],[15,10]],"Reported EPS vs consensus, average of the last 2 quarters (Nasdaq). Post-earnings drift."),
 ];
@@ -416,7 +416,7 @@ let LW=LW_S,TIMING=TIMING_S;
 const VAL_T=4,VAL_K=2,vmult=v=>v==null||v>=VAL_T?1:1+VAL_K*(VAL_T-Math.max(v,0))/VAL_T;
 const EVENT_DAYS=84;          /* earnings within 12 weeks fall inside the entry-timing horizon */
 /* Banks and insurers: these ratios are not meaningful (deposits are liabilities, no gross margin, no EBITDA) */
-const FIN_RX=/\b(bank|banks|banking|insurance|insurer|reinsurance|savings institution|thrift)/i;
+const FIN_RX=/\b(bank|banks|banking|insurance|insurer|reinsurance|savings institution|thrift|capital markets|brokers?)/i;
 const FIN_NA=["gross","gpa","capexAb","fcfM","conv","ndEbitda","intCov","de","current","quick","evEbitda","pfcf","fcfY","impG","altman","beneish"];
 const LT_T_S=[[7.5,"Strong long-term profile","Business quality, growth and balance sheet are strong, and the price is reasonable for them.","#3ddc97","#0e8a57"],
  [6.2,"Favourable long-term profile","The business case is sound; one or two areas (often valuation) hold the score back.","#a6e22e","#5d8a00"],
@@ -585,7 +585,8 @@ async function benchTask(sym,g){
  /* market regime (not scored): broad index vs its 200-day average and 50-day vs 200-day */
  const mi=us?"SPY":"^STOXX",mn=us?"S&P 500 (SPY)":"STOXX Europe 600";
  try{const{j}=await cached("yb_"+mi,6*36e5,()=>race(yCh(mi,"2y","1d"),j=>j.chart&&j.chart.result&&j.chart.result[0]));
-  if(g!==S.gen)return;const c=(j.chart.result[0].indicators.quote[0].close||[]).filter(x=>x!=null);
+  if(g!==S.gen)return;const r0=j.chart.result[0],c0=r0.indicators.quote[0].close||[],c=c0.filter(x=>x!=null);
+  S.mktC=new Map();(r0.timestamp||[]).forEach((t,i)=>{if(c0[i]!=null)S.mktC.set(new Date(t*1e3).toISOString().slice(0,10),c0[i])});S.mktN=mn;
   if(c.length>=200){const a2=sma(c,200),a5=sma(c,50),iv=(last(c)/a2-1)*100,up=a5>a2;
    S.mkt={n:mn,iv,up,lab:iv>0&&up?"Supportive":iv<0&&!up?"Hostile":"Mixed"}}}catch(e){}}
 
@@ -717,10 +718,12 @@ function calc(){
  /* cash-flow items can lag the income statement by a year: take the latest of the last two fiscal years */
  const lat=f=>{for(const r of A.slice(-2).reverse())if(r[f]!=null)return r[f];return null};
  const px=S.price!=null?(pence(S.cur)?S.price/100:S.price):null;
- const sh=(S.sec&&S.sec.shares)||B.shares||L.shares,mcap=nd.mcap||(sh&&px?sh*px:null);
+ const sh=(S.sec&&S.sec.shares)||B.shares||L.shares;let mcap=nd.mcap||(sh&&px?sh*px:null);S.clsWarn=null;
  const set=(k,v,o={})=>{const m=RM[k],r={v,s:"nf",...o};if(r.s!=="na"){if(r.force!=null){r.s="ok";r.sc=r.force}else if(isN(v)&&m.st){r.s="ok";r.sc=band(v,m.st)}}r.d=r.dd||(isN(v)?m.f(v):r.s==="na"?"—":"∅");V[k]=r};
  const cg=(f,n)=>{const s=A.filter(x=>x[f]!=null),e=last(s);if(!e)return null;const pick=k=>{let r=null;for(const x of s)if(new Date(x.end)<=new Date(e.end)-k*365.25*864e5+120*864e5)r=x;return r};let bs=pick(n);if((!bs||bs===e)&&n>=5)bs=pick(n-1);if(!bs||bs===e)return null;const y=(new Date(e.end)-new Date(bs.end))/(365.25*864e5);return y<n-1.2?null:cagr(bs[f],e[f],y)};
  const rev=g("rev"),ni=g("ni"),eps=g("eps"),fcf=g("fcf"),op=g("op"),gross=g("gross"),ebitda=lat("ebitda");
+ /* share-class mismatch (e.g. Berkshire B quoted, figures per A share): a trailing P/E below 1 means price and per-share data are not the same class, so a market cap from shares × price is wrong */
+ if(!nd.mcap&&eps>0&&px&&px/eps<1){mcap=null;S.clsWarn="Share-class mismatch: the quoted price and the per-share figures are for different share classes; market-cap ratios left out"}
  const debt=b("debt"),cash=b("cash"),eq=b("equity"),as=b("assets"),ca=b("ca"),cl=b("cl"),inv=b("inv")||0;
  set("revCagr5",cg("rev",5));set("revCagr3",cg("rev",3));set("epsCagr5",cg("eps",5));set("fcfCagr5",cg("fcf",5));
  set("revYoY",L.rev!=null&&P.rev>0?(L.rev/P.rev-1)*100:null);set("epsYoY",L.eps!=null&&P.eps>0?(L.eps/P.eps-1)*100:null);
@@ -735,10 +738,10 @@ function calc(){
  if(debt===0)set("intCov",999,{force:10});else if(debt>0&&lat("int")>0&&op!=null)set("intCov",op/lat("int"));else set("intCov",null);
  set("de",eq>0&&debt!=null?debt/eq*100:null,eq<=0&&debt>0?{dd:"neg. equity",force:0}:{});
  set("current",ca!=null&&cl>0?ca/cl:null);set("quick",ca!=null&&cl>0?(ca-inv)/cl:null);
- const pe=nd.pe||(eps>0&&px?px/eps:null);
+ const pe=nd.pe||(eps>0&&px&&!S.clsWarn?px/eps:null);
  eps!=null&&eps<=0?set("pe",null,{dd:"n/m",force:1}):set("pe",pe);
  let fe=nd.fpe&&nd.fpe>0?nd.fpe:null,fs="Nasdaq consensus";
- if(fe==null&&eps>0&&px){const e5=V.epsCagr5.v,gr=e5!=null?clamp(e5,-10,25):6;fe=px/(eps*(1+gr/100));fs="model: trailing EPS × historical growth"}
+ if(fe==null&&eps>0&&px&&!S.clsWarn){const e5=V.epsCagr5.v,gr=e5!=null?clamp(e5,-10,25):6;fe=px/(eps*(1+gr/100));fs="model: trailing EPS × historical growth"}
  set("peFwd",fe,{src:fs});
  const gr=V.epsCagr5.v;set("peg",pe>0&&gr>0?pe/gr:null);
  set("ps",mcap>0&&rev>0?mcap/rev:null);
@@ -811,7 +814,7 @@ function calc(){
  /* market */
  set("upside",nd.target>0&&px>0&&S.cur==="USD"?(nd.target/px-1)*100:null);
  const hi=S.hi52||t.hi;set("hi52",hi>0&&S.price?(S.price/hi-1)*100:null);
- set("beta",nd.beta!=null?nd.beta:null);set("dilut",cg("shares",3));
+ {const pb=nd.beta!=null?null:priceBeta();set("beta",nd.beta!=null?nd.beta:pb,nd.beta!=null?{src:"Nasdaq"}:pb!=null?{src:"weekly returns vs "+S.mktN+", 1 year"}:{})}set("dilut",cg("shares",3));
  /* sector fit: ratios that mean nothing for banks and insurers are marked n/a instead of scored */
  S.isFin=(!S.kind||S.kind==="equity")&&FIN_RX.test([S.industry,S.sector,S.yInd,S.ySec].filter(Boolean).join(" "));
  let WE=S.isFin?{...WI,...FIN_OVR}:WI;if(/utilit|telecom/i.test([S.industry,S.sector,S.yInd,S.ySec].filter(Boolean).join(" "))&&WE.capexAb)WE={...WE,capexAb:[WE.capexAb[0]/2,WE.capexAb[1]]};S.WE=WE;
@@ -860,6 +863,11 @@ function dirNote(){if(S.tscore==null)return null;const V=S.v||{},e2=V.e200&&V.e2
  else{l="Neutral";n="No clear edge for longs or shorts: trend, momentum and timing do not line up.";if(ph==="fading")n+=" Fear is fading with confirmation, historically the best market phase for adding long exposure"+(hb?`; high-beta stocks${bt} tend to rebound most.`:".");else if(ph==="early")n+=" Fear has only just begun: bottoms usually come after a period of fear, not at its start."}
  if(lb&&ph&&!calm)n+=` Low beta${bt}: moves less than the market in both directions.`;return{label:l,note:n,phase:ph}}
 /* market fear in the timing score, scaled by the stock's beta: 5 + (fear − 5) × clip(beta, 0.5, 1.5) */
+/* beta from prices when Nasdaq gives none (European stocks, the GitHub runner): 52 weekly returns vs the local index */
+function priceBeta(){const M=S.mktC;if(!M||!S.closes||S.closes.length<200)return null;
+ const P=[];S.closes.forEach(x=>{const d=new Date(x.t).toISOString().slice(0,10);if(M.has(d))P.push([x.c,M.get(d)])});const z=P.slice(-261);if(z.length<160)return null;
+ const a=[],b=[];for(let i=5;i<z.length;i+=5){a.push(z[i][0]/z[i-5][0]-1);b.push(z[i][1]/z[i-5][1]-1)}if(a.length<30)return null;
+ const ma=a.reduce((x,y)=>x+y,0)/a.length,mb=b.reduce((x,y)=>x+y,0)/b.length;let cv=0,vb=0;a.forEach((x,i)=>{cv+=(x-ma)*(b[i]-mb);vb+=(b[i]-mb)**2});return vb>0?cv/vb:null}
 function applyFear(){S.tbase=S.tscore;S.fear=null;S.fearAdj=null;S.dir=null;if(S.tscore==null||!MF||S.kind==="crypto"){S.dir=dirNote();return}S.fear=MF;
  const bv=S.v&&S.v.beta&&S.v.beta.v,b=isN(bv)?Math.min(1.5,Math.max(.5,bv)):1;S.fearBeta=b;S.fearAdj=Math.round((5+(MF.score-5)*b)*10)/10;
  S.tscore=Math.round(((1-FEAR_W)*S.tscore+FEAR_W*S.fearAdj)*10)/10;const tm=tierOf(S.tscore,TM_T),tc=t=>isLight()?t[4]:t[3];S.tsent=tm?[tm[1],tc(tm),tm[2]]:null;S.dir=dirNote()}
@@ -1031,7 +1039,7 @@ function snap(){
   next_earnings:S.nextEarn?{date:new Date(S.nextEarn.t).toISOString().slice(0,10),confirmed:S.nextEarn.confirmed}:null,
   fund:Q?{family:Q.fam||null,category:Q.cat||null,source:Q.src,top_holdings:(Q.hold||[]).slice(0,10).map(h=>({s:h.s,n:h.n,w:r2(h.w)})),sectors:(Q.sect||[]).slice(0,6).map(x=>({k:x.k,w:r2(x.w,1)}))}:null,
   expectations:S.xp||null,sources:S.via||{},
-  warning:(()=>{for(let i=Math.max(1,c.length-260);i<c.length;i++){const j=c[i].c/c[i-1].c;if(j>2||j<.5)return"Price history jumps >50% in one day around "+new Date(c[i].t).toISOString().slice(0,10)+" (split or bad data): trend figures may be wrong"}return null})(),
+  warning:S.clsWarn||(()=>{for(let i=Math.max(1,c.length-260);i<c.length;i++){const j=c[i].c/c[i-1].c;if(j>2||j<.5)return"Price history jumps >50% in one day around "+new Date(c[i].t).toISOString().slice(0,10)+" (split or bad data): trend figures may be wrong"}return null})(),
   status:S.score!=null?"scored":S.tscore!=null?"timing only":S.price!=null?"price only":"no data"}}
 async function watchlist(){
  const q=QS.get("watchlist");if(q)return q.split(/[,\s]+/).map(x=>x.trim().toUpperCase()).filter(Boolean);
