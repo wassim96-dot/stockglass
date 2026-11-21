@@ -416,7 +416,7 @@ let LW=LW_S,TIMING=TIMING_S;
 const VAL_T=4,VAL_K=2,vmult=v=>v==null||v>=VAL_T?1:1+VAL_K*(VAL_T-Math.max(v,0))/VAL_T;
 const EVENT_DAYS=84;          /* earnings within 12 weeks fall inside the entry-timing horizon */
 /* Banks and insurers: these ratios are not meaningful (deposits are liabilities, no gross margin, no EBITDA) */
-const FIN_RX=/\b(bank|banks|banking|insurance|insurer|reinsurance|savings institution|thrift)/i;
+const FIN_RX=/\b(bank|banks|banking|insurance|insurer|reinsurance|savings institution|thrift|capital markets|brokers?)/i;
 const FIN_NA=["gross","gpa","capexAb","fcfM","conv","ndEbitda","intCov","de","current","quick","evEbitda","pfcf","fcfY","impG","altman","beneish"];
 const LT_T_S=[[7.5,"Strong long-term profile","Business quality, growth and balance sheet are strong, and the price is reasonable for them.","#3ddc97","#0e8a57"],
  [6.2,"Favourable long-term profile","The business case is sound; one or two areas (often valuation) hold the score back.","#a6e22e","#5d8a00"],
@@ -718,10 +718,12 @@ function calc(){
  /* cash-flow items can lag the income statement by a year: take the latest of the last two fiscal years */
  const lat=f=>{for(const r of A.slice(-2).reverse())if(r[f]!=null)return r[f];return null};
  const px=S.price!=null?(pence(S.cur)?S.price/100:S.price):null;
- const sh=(S.sec&&S.sec.shares)||B.shares||L.shares,mcap=nd.mcap||(sh&&px?sh*px:null);
+ const sh=(S.sec&&S.sec.shares)||B.shares||L.shares;let mcap=nd.mcap||(sh&&px?sh*px:null);S.clsWarn=null;
  const set=(k,v,o={})=>{const m=RM[k],r={v,s:"nf",...o};if(r.s!=="na"){if(r.force!=null){r.s="ok";r.sc=r.force}else if(isN(v)&&m.st){r.s="ok";r.sc=band(v,m.st)}}r.d=r.dd||(isN(v)?m.f(v):r.s==="na"?"—":"∅");V[k]=r};
  const cg=(f,n)=>{const s=A.filter(x=>x[f]!=null),e=last(s);if(!e)return null;const pick=k=>{let r=null;for(const x of s)if(new Date(x.end)<=new Date(e.end)-k*365.25*864e5+120*864e5)r=x;return r};let bs=pick(n);if((!bs||bs===e)&&n>=5)bs=pick(n-1);if(!bs||bs===e)return null;const y=(new Date(e.end)-new Date(bs.end))/(365.25*864e5);return y<n-1.2?null:cagr(bs[f],e[f],y)};
  const rev=g("rev"),ni=g("ni"),eps=g("eps"),fcf=g("fcf"),op=g("op"),gross=g("gross"),ebitda=lat("ebitda");
+ /* share-class mismatch (e.g. Berkshire B quoted, figures per A share): a trailing P/E below 1 means price and per-share data are not the same class, so a market cap from shares × price is wrong */
+ if(!nd.mcap&&eps>0&&px&&px/eps<1){mcap=null;S.clsWarn="Share-class mismatch: the quoted price and the per-share figures are for different share classes; market-cap ratios left out"}
  const debt=b("debt"),cash=b("cash"),eq=b("equity"),as=b("assets"),ca=b("ca"),cl=b("cl"),inv=b("inv")||0;
  set("revCagr5",cg("rev",5));set("revCagr3",cg("rev",3));set("epsCagr5",cg("eps",5));set("fcfCagr5",cg("fcf",5));
  set("revYoY",L.rev!=null&&P.rev>0?(L.rev/P.rev-1)*100:null);set("epsYoY",L.eps!=null&&P.eps>0?(L.eps/P.eps-1)*100:null);
@@ -736,10 +738,10 @@ function calc(){
  if(debt===0)set("intCov",999,{force:10});else if(debt>0&&lat("int")>0&&op!=null)set("intCov",op/lat("int"));else set("intCov",null);
  set("de",eq>0&&debt!=null?debt/eq*100:null,eq<=0&&debt>0?{dd:"neg. equity",force:0}:{});
  set("current",ca!=null&&cl>0?ca/cl:null);set("quick",ca!=null&&cl>0?(ca-inv)/cl:null);
- const pe=nd.pe||(eps>0&&px?px/eps:null);
+ const pe=nd.pe||(eps>0&&px&&!S.clsWarn?px/eps:null);
  eps!=null&&eps<=0?set("pe",null,{dd:"n/m",force:1}):set("pe",pe);
  let fe=nd.fpe&&nd.fpe>0?nd.fpe:null,fs="Nasdaq consensus";
- if(fe==null&&eps>0&&px){const e5=V.epsCagr5.v,gr=e5!=null?clamp(e5,-10,25):6;fe=px/(eps*(1+gr/100));fs="model: trailing EPS × historical growth"}
+ if(fe==null&&eps>0&&px&&!S.clsWarn){const e5=V.epsCagr5.v,gr=e5!=null?clamp(e5,-10,25):6;fe=px/(eps*(1+gr/100));fs="model: trailing EPS × historical growth"}
  set("peFwd",fe,{src:fs});
  const gr=V.epsCagr5.v;set("peg",pe>0&&gr>0?pe/gr:null);
  set("ps",mcap>0&&rev>0?mcap/rev:null);
@@ -1037,7 +1039,7 @@ function snap(){
   next_earnings:S.nextEarn?{date:new Date(S.nextEarn.t).toISOString().slice(0,10),confirmed:S.nextEarn.confirmed}:null,
   fund:Q?{family:Q.fam||null,category:Q.cat||null,source:Q.src,top_holdings:(Q.hold||[]).slice(0,10).map(h=>({s:h.s,n:h.n,w:r2(h.w)})),sectors:(Q.sect||[]).slice(0,6).map(x=>({k:x.k,w:r2(x.w,1)}))}:null,
   expectations:S.xp||null,sources:S.via||{},
-  warning:(()=>{for(let i=Math.max(1,c.length-260);i<c.length;i++){const j=c[i].c/c[i-1].c;if(j>2||j<.5)return"Price history jumps >50% in one day around "+new Date(c[i].t).toISOString().slice(0,10)+" (split or bad data): trend figures may be wrong"}return null})(),
+  warning:S.clsWarn||(()=>{for(let i=Math.max(1,c.length-260);i<c.length;i++){const j=c[i].c/c[i-1].c;if(j>2||j<.5)return"Price history jumps >50% in one day around "+new Date(c[i].t).toISOString().slice(0,10)+" (split or bad data): trend figures may be wrong"}return null})(),
   status:S.score!=null?"scored":S.tscore!=null?"timing only":S.price!=null?"price only":"no data"}}
 async function watchlist(){
  const q=QS.get("watchlist");if(q)return q.split(/[,\s]+/).map(x=>x.trim().toUpperCase()).filter(Boolean);
