@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-21T10:54:00.540Z",
+ "updated": "2026-11-21T14:35:05.443Z",
  "date": "2026-11-20",
  "vix": 35.89,
  "vix3m": 30.94,
@@ -7,11 +7,23 @@
  "rv22": 683.2,
  "vrp": 604.9,
  "vrp_pct": 98,
- "vix_pct": 99,
- "score": 9.8,
+ "vix_pct": 98,
+ "window_years": 10,
+ "phase": "early",
+ "phase_label": "Early fear",
+ "stress_days": 4,
+ "vix_peak": 35.89,
+ "vrp_score": 9.8,
+ "phase_score": 4.5,
+ "score": 7.2,
  "label": "High fear premium",
- "note": "Option buyers pay far more than recent swings justify: historically followed by above-average market returns over 2–4 months, with larger swings. VIX above VIX3M: the term structure is inverted, a sign of near-term stress.",
- "window_days": 1260,
- "method": "VRP = VIX² − 22-day realised variance of the S&P 500 (annualised %²); score = 10 × its percentile over the last 5 years. Bollerslev, Tauchen & Zhou (2009); Bollerslev, Marrone, Xu & Zhou (2014).",
+ "note": "Early fear (day 4 of stress, VIX high 35.9): Fear has only just begun and the VIX is still near its high: historically the first days of a panic are not the bottom (deepest follow-on drops); bottoms tend to come after fear has lasted and starts to fade. Variance risk premium higher than 98% of the last 10 years. VIX above VIX3M: the term structure is inverted, a sign of near-term stress.",
+ "credit_spread": null,
+ "cnn_fear_greed": {
+  "score": 10,
+  "rating": "extreme fear",
+  "date": "2026-11-20"
+ },
+ "method": "Fear score = ½ × variance-risk-premium percentile over 10 years ÷ 10 + ½ × fear-phase score (calm 5, early fear 4.5, peak stress 6, fading fear 8, after fear 5.5). Bollerslev, Tauchen & Zhou (2009); Bollerslev, Marrone, Xu & Zhou (2014); Whaley (2009); Daniel & Moskowitz (2016); event study 2016–2026.",
  "history": "data/market-history.json"
 }
