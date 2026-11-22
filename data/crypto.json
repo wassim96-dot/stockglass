@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-21T16:29:34.240Z",
+ "updated": "2026-11-22T08:09:01.979Z",
  "method": "Crypto cycle phase: accumulation (MVRV ≤ 1), distribution (MVRV in the top 10% of its last 4 years), else bull (price above its 200-day average) or bear. Coins without on-chain data use Bitcoin's phase. Long-term phase scores: accumulation 8.5, bull 6, bear 3.5, distribution 3.5; timing: 6.5, 6, 4, 5.",
  "phases": {
   "accumulation": {
@@ -29,46 +29,46 @@
  },
  "assets": {
   "btc": {
-   "date": "2026-11-20",
-   "price": 58851.019,
-   "ma200": 72524.5,
+   "date": "2026-11-21",
+   "price": 60122.611,
+   "ma200": 72420.4,
    "above_200d": false,
-   "ret_1y": -32.3,
-   "mvrv": 1.105,
+   "ret_1y": -29.2,
+   "mvrv": 1.13,
    "mvrv_pct_4y": 5,
-   "realized_price": 53262,
+   "realized_price": 53209.2,
    "phase": "bear",
    "phase_source": "own on-chain data",
-   "adr_growth_1y": -6.5,
-   "funding_annual": 0
+   "adr_growth_1y": -6.6,
+   "funding_annual": 0.2
   },
   "eth": {
-   "date": "2026-11-20",
-   "price": 1618.826,
-   "ma200": 2128.52,
+   "date": "2026-11-21",
+   "price": 1681.2068,
+   "ma200": 2125.12,
    "above_200d": false,
-   "ret_1y": -43.1,
-   "mvrv": 0.801,
-   "mvrv_pct_4y": 2,
-   "realized_price": 2020.34,
+   "ret_1y": -39,
+   "mvrv": 0.833,
+   "mvrv_pct_4y": 4,
+   "realized_price": 2018.66,
    "phase": "accumulation",
    "phase_source": "own on-chain data",
-   "adr_growth_1y": 24.9,
-   "funding_annual": -3.2
+   "adr_growth_1y": 26.3,
+   "funding_annual": -2.8
   },
   "near": {
-   "date": "2026-11-20",
-   "price": 2.8569858,
-   "ma200": 2.73534,
+   "date": "2026-11-21",
+   "price": 2.8927517,
+   "ma200": 2.74333,
    "above_200d": true,
-   "ret_1y": 37,
+   "ret_1y": 55.6,
    "phase": "bear",
    "phase_source": "Bitcoin's cycle (no on-chain data for this coin)",
-   "funding_annual": 3.7
+   "funding_annual": 4.5
   }
  },
  "fng": {
-  "date": "2026-11-21",
-  "value": 12
+  "date": "2026-11-22",
+  "value": 11
  }
 }
