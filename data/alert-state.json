@@ -1,0 +1,19 @@
+{
+ "fear": {
+  "phase": "early",
+  "label": "Early fear",
+  "date": "2026-11-20"
+ },
+ "crypto": {
+  "btc": {
+   "phase": "bear",
+   "label": "Bear market",
+   "date": "2026-11-21"
+  },
+  "eth": {
+   "phase": "accumulation",
+   "label": "Accumulation",
+   "date": "2026-11-21"
+  }
+ }
+}

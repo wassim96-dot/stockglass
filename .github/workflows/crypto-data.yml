@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   crypto:
@@ -20,11 +21,22 @@ jobs:
         with: { node-version: 20 }
       - name: Fetch crypto data
         run: node scripts/crypto-data.mjs
+      - name: Phase-change alert (GitHub issue → phone notification)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/phase-alert.mjs crypto
+          for t in alerts/*.title; do
+            [ -e "$t" ] || continue
+            gh issue create --title "$(cat "$t")" --body-file "${t%.title}.md"
+          done
+          rm -rf alerts
       - name: Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/crypto-history.json data/crypto.json 2>/dev/null || git add data/crypto-history.json
+          git add data/alert-state.json
           git diff --cached --quiet && exit 0
           git commit -m "Crypto data $(date -u +%F)"
           git pull --rebase origin "$GITHUB_REF_NAME"
