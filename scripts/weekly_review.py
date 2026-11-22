@@ -287,7 +287,7 @@ def tcard(t):
     lbl = e(t["ltl"] or "") + (f' <span class="sub">(was {e(c["week"]["label_was"])})</span>' if c["week"]["label_was"] else "")
     notes = []
     if t.get("crypto") and t["crypto"].get("phase_label"):
-        cy = t["crypto"]; notes.append(f"Cycle: {e(cy['phase_label'])}" + (f" (MVRV {cy['mvrv']:.2f})" if cy.get("mvrv") is not None else " (Bitcoin's cycle)"))
+        cy = t["crypto"]; notes.append(f"Cycle: {e(cy['phase_label'])}" + (f", day {cy['phase_days']}" if cy.get("phase_days") else "") + (f" (MVRV {cy['mvrv']:.2f})" if cy.get("mvrv") is not None else " (Bitcoin's cycle)"))
     if t.get("direction"): notes.append(f"Direction: {e(t['direction'])}")
     if t["earnings"]: notes.append(f"Next earnings {e(t['earnings'])}")
     if t["warning"]: notes.append(f'<span class="n">⚠ {e(t["warning"])}</span>')
@@ -337,7 +337,10 @@ if CRY and CRY.get("assets"):
         r = (CRY["assets"] or {}).get(a)
         if not r or not r.get("phase"): return ""
         lab = CRY["phases"][r["phase"]]["label"]
-        return (f'<p><b>{nm}</b>: {e(lab)}' + (f' · MVRV {r["mvrv"]:.2f} · average cost {r["realized_price"]:,.0f} USD · price {r["price"]:,.0f}' if r.get("mvrv") is not None else "") + "</p>")
+        ag, pa = r.get("phase_age") or {}, r.get("past_accumulation") or {}
+        return (f'<p><b>{nm}</b>: {e(lab)}' + (f', day {ag["days"]} (since {e(ag["since"])}, price {ag["change_since_start"]:+.0f}% since)' if ag.get("days") else "")
+                + (f' · MVRV {r["mvrv"]:.2f} · average cost {r["realized_price"]:,.0f} USD · price {r["price"]:,.0f}' if r.get("mvrv") is not None else "")
+                + (f' · past accumulation phases lasted {pa["min_days"]}–{pa["max_days"]} days (median {pa["median_days"]})' if r.get("phase") == "accumulation" and pa.get("median_days") else "") + "</p>")
     btc = CRY["assets"].get("btc") or {}
     crypto_card = card("Crypto cycle", _cl("btc", "Bitcoin") + _cl("eth", "Ethereum")
         + (f'<p class="sub">{e(CRY["phases"][btc["phase"]]["note"])}</p>' if btc.get("phase") else "")

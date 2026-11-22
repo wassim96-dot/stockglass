@@ -55,6 +55,7 @@ if (kind === "crypto") {
       out.push([`Crypto alert: ${nm} ${lab} (was ${prev.label})`,
         [`**${nm} cycle phase changed: ${prev.label} → ${lab}** (data of ${r.date})`, "",
          r.mvrv != null ? `- MVRV ${r.mvrv} · holders' average cost ${Math.round(r.realized_price).toLocaleString("en-US")} USD · price ${Math.round(r.price).toLocaleString("en-US")} USD · 200-day average ${Math.round(r.ma200).toLocaleString("en-US")} USD` : null,
+         r.phase === "accumulation" && r.past_accumulation?.median_days ? `- Past accumulation phases for ${nm} lasted ${r.past_accumulation.min_days}–${r.past_accumulation.max_days} days (median ${r.past_accumulation.median_days}); prices often kept falling during them.` : null,
          "", copp(a, r.phase) || null, "", c.phases[r.phase].note, "",
          `StockGlass: ${SITE} · Rule-based screen on public data, not investment advice.`, "", "@wassim96-dot"].filter(x => x != null).join("\n")]);
     }
@@ -65,8 +66,8 @@ if (process.env.TEST_ALERT === "true" && !out.length) {   // manual test from th
   const m = read("data/market.json"), c = read("data/crypto.json");
   out.push([`Test alert: StockGlass phase alerts are working`, [`This is a test. You will get an issue like this whenever the market fear phase or the Bitcoin/Ethereum cycle phase changes.`, "",
     m ? `- Market fear now: ${m.phase_label}, ${m.score}/10 ${m.label} (VIX ${m.vix}, ${m.date})` : null, m ? "  " + (FEAR_OPP[m.phase] || "") : null,
-    c?.assets?.btc ? `- Bitcoin: ${c.phases[c.assets.btc.phase].label} (MVRV ${c.assets.btc.mvrv})` : null, c?.assets?.btc ? "  " + copp("btc", c.assets.btc.phase) : null,
-    c?.assets?.eth ? `- Ethereum: ${c.phases[c.assets.eth.phase].label} (MVRV ${c.assets.eth.mvrv})` : null, c?.assets?.eth ? "  " + copp("eth", c.assets.eth.phase) : null, "",
+    c?.assets?.btc ? `- Bitcoin: ${c.phases[c.assets.btc.phase].label}${c.assets.btc.phase_age ? `, day ${c.assets.btc.phase_age.days} (since ${c.assets.btc.phase_age.since})` : ""} (MVRV ${c.assets.btc.mvrv})` : null, c?.assets?.btc ? "  " + copp("btc", c.assets.btc.phase) : null,
+    c?.assets?.eth ? `- Ethereum: ${c.phases[c.assets.eth.phase].label}${c.assets.eth.phase_age ? `, day ${c.assets.eth.phase_age.days} (since ${c.assets.eth.phase_age.since})` : ""} (MVRV ${c.assets.eth.mvrv})` : null, c?.assets?.eth ? "  " + copp("eth", c.assets.eth.phase) : null, "",
     `You can close this issue.`, "", "@wassim96-dot"].filter(x => x != null).join("\n")]);
 }
 fs.writeFileSync(path.join(ROOT, "data/alert-state.json"), JSON.stringify(state, null, 1));
