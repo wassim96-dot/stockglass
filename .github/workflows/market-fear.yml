@@ -6,9 +6,15 @@ on:
   schedule:
     - cron: "35 22 * * 1-5"
   workflow_dispatch:
+    inputs:
+      test_alert:
+        description: "Send a test phase alert (GitHub issue) with today's reading"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: market-fear
@@ -27,11 +33,23 @@ jobs:
           node-version: "20"
       - name: Compute VIX and variance risk premium
         run: node scripts/market-fear.mjs
+      - name: Phase-change alert (GitHub issue → phone notification)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TEST_ALERT: ${{ inputs.test_alert }}
+        run: |
+          node scripts/phase-alert.mjs fear
+          for t in alerts/*.title; do
+            [ -e "$t" ] || continue
+            gh issue create --title "$(cat "$t")" --body-file "${t%.title}.md"
+          done
+          rm -rf alerts
       - name: Commit
         run: |
           git config user.name "stockglass-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/market.json data/market-history.json
+          git add data/alert-state.json
           git diff --cached --quiet && { echo "No changes"; exit 0; }
           git commit -m "Market fear $(date -u +%F)"
           git pull --rebase origin "$GITHUB_REF_NAME"
