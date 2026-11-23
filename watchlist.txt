@@ -74,7 +74,7 @@ ENI.MI    # Eni (US ADR E is the same company) · top 5 IT
 G.MI      # Generali · top 5 IT
 ITX.MC    # Inditex · top 5 ES
 SAN.MC    # Banco Santander (US ADR SAN is the same company) · top 5 ES
-ELE.MC    # Endesa (utility) · top 5 ES, replaces a 2nd bank
+FER.MC    # Ferrovial (construction & infrastructure) · top 5 ES, replaces a 2nd bank
 AENA.MC   # Aena (airports) · top 5 ES, replaces a 2nd bank
 NOVN.SW   # Novartis (US ADR NVS is the same company) · top 5 CH
 NESN.SW   # Nestlé · top 5 CH
@@ -90,7 +90,7 @@ ABX.TO    # Barrick Mining (TSX; NYSE listing B is the same company)
 RY.TO     # Royal Bank of Canada · top 5 CA
 ENB.TO    # Enbridge (pipelines) · top 5 CA, replaces a 2nd bank
 SHOP.TO   # Shopify (Nasdaq SHOP is the same company) · top 5 CA
-CNQ.TO    # Canadian Natural Resources (oil & gas) · top 5 CA, replaces a 2nd bank
+CP.TO     # Canadian Pacific Kansas City (railways) · top 5 CA, replaces a 2nd bank
 BN.TO     # Brookfield Corporation (asset management) · top 5 CA, replaces a 2nd bank
 
 # --- ETFs ---
