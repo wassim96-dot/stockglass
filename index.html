@@ -588,16 +588,20 @@ async function nasdaqTask(sym,g){
 /* ---------- benchmark for relative strength: US sector ETF, else STOXX Europe 600 ---------- */
 const SECTOR_ETF=[[/health|pharma|biotech|medical/i,"XLV"],[/tech|software|semicond|computer|electronic/i,"XLK"],[/communic|telecom|media|internet|entertain/i,"XLC"],
  [/financ|bank|insur|capital market/i,"XLF"],[/discretionary|cyclical|retail|auto|apparel|leisure|restaurant/i,"XLY"],[/staples|defensive|food|beverage|household|tobacco/i,"XLP"],
- [/energy|oil|gas/i,"XLE"],[/industr|aerospace|defen[cs]e|machinery|transport/i,"XLI"],[/utilit/i,"XLU"],[/real estate|reit/i,"XLRE"],[/material|chemical|mining|metal|steel/i,"XLB"]];
+ [/energy|oil|gas/i,"XLE"],[/industr|aerospace|defen[cs]e|machinery|transport/i,"XLI"],[/utilit/i,"XLU"],[/real estate|reit/i,"XLRE"],[/gold|silver|precious/i,"GDX"],[/material|chemical|mining|metal|steel/i,"XLB"]];
+/* Canadian listings (.TO Toronto, .V Venture): relative strength vs a same-currency TSX benchmark, regime and beta vs the S&P/TSX Composite */
+const CA_RX=/\.(TO|V)$/i,CA_SECTOR=[[/gold|silver|precious/i,"XGD.TO","S&P/TSX Global Gold (XGD.TO)"]];
 async function benchTask(sym,g){
- const txt=(S.sector||"")+" "+(S.industry||""),us=!sym.includes(".");
- let b=us?((SECTOR_ETF.find(([rx])=>rx.test(txt))||[0,"SPY"])[1]):"^STOXX",n=us?(b==="SPY"?"S&P 500 (SPY)":b+" sector ETF"):"STOXX Europe 600";
+ const txt=(S.sector||"")+" "+(S.industry||""),ca=CA_RX.test(sym),us=!ca&&!sym.includes(".");
+ let b,n;
+ if(ca){const m=CA_SECTOR.find(([rx])=>rx.test(txt));b=m?m[1]:"^GSPTSE";n=m?m[2]:"S&P/TSX Composite"}
+ else{b=us?((SECTOR_ETF.find(([rx])=>rx.test(txt))||[0,"SPY"])[1]):"^STOXX";n=us?(b==="SPY"?"S&P 500 (SPY)":b==="GDX"?"Gold miners (GDX)":b+" sector ETF"):"STOXX Europe 600"}
  try{const{j}=await cached("yb_"+b,6*36e5,()=>race(yCh(b,"2y","1d"),j=>j.chart&&j.chart.result&&j.chart.result[0]));
   if(g!==S.gen)return;const c=(j.chart.result[0].indicators.quote[0].close||[]).filter(x=>x!=null);
   if(c.length>253){S.bench={n,r:(last(c)/c[c.length-253]-1)*100};stat("bench").className="st ok"}else stat("bench").className="st nf"}
  catch(e){if(g===S.gen)stat("bench").className="st nf"}
  /* market regime (not scored): broad index vs its 200-day average and 50-day vs 200-day */
- const mi=us?"SPY":"^STOXX",mn=us?"S&P 500 (SPY)":"STOXX Europe 600";
+ const mi=ca?"^GSPTSE":us?"SPY":"^STOXX",mn=ca?"S&P/TSX Composite":us?"S&P 500 (SPY)":"STOXX Europe 600";
  try{const{j}=await cached("yb_"+mi,6*36e5,()=>race(yCh(mi,"2y","1d"),j=>j.chart&&j.chart.result&&j.chart.result[0]));
   if(g!==S.gen)return;const r0=j.chart.result[0],c0=r0.indicators.quote[0].close||[],c=c0.filter(x=>x!=null);
   S.mktC=new Map();(r0.timestamp||[]).forEach((t,i)=>{if(c0[i]!=null)S.mktC.set(new Date(t*1e3).toISOString().slice(0,10),c0[i])});S.mktN=mn;
