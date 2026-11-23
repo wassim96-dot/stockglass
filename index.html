@@ -210,7 +210,7 @@ ol.hl{margin:4px 0 8px;padding-left:18px;font-size:12px}ol.hl li{display:flex;ga
   <div id="left"><div id="grid"></div></div>
   <aside id="side">
    <div class="card glass sc" id="vc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="rg" x1="0" y1="1" x2="1" y2="0"><stop id="r1" offset="0" stop-color="#0c9f6a"/><stop id="r2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="rfg" cx="46" cy="46" r="38" fill="none" stroke="url(#rg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="snum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Long-term score <i class="hz">1–3 years</i></span><span id="sent">…</span><p class="mean" id="lmean"></p><div id="cov"></div></div></div>
-   <div class="card glass sc" id="tc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="tg" x1="0" y1="1" x2="1" y2="0"><stop id="t1" offset="0" stop-color="#0c9f6a"/><stop id="t2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="tfg" cx="46" cy="46" r="38" fill="none" stroke="url(#tg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="tnum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Entry-timing score <i class="hz">2–12 weeks</i></span><span id="tsent">…</span><p class="mean" id="tmean"></p><div class="parts" id="tparts"></div><div class="tevt" id="tevt"></div><div class="tevt" id="txp"></div><div class="tevt" id="tfil"></div><div class="mreg" id="mreg"></div></div></div>
+   <div class="card glass sc" id="tc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="tg" x1="0" y1="1" x2="1" y2="0"><stop id="t1" offset="0" stop-color="#0c9f6a"/><stop id="t2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="tfg" cx="46" cy="46" r="38" fill="none" stroke="url(#tg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="tnum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Entry-timing score <i class="hz">2–12 weeks</i></span><span id="tsent">…</span><p class="mean" id="tmean"></p><div class="parts" id="tparts"></div><div class="tevt" id="tevt"></div><div class="tevt" id="txp"></div><div class="tevt" id="tfil"></div><div class="mreg" id="mreg"></div><div class="mreg" id="mtt"></div></div></div>
    
    <!-- Score by group (long-term weights) -->
    <div class="card glass"><h3>Score by group <span class="chip">long-term weights</span></h3><div class="bars" id="bars"></div></div>
@@ -241,7 +241,7 @@ const isLight=()=>document.documentElement.dataset.theme==="light";
 const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const col=s=>isLight()?`hsl(${s<=5?4+s/5*44:48+(s-5)/5*102} 66% 40%)`:`hsl(${s<=5?4+s/5*44:48+(s-5)/5*102} 88% 64%)`;
 const pc=(v,d=1)=>isN(v)?v.toFixed(d)+"%":"∅",xf=(v,d=1)=>isN(v)?v.toFixed(d)+"×":"∅";
-const CUR={USD:"$",EUR:"€",GBP:"£",JPY:"¥",CHF:"CHF ",CAD:"C$",AUD:"A$",HKD:"HK$",INR:"₹",KRW:"₩",SEK:"kr ",NOK:"kr ",DKK:"kr "},pence=c=>c==="GBp"||c==="GBX";
+const CUR={USD:"$",EUR:"€",GBP:"£",JPY:"¥",CHF:"CHF ",CAD:"C$",AUD:"A$",HKD:"HK$",INR:"₹",KRW:"₩",SEK:"kr ",NOK:"kr ",DKK:"kr ",PLN:"zł "},pence=c=>c==="GBp"||c==="GBX";
 const money=(v,c)=>{if(!isN(v))return"∅";if(pence(c))return v.toFixed(2)+"p";return(CUR[c]||c+" ")+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})};
 const cagr=(a,b,n)=>isN(a)&&isN(b)&&a>0&&n>0?(b<=0?-100:(Math.pow(b/a,1/n)-1)*100):null;
 function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";setTimeout(()=>t.style.display="none",2200)}
@@ -896,6 +896,26 @@ function dirNote(){if(S.tscore==null)return null;if(S.kind==="crypto")return dir
  if(lb&&ph&&!calm)n+=` Low beta${bt}: moves less than the market in both directions.`;return{label:l,note:n,phase:ph}}
 /* market fear in the timing score, scaled by the stock's beta: 5 + (fear − 5) × clip(beta, 0.5, 1.5) */
 /* beta from prices when Nasdaq gives none (European stocks, the GitHub runner): 52 weekly returns vs the local index */
+/* Minervini Trend Template (Trade Like a Stock Market Wizard, 2013), shown under entry timing, NOT scored.
+   The 7 price rules use daily closes; the 8th rule (IBD relative-strength rank >= 70) is proprietary, so the
+   12-month relative strength vs the benchmark is shown as a proxy and not counted. Stop: 2 x ATR(20), max 10%. */
+function trendTemplate(){const d=S.closes||[];if((S.kind&&S.kind!=="equity")||d.length<200)return null;
+ const c=d.map(x=>x.c),p=S.price??last(c),at=(k,n)=>{const a=c.slice(0,c.length-k);return a.length<n?null:sum(a.slice(-n))/n};
+ const s50=at(0,50),s150=at(0,150),s200=at(0,200),s200m1=at(21,200),s200m5=at(105,200),y=d.slice(-252),hi=Math.max(...y.map(x=>x.h)),lo=Math.min(...y.map(x=>x.l));
+ const up=s200!=null&&s200m1!=null&&s200>s200m1,up5=up&&s200m5!=null&&s200>s200m5,aL=lo>0?(p/lo-1)*100:null,bH=hi>0?(1-p/hi)*100:null,f=v=>v.toFixed(0);
+ const R=[["Price above the 150- and 200-day averages",s150!=null&&p>s150&&p>s200],["150-day average above the 200-day",s150!=null&&s150>s200],
+  ["200-day average rising for at least 1 month"+(up?(up5?" (also over 5 months)":" (not yet over 5 months, the preferred span)"):""),up],
+  ["50-day average above the 150- and 200-day",s50!=null&&s150!=null&&s50>s150&&s50>s200],["Price above the 50-day average",s50!=null&&p>s50],
+  [`At least 30% above the 52-week low (${aL!=null?"+"+f(aL)+"%":"∅"}; best setups +100–300%)`,aL!=null&&aL>=30],
+  [`Within 25% of the 52-week high (${bH!=null?"−"+f(bH)+"%":"∅"})`,bH!=null&&bH<=25]];
+ let atr=null;if(d.length>21){let t=0;for(let i=d.length-20;i<d.length;i++)t+=Math.max(d[i].h-d[i].l,Math.abs(d[i].h-d[i-1].c),Math.abs(d[i].l-d[i-1].c));atr=t/20}
+ const rs=S.v&&S.v.rs&&isN(S.v.rs.v)?S.v.rs.v:null,n=R.filter(r=>r[1]).length,dist=atr!=null&&p?Math.min(2*atr/p,.1):null;
+ const F=S.fear||MF,ph=F?F.phase:null,M_=S.mkt,mktBad=(ph==="early"||ph==="peak")||(M_&&M_.lab==="Hostile"),
+  verdict=n===R.length?(mktBad?["🟡 Meets the trend template, but Minervini would wait: he only buys breakouts when the overall market is in an uptrend, and the market is under stress ("+(ph==="early"||ph==="peak"?"fear phase: "+(F.phase_label||ph):"market regime hostile")+").","var(--warn)"]
+   :["🟢 Buy candidate under Minervini's rules: all 7 trend criteria pass. His entry still needs a breakout above a tight base (volatility contraction) on rising volume, with the stop below.","var(--good)"])
+   :n>=5?["🟡 Not a buy yet under Minervini's rules: "+(R.length-n)+" criterion"+(R.length-n>1?"s":"")+" missing. Keep on a watchlist until all 7 pass.","var(--warn)"]
+   :["🔴 Not a buy under Minervini's rules: the stock is not in a confirmed uptrend (stage 2).","var(--bad)"];
+ return{rules:R,passed:n,total:R.length,met:n===R.length,rs,verdict,stop:dist!=null?{pct:dist*100,level:p*(1-dist),capped:2*atr/p>.1}:null}}
 function priceBeta(){const M=S.mktC;if(!M||!S.closes||S.closes.length<200)return null;
  const P=[];S.closes.forEach(x=>{const d=new Date(x.t).toISOString().slice(0,10);if(M.has(d))P.push([x.c,M.get(d)])});const z=P.slice(-261);if(z.length<160)return null;
  const a=[],b=[];for(let i=5;i<z.length;i+=5){a.push(z[i][0]/z[i-5][0]-1);b.push(z[i][1]/z[i-5][1]-1)}if(a.length<30)return null;
@@ -936,6 +956,11 @@ function render(){
    el.innerHTML+=`<br><b style="color:${fc}">Fear: ${esc(F.label)}</b>VIX ${F.vix.toFixed(1)} (higher than ${F.vix_pct}% of the last ${Math.round(F.window_years||10)} years)${F.vix_vix3m!=null?`, VIX/VIX3M ${F.vix_vix3m.toFixed(2)}`:""}; fear phase <b>${esc(F.phase_label||"?")}</b> (${F.phase_score}/10${F.risk_flag?", high-risk entry":""}), premium ${isN(F.premium_score)?F.premium_score.toFixed(1):"∅"}/10 (HAR variance risk premium, pct ${F.vrp_pct})${fc2?`; fading checks: credit ${fc2.credit_easing===false?"still widening":fc2.credit_easing?"easing":"n/a"}, new 20-day low ${fc2.new_low_5d?"yes":"no"}, bear state ${fc2.bear_state?"yes":"no"}`:""}${F.credit_spread?`; high-yield spread ${F.credit_spread.value.toFixed(2)}%`:""}${F.cnn_fear_greed?`; CNN Fear &amp; Greed ${F.cnn_fear_greed.score} (${esc(F.cnn_fear_greed.rating)}, context)`:""} → ${F.score.toFixed(1)}/10`+(S.fear?`; for this stock ${S.fearAdj.toFixed(1)} (beta ${S.fearBeta.toFixed(2)}, clipped 0.5–1.5), ${Math.round(FEAR_W*100)}% of entry timing.`:S.kind==="crypto"?", not applied to crypto.":", not applied.")+` ${esc(F.note)} <span class="muted">(${esc(F.date)})</span>`}
   if(S.dir){const D_=S.dir,dc=D_.label.startsWith("Long")?"var(--good)":D_.label.startsWith("Short setups")?"var(--bad)":D_.label.includes("risky")?"var(--warn)":"var(--ink2)";
    el.innerHTML+=`<br><b style="color:${dc}">Direction: ${esc(D_.label)}</b>${esc(D_.note)} <span class="muted">Not scored.</span>`}}
+ {const el=$("mtt"),T=S.tt=trendTemplate();el.innerHTML="";if(T){const cc=T.met?"var(--good)":T.passed>=5?"var(--warn)":"var(--bad)";
+  el.innerHTML=`<b style="color:${cc}">Minervini trend template: ${T.passed}/${T.total}${T.met?" met":""}</b>`+T.rules.map(r=>`<br>${r[1]?"✓":"✗"} ${esc(r[0])}`).join("")+
+  `<br>· Relative-strength rank ≥ 70 (IBD, not available): proxy ${T.rs!=null?(T.rs>=0?"+":"")+T.rs.toFixed(1)+" pt vs benchmark over 12 months":"∅"}, not counted`+
+  (T.stop?`<br>Stop-loss guide (2 × 20-day ATR, max 10%): ${money(T.stop.level,S.cur)} (−${T.stop.pct.toFixed(1)}%${T.stop.capped?", capped at 10%":""})`:"")+
+  `<br><b style="color:${T.verdict[1]}">${esc(T.verdict[0])}</b> <span class="muted">Rule-based reading of Minervini's criteria, not investment advice. Not scored.</span>`}}
  {const den=100-TIMING.value+TIMING.value*S.vmT,sh=k=>Math.round(100*TIMING[k]*(k==="value"?S.vmT:1)/den);
   const tv=TIMING.value||0,den2=100-tv+tv*S.vmT,sh2=k=>Math.round(100*TIMING[k]*(k==="value"?S.vmT:1)/den2),nm=k=>(GR.find(x=>x[0]===k)||[,k])[1];
   const fw=S.fear?FEAR_W:0;
@@ -1069,6 +1094,7 @@ function snap(){
   chg_1d:ret(1),chg_1w:ret(5),chg_1m:ret(21),chg_1y:ret(252),
   long_term:{score:S.score,label:S.sent?S.sent[0]:null,confidence:S.score!=null?S.conf:null},
   timing:{score:S.tscore,label:S.tsent?S.tsent[0]:null,confidence:S.tscore!=null?S.tconf:null,before_fear:S.fear?S.tbase:null,fear_weight:S.fear?FEAR_W:0,fear_adj:S.fear?S.fearAdj:null,fear_beta:S.fear?S.fearBeta:null,direction:S.dir?S.dir.label:null},
+  trend_template:S.tt?{passed:S.tt.passed,total:S.tt.total,met:S.tt.met,verdict:S.tt.verdict[0].slice(0,2).trim(),rs_proxy:r2(S.tt.rs,1),stop_pct:S.tt.stop?r2(S.tt.stop.pct,1):null}:null,
   groups:g,metrics:m,coverage:S.cov||null,filing_check:S.fil&&S.fil.lab||null,
   next_earnings:S.nextEarn?{date:new Date(S.nextEarn.t).toISOString().slice(0,10),confirmed:S.nextEarn.confirmed}:null,
   fund:Q?{family:Q.fam||null,category:Q.cat||null,source:Q.src,top_holdings:(Q.hold||[]).slice(0,10).map(h=>({s:h.s,n:h.n,w:r2(h.w)})),sectors:(Q.sect||[]).slice(0,6).map(x=>({k:x.k,w:r2(x.w,1)}))}:null,
