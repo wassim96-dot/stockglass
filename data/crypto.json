@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-22T08:09:01.979Z",
+ "updated": "2026-11-23T09:13:30.088Z",
  "method": "Crypto cycle phase: accumulation (MVRV ≤ 1), distribution (MVRV in the top 10% of its last 4 years), else bull (price above its 200-day average) or bear. Coins without on-chain data use Bitcoin's phase. Long-term phase scores: accumulation 8.5, bull 6, bear 3.5, distribution 3.5; timing: 6.5, 6, 4, 5.",
  "phases": {
   "accumulation": {
@@ -29,46 +29,223 @@
  },
  "assets": {
   "btc": {
-   "date": "2026-11-21",
-   "price": 60122.611,
-   "ma200": 72420.4,
+   "date": "2026-11-22",
+   "price": 61103.707,
+   "ma200": 72319.1,
    "above_200d": false,
-   "ret_1y": -29.2,
-   "mvrv": 1.13,
-   "mvrv_pct_4y": 5,
-   "realized_price": 53209.2,
+   "ret_1y": -27.9,
+   "mvrv": 1.148,
+   "mvrv_pct_4y": 6,
+   "realized_price": 53205.6,
    "phase": "bear",
    "phase_source": "own on-chain data",
-   "adr_growth_1y": -6.6,
-   "funding_annual": 0.2
+   "phase_age": {
+    "since": "2026-11-12",
+    "days": 11,
+    "price_at_start": 71280.4,
+    "change_since_start": -14.3
+   },
+   "adr_growth_1y": -6.9,
+   "past_accumulation": {
+    "episodes": [
+     {
+      "start": "2014-10-29",
+      "end": "2014-11-04",
+      "days": 7,
+      "low_vs_start": -3
+     },
+     {
+      "start": "2014-12-17",
+      "end": "2015-10-22",
+      "days": 310,
+      "low_vs_start": -45
+     },
+     {
+      "start": "2018-11-19",
+      "end": "2019-04-01",
+      "days": 134,
+      "low_vs_start": -34
+     },
+     {
+      "start": "2020-03-12",
+      "end": "2020-03-18",
+      "days": 7,
+      "low_vs_start": 0
+     },
+     {
+      "start": "2022-06-13",
+      "end": "2022-07-26",
+      "days": 44,
+      "low_vs_start": -15
+     },
+     {
+      "start": "2022-08-19",
+      "end": "2023-01-12",
+      "days": 147,
+      "low_vs_start": -25
+     }
+    ],
+    "median_days": 44,
+    "min_days": 7,
+    "max_days": 310
+   },
+   "funding_annual": 0.4
   },
   "eth": {
-   "date": "2026-11-21",
-   "price": 1681.2068,
-   "ma200": 2125.12,
+   "date": "2026-11-22",
+   "price": 1719.9623,
+   "ma200": 2121.98,
    "above_200d": false,
-   "ret_1y": -39,
-   "mvrv": 0.833,
-   "mvrv_pct_4y": 4,
-   "realized_price": 2018.66,
+   "ret_1y": -38,
+   "mvrv": 0.852,
+   "mvrv_pct_4y": 5,
+   "realized_price": 2018.13,
    "phase": "accumulation",
    "phase_source": "own on-chain data",
-   "adr_growth_1y": 26.3,
-   "funding_annual": -2.8
+   "phase_age": {
+    "since": "2026-11-08",
+    "days": 15,
+    "price_at_start": 2136.78,
+    "change_since_start": -19.5
+   },
+   "adr_growth_1y": 26.5,
+   "past_accumulation": {
+    "episodes": [
+     {
+      "start": "2018-03-27",
+      "end": "2018-04-11",
+      "days": 16,
+      "low_vs_start": -18
+     },
+     {
+      "start": "2018-08-04",
+      "end": "2019-06-13",
+      "days": 314,
+      "low_vs_start": -80
+     },
+     {
+      "start": "2019-07-11",
+      "end": "2020-02-10",
+      "days": 215,
+      "low_vs_start": -55
+     },
+     {
+      "start": "2020-02-26",
+      "end": "2020-05-29",
+      "days": 94,
+      "low_vs_start": -51
+     },
+     {
+      "start": "2020-06-21",
+      "end": "2020-07-05",
+      "days": 15,
+      "low_vs_start": -3
+     },
+     {
+      "start": "2022-05-18",
+      "end": "2023-01-18",
+      "days": 246,
+      "low_vs_start": -48
+     },
+     {
+      "start": "2023-02-09",
+      "end": "2023-02-14",
+      "days": 6,
+      "low_vs_start": -3
+     },
+     {
+      "start": "2023-03-03",
+      "end": "2023-03-11",
+      "days": 9,
+      "low_vs_start": -9
+     },
+     {
+      "start": "2025-02-28",
+      "end": "2025-05-07",
+      "days": 69,
+      "low_vs_start": -34
+     },
+     {
+      "start": "2026-01-31",
+      "end": "2026-04-29",
+      "days": 89,
+      "low_vs_start": -24
+     },
+     {
+      "start": "2026-05-15",
+      "end": "2026-08-18",
+      "days": 96,
+      "low_vs_start": -30
+     }
+    ],
+    "median_days": 89,
+    "min_days": 6,
+    "max_days": 314
+   },
+   "funding_annual": -2.6
   },
   "near": {
-   "date": "2026-11-21",
-   "price": 2.8927517,
-   "ma200": 2.74333,
+   "date": "2026-11-22",
+   "price": 2.97485,
+   "ma200": 2.75076,
    "above_200d": true,
-   "ret_1y": 55.6,
+   "ret_1y": 61.6,
    "phase": "bear",
    "phase_source": "Bitcoin's cycle (no on-chain data for this coin)",
-   "funding_annual": 4.5
+   "funding_annual": 3.5,
+   "phase_age": {
+    "since": "2026-11-12",
+    "days": 11,
+    "price_at_start": 3.4120815,
+    "change_since_start": -12.8
+   },
+   "past_accumulation": {
+    "episodes": [
+     {
+      "start": "2014-10-29",
+      "end": "2014-11-04",
+      "days": 7,
+      "low_vs_start": -3
+     },
+     {
+      "start": "2014-12-17",
+      "end": "2015-10-22",
+      "days": 310,
+      "low_vs_start": -45
+     },
+     {
+      "start": "2018-11-19",
+      "end": "2019-04-01",
+      "days": 134,
+      "low_vs_start": -34
+     },
+     {
+      "start": "2020-03-12",
+      "end": "2020-03-18",
+      "days": 7,
+      "low_vs_start": 0
+     },
+     {
+      "start": "2022-06-13",
+      "end": "2022-07-26",
+      "days": 44,
+      "low_vs_start": -15
+     },
+     {
+      "start": "2022-08-19",
+      "end": "2023-01-12",
+      "days": 147,
+      "low_vs_start": -25
+     }
+    ],
+    "median_days": 44,
+    "min_days": 7,
+    "max_days": 310
+   }
   }
  },
  "fng": {
-  "date": "2026-11-22",
+  "date": "2026-11-23",
   "value": 11
  }
 }
