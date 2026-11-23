@@ -12,6 +12,7 @@ BE
 BRK-B
 BTI
 CAT
+CB        # Chubb (Swiss-domiciled, NYSE only) · top 5 CH
 COST
 GOOG
 INTC
@@ -42,7 +43,7 @@ CS.PA     # AXA
 DG.PA     # Vinci
 ESSITY-B.ST
 IBE.MC    # Iberdrola
-ROP.SW    # Roche participation shares (replaced ROG.SW in 2026)
+ROP.SW    # Roche participation shares (replaced ROG.SW in 2026) · top 5 CH
 SAF.PA    # Safran
 SAN.PA    # Sanofi
 SIVE.ST   # Sivers Semiconductors (2DG.F is its Frankfurt listing: same company)
@@ -75,6 +76,14 @@ ITX.MC    # Inditex · top 5 ES
 SAN.MC    # Banco Santander (US ADR SAN is the same company) · top 5 ES
 BBVA.MC   # BBVA (US ADR BBVA is the same company) · top 5 ES
 CABK.MC   # CaixaBank · top 5 ES
+NOVN.SW   # Novartis (US ADR NVS is the same company) · top 5 CH
+NESN.SW   # Nestlé · top 5 CH
+ABBN.SW   # ABB · top 5 CH
+PKN.WA    # ORLEN · top 5 PL
+PKO.WA    # PKO Bank Polski · top 5 PL
+EBP.WA    # Erste Bank Polska (formerly Santander Bank Polska) · top 5 PL
+MBK.WA    # mBank · top 5 PL
+PEO.WA    # Bank Pekao · top 5 PL
 
 # --- Canadian stocks ---
 ABX.TO    # Barrick Mining (TSX; NYSE listing B is the same company)
