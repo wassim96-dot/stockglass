@@ -878,6 +878,16 @@ const FEAR_W=.10;let MF=null,CR=null;
 const crReady=(async()=>{try{const r=await fetch("data/crypto.json",{cache:"no-cache"});if(r.ok){const m=await r.json();if(m&&m.assets&&Date.now()-Date.parse(m.updated)<8*864e5)CR=m}}catch(e){}})();
 const mfReady=(async()=>{try{const r=await fetch("data/market.json",{cache:"no-cache"});if(r.ok){const m=await r.json();
  if(m&&isN(m.score)&&Date.now()-Date.parse(m.date+"T00:00:00Z")<8*864e5)MF=m}}catch(e){}})();
+/* Live VIX: context only, never scored. The fear score stays on the official daily close (fear phase and premium are
+   defined close to close); the live quote shows how far the market has moved since that close. Refreshed every 5 minutes. */
+let LV=null;const fdClose=d=>new Date(d+"T12:00:00Z").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
+function lvHTML(){if(!LV)return "Live quote unavailable right now.";const F=MF,tm=new Date(LV.t).toLocaleString(undefined,{weekday:"short",hour:"2-digit",minute:"2-digit"});
+ const d=F&&isN(F.vix)?(LV.v/F.vix-1)*100:null;
+ return `<b>${LV.v.toFixed(2)}</b> at ${esc(tm)}${d!=null?` (${d>=0?"+":""}${d.toFixed(1)}% vs the scored close ${F.vix.toFixed(1)})`:""}.`+(d!=null&&Math.abs(d)>=10?" A move this large can change the fear phase at the next update.":"")}
+function fillLV(){const el=document.getElementById("lvix");if(el)el.innerHTML=lvHTML()}
+async function liveVix(){try{const {j}=await race(yCh("^VIX","1d","5m"),j=>isN(j?.chart?.result?.[0]?.meta?.regularMarketPrice));
+ const m=j.chart.result[0].meta;LV={v:m.regularMarketPrice,t:(m.regularMarketTime||Date.now()/1000)*1000};fillLV()}catch(e){fillLV()}}
+liveVix();setInterval(()=>{if(!document.hidden)liveVix()},5*60e3);
 /* Long / short setup note under the timing score (not a score; version 2, 21 Nov 2026). A trend counts only when the
    12-1 momentum is large relative to volatility (|12-1 return| > 0.5 × annual σ; mom is already risk-adjusted), as in the
    revised time-series momentum of Lim, Wang & Yao (2018) and volatility-scaled momentum (Barroso & Santa-Clara 2015).
@@ -966,10 +976,11 @@ function render(){
   if(MF){const F=MF,fc=F.score>=6.5?"var(--good)":F.score<=4.5?"var(--bad)":"var(--warn)",k=F.fading_checks;
    add("Market fear",`${F.label} · ${F.score.toFixed(1)}/10`,fc,[
     ["Fear phase",P(`<b>${esc(F.phase_label||"?")}</b> (${F.phase_score}/10${F.risk_flag?", high-risk entry":""})`)+(F.note?P(esc(F.note)):"")],
-    ["VIX",P(`${F.vix.toFixed(1)}, higher than ${F.vix_pct}% of the last ${Math.round(F.window_years||10)} years${F.vix_vix3m!=null?`; VIX/VIX3M ${F.vix_vix3m.toFixed(2)}${F.vix_vix3m>1?" (inverted: near-term stress)":""}`:""}.`)],
+    [`VIX · close of ${fdClose(F.date)} (scored)`,P(`${F.vix.toFixed(1)}, higher than ${F.vix_pct}% of the last ${Math.round(F.window_years||10)} years${F.vix_vix3m!=null?`; VIX/VIX3M ${F.vix_vix3m.toFixed(2)}${F.vix_vix3m>1?" (inverted: near-term stress)":""}`:""}.`)],
+    ["Live VIX · context only",`<p id="lvix">${LV?lvHTML():"Loading the live quote…"}</p>`+mu("Not scored: the score uses the official close and updates after the US close (about 23:35 Paris, Monday to Friday).")],
     ["Variance risk premium",P(`${isN(F.premium_score)?F.premium_score.toFixed(1):"∅"}/10 (HAR model, percentile ${F.vrp_pct}): how much options price in beyond the volatility expected.`)],
     k?["Fading checks",P(`Credit ${k.credit_easing===false?"still widening":k.credit_easing?"easing":"n/a"} · new 20-day low in 5 days: ${k.new_low_5d?"yes":"no"} · bear state: ${k.bear_state?"yes":"no"}${F.credit_spread?` · high-yield spread ${F.credit_spread.value.toFixed(2)}%`:""}${F.cnn_fear_greed?` · CNN Fear &amp; Greed ${F.cnn_fear_greed.score} (${esc(F.cnn_fear_greed.rating)}, context)`:""}`)]:null,
-    ["Effect on this asset",P(S.fear?`${S.fearAdj.toFixed(1)}/10 after beta scaling (beta ${S.fearBeta.toFixed(2)}, clipped 0.5–1.5); counts for ${Math.round(FEAR_W*100)}% of entry timing${isN(S.tbase)?` (timing before fear: ${S.tbase.toFixed(1)})`:""}.`:S.kind==="crypto"?"Not applied to crypto: the evidence is for equities.":"Not applied.")+mu(`Score = 0.3 × premium + 0.7 × phase · reading of ${esc(F.date)}`)]],"","S",S.fear?`scored: ${Math.round(FEAR_W*100)}% of entry timing`:"not scored")}
+    ["Effect on this asset",P(S.fear?`${S.fearAdj.toFixed(1)}/10 after beta scaling (beta ${S.fearBeta.toFixed(2)}, clipped 0.5–1.5); counts for ${Math.round(FEAR_W*100)}% of entry timing${isN(S.tbase)?` (timing before fear: ${S.tbase.toFixed(1)})`:""}.`:S.kind==="crypto"?"Not applied to crypto: the evidence is for equities.":"Not applied.")+mu(`Score = 0.3 × premium + 0.7 × phase · reading of the ${fdClose(F.date)} close`)]],"","S",S.fear?`scored: ${Math.round(FEAR_W*100)}% of entry timing`:"not scored")}
   if(S.dir){const D_=S.dir;add("Direction",D_.label,null,[["Setup",P(esc(D_.note))],["How it is read",mu("A trend counts when 12-1 momentum exceeds half its volatility; shorts only in a calm, rising market because of momentum-crash risk (Daniel &amp; Moskowitz 2016).")]],"","S")}
   const T=S.tt=trendTemplate();
   if(T){add("Minervini trend template",`${T.passed}/${T.total}${T.met?" met":""}`,T.met?"var(--good)":T.passed>=5?"var(--warn)":"var(--bad)",[
