@@ -49,9 +49,40 @@ SIVE.ST   # Sivers Semiconductors (2DG.F is its Frankfurt listing: same company)
 SOI.PA    # Soitec
 SU.PA     # Schneider Electric
 TTE.PA    # TotalEnergies (US listing TTE is the same company)
+OR.PA     # L'Oréal · top 5 FR
+MC.PA     # LVMH · top 5 FR
+RMS.PA    # Hermès · top 5 FR
+SIE.DE    # Siemens · top 5 DE
+ALV.DE    # Allianz · top 5 DE
+DTE.DE    # Deutsche Telekom · top 5 DE
+ENR.DE    # Siemens Energy · top 5 DE
+ABI.BR    # AB InBev (US ADR BUD is the same company) · top 5 BE
+UCB.BR    # UCB · top 5 BE
+KBC.BR    # KBC Group · top 5 BE
+AGS.BR    # Ageas · top 5 BE
+ELI.BR    # Elia Group · top 5 BE
+EQNR.OL   # Equinor (US listing EQNR is the same company) · top 5 NO
+DNB.OL    # DNB Bank · top 5 NO
+KOG.OL    # Kongsberg Gruppen · top 5 NO
+AKRBP.OL  # Aker BP · top 5 NO
+TEL.OL    # Telenor · top 5 NO
+UCG.MI    # UniCredit · top 5 IT
+ISP.MI    # Intesa Sanpaolo · top 5 IT
+ENEL.MI   # Enel · top 5 IT
+ENI.MI    # Eni (US ADR E is the same company) · top 5 IT
+G.MI      # Generali · top 5 IT
+ITX.MC    # Inditex · top 5 ES
+SAN.MC    # Banco Santander (US ADR SAN is the same company) · top 5 ES
+BBVA.MC   # BBVA (US ADR BBVA is the same company) · top 5 ES
+CABK.MC   # CaixaBank · top 5 ES
 
 # --- Canadian stocks ---
 ABX.TO    # Barrick Mining (TSX; NYSE listing B is the same company)
+RY.TO     # Royal Bank of Canada · top 5 CA
+TD.TO     # Toronto-Dominion Bank · top 5 CA
+SHOP.TO   # Shopify (Nasdaq SHOP is the same company) · top 5 CA
+BMO.TO    # Bank of Montreal · top 5 CA
+BNS.TO    # Scotiabank · top 5 CA
 
 # --- ETFs ---
 EUNL.DE
