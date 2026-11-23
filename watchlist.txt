@@ -50,6 +50,9 @@ SOI.PA    # Soitec
 SU.PA     # Schneider Electric
 TTE.PA    # TotalEnergies (US listing TTE is the same company)
 
+# --- Canadian stocks ---
+ABX.TO    # Barrick Mining (TSX; NYSE listing B is the same company)
+
 # --- ETFs ---
 EUNL.DE
 EXV4.DE
