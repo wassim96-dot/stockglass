@@ -289,16 +289,16 @@ def tcard(t):
     def tone(l):
         l = str(l or "")
         return "var(--good)" if l.startswith(("Long", "🟢")) else "var(--bad)" if l.startswith(("Short setups", "🔴")) else "var(--warn)" if ("risky" in l or l.startswith("🟡")) else "var(--ink2)"
-    def mw(title, val, col, sub=""):
-        return f'<div class="mw"><i>{e(title)}</i><b style="color:{col}">{val}</b>{f"<small>{sub}</small>" if sub else ""}</div>'
+    def mw(title, val, col, sub="", hz=""):
+        return f'<div class="mw"><i>{e(title)}</i><b style="color:{col}">{val}</b>{f"<small>{sub}</small>" if sub else ""}{f"<em>{hz}</em>" if hz else ""}</div>'
     notes = []
     if t.get("crypto") and t["crypto"].get("phase_label"):
-        cy = t["crypto"]; notes.append(mw("Crypto cycle", e(cy["phase_label"]) + (f", day {cy['phase_days']}" if cy.get("phase_days") else ""), "var(--ink)", f"MVRV {cy['mvrv']:.2f}" if cy.get("mvrv") is not None else "Bitcoin's cycle"))
-    if t.get("direction"): notes.append(mw("Direction", e(t["direction"]), tone(t["direction"]), "not scored"))
+        cy = t["crypto"]; notes.append(mw("Crypto cycle", e(cy["phase_label"]) + (f", day {cy['phase_days']}" if cy.get("phase_days") else ""), "var(--ink)", f"MVRV {cy['mvrv']:.2f}" if cy.get("mvrv") is not None else "Bitcoin's cycle", "scored · long and short term"))
+    if t.get("direction"): notes.append(mw("Direction", e(t["direction"]), tone(t["direction"]), "not scored", "short term · 2–12 wk"))
     TT = t.get("trend_template")
     if TT: notes.append(mw("Minervini template", f'{e(TT.get("verdict") or "")} {TT["passed"]}/{TT["total"]}', "var(--good)" if TT.get("verdict") == "🟢" else "var(--bad)" if TT.get("verdict") == "🔴" else "var(--warn)",
-                           ("stop guide −" + f'{TT["stop_pct"]:.1f}%' + " · " if TT.get("stop_pct") is not None else "") + "not scored"))
-    if t["earnings"]: notes.append(mw("Next earnings", e(t["earnings"]), "var(--ink)", "date"))
+                           ("stop guide −" + f'{TT["stop_pct"]:.1f}%' + " · " if TT.get("stop_pct") is not None else "") + "not scored", "short term · 2–12 wk"))
+    if t["earnings"]: notes.append(mw("Next earnings", e(t["earnings"]), "var(--ink)", "date · not scored", "short term · 2–12 wk"))
     if t["warning"]: notes.append(mw("Warning", "⚠ " + e(t["warning"]), "var(--bad)"))
     it = INTERP.get(t["sym"].upper())
     P = t["px"]
@@ -385,7 +385,7 @@ svg.sp{{width:100%;height:64px;display:block;margin-top:8px}}
 .ts{{display:flex;gap:12px;white-space:nowrap}}.ts span{{display:flex;flex-direction:column;align-items:flex-end}}.ts i{{font-style:normal;font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em}}.ts b{{font-size:19px;font-weight:800;line-height:1.1}}
 .tc p{{margin:6px 0 0;font-size:12.5px;color:var(--ink2)}}.tc p.tl{{color:var(--ink);font-weight:600}}.tc p.it{{color:var(--ink);background:rgba(255,255,255,.06);border-left:3px solid var(--tm);border-radius:6px;padding:6px 9px}}
 .tc em{{font-style:normal;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-right:4px}}
-.hz2{{display:inline-block;margin-right:12px}}.tc p.pl b{{color:var(--ink);font-weight:700}}svg.ps{{width:100%;height:34px;display:block;margin-top:6px}}.tc p.ps2{{margin-top:2px;font-size:11px}}.tc .u{{color:var(--good)}}.tc .n{{color:var(--bad)}}.tc p.gl b,.tc p.kl b{{color:var(--ink);font-weight:700}}.mws{{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}}.mw{{background:rgba(255,255,255,.05);border:1px solid var(--ln);border-radius:10px;padding:6px 9px;min-width:0}}.mw i{{display:block;font-style:normal;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}}.mw b{{display:block;font-size:12px;font-weight:700;line-height:1.3}}.mw small{{display:block;font-size:10px;color:var(--ink3)}}a{{color:var(--acc)}}.ft{{color:var(--ink3);font-size:11px;margin-top:16px}}
+.hz2{{display:inline-block;margin-right:12px}}.tc p.pl b{{color:var(--ink);font-weight:700}}svg.ps{{width:100%;height:34px;display:block;margin-top:6px}}.tc p.ps2{{margin-top:2px;font-size:11px}}.tc .u{{color:var(--good)}}.tc .n{{color:var(--bad)}}.tc p.gl b,.tc p.kl b{{color:var(--ink);font-weight:700}}.mws{{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}}.mw{{background:rgba(255,255,255,.05);border:1px solid var(--ln);border-radius:10px;padding:6px 9px;min-width:0}}.mw i{{display:block;font-style:normal;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}}.mw b{{display:block;font-size:12px;font-weight:700;line-height:1.3}}.mw small{{display:block;font-size:10px;color:var(--ink3)}}.mw em{{display:block;font-size:9.5px;color:var(--ink3);opacity:.85}}a{{color:var(--acc)}}.ft{{color:var(--ink3);font-size:11px;margin-top:16px}}
 </style>
 <div class="w">
 <div class="top"><h1>Watchlist review</h1><span class="sub">{fd(cur_d)} · {len(CUR)} tickers · {len(RUNS)} weekly run{"s" if len(RUNS) != 1 else ""} since {fd(RUNS[0])}</span></div>
