@@ -68,30 +68,30 @@ KOG.OL    # Kongsberg Gruppen · top 5 NO
 AKRBP.OL  # Aker BP · top 5 NO
 TEL.OL    # Telenor · top 5 NO
 UCG.MI    # UniCredit · top 5 IT
-ISP.MI    # Intesa Sanpaolo · top 5 IT
+RACE.MI   # Ferrari (NYSE RACE is the same company) · top 5 IT, replaces a 2nd bank
 ENEL.MI   # Enel · top 5 IT
 ENI.MI    # Eni (US ADR E is the same company) · top 5 IT
 G.MI      # Generali · top 5 IT
 ITX.MC    # Inditex · top 5 ES
 SAN.MC    # Banco Santander (US ADR SAN is the same company) · top 5 ES
-BBVA.MC   # BBVA (US ADR BBVA is the same company) · top 5 ES
-CABK.MC   # CaixaBank · top 5 ES
+ELE.MC    # Endesa (utility) · top 5 ES, replaces a 2nd bank
+AENA.MC   # Aena (airports) · top 5 ES, replaces a 2nd bank
 NOVN.SW   # Novartis (US ADR NVS is the same company) · top 5 CH
 NESN.SW   # Nestlé · top 5 CH
 ABBN.SW   # ABB · top 5 CH
 PKN.WA    # ORLEN · top 5 PL
 PKO.WA    # PKO Bank Polski · top 5 PL
-EBP.WA    # Erste Bank Polska (formerly Santander Bank Polska) · top 5 PL
-MBK.WA    # mBank · top 5 PL
-PEO.WA    # Bank Pekao · top 5 PL
+ALE.WA    # Allegro (e-commerce) · top 5 PL, replaces a 2nd bank
+PZU.WA    # PZU (insurance) · top 5 PL, replaces a 2nd bank
+LPP.WA    # LPP (clothing retail) · top 5 PL, replaces a 2nd bank
 
 # --- Canadian stocks ---
 ABX.TO    # Barrick Mining (TSX; NYSE listing B is the same company)
 RY.TO     # Royal Bank of Canada · top 5 CA
-TD.TO     # Toronto-Dominion Bank · top 5 CA
+ENB.TO    # Enbridge (pipelines) · top 5 CA, replaces a 2nd bank
 SHOP.TO   # Shopify (Nasdaq SHOP is the same company) · top 5 CA
-BMO.TO    # Bank of Montreal · top 5 CA
-BNS.TO    # Scotiabank · top 5 CA
+CNQ.TO    # Canadian Natural Resources (oil & gas) · top 5 CA, replaces a 2nd bank
+BN.TO     # Brookfield Corporation (asset management) · top 5 CA, replaces a 2nd bank
 
 # --- ETFs ---
 EUNL.DE
