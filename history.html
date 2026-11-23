@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#14171b">
+<meta name="theme-color" content="#10203a">
 <title>StockGlass Watchlist</title>
 <script>try{var _t=JSON.parse(localStorage.getItem("sg_theme")||'"dark"');if(_t==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{color-scheme:dark;--bg1:#14171b;--bg2:#1d2127;--card:rgba(255,255,255,.055);--card2:rgba(255,255,255,.035);--ink:#eef1f5;--ink2:#b6bec9;--ink3:#828b96;--ln:rgba(255,255,255,.12);--btn:rgba(255,255,255,.08);--up:#3ddc97;--dn:#ff7a8a;--acc:#5db3ff;--trk:rgba(255,255,255,.12)}
-:root[data-theme="light"]{color-scheme:light;--bg1:#eceff3;--bg2:#e3e7ec;--card:rgba(255,255,255,.75);--card2:rgba(255,255,255,.55);--ink:#16191d;--ink2:#47505b;--ink3:#6b7480;--ln:rgba(0,0,0,.1);--btn:rgba(0,0,0,.05);--up:#0e8a57;--dn:#c4314b;--acc:#1f6fc5;--trk:rgba(0,0,0,.1)}
+:root{color-scheme:dark;--bg1:#10203a;--bg2:#183153;--card:linear-gradient(150deg,rgba(84,120,172,.40),rgba(38,66,110,.32));--card2:rgba(84,120,172,.22);--ink:#eef5ff;--ink2:#b7c9e2;--ink3:#8199ba;--ln:rgba(150,190,240,.2);--btn:rgba(150,190,240,.12);--up:#3ddc97;--dn:#ff6b81;--acc:#8fc4ff;--trk:rgba(150,190,240,.18)}
+:root[data-theme="light"]{color-scheme:light;--bg1:#e8f1fc;--bg2:#d6e6f8;--card:rgba(255,255,255,.8);--card2:rgba(255,255,255,.58);--ink:#0f2440;--ink2:#3d5878;--ink3:#6a83a3;--ln:rgba(30,70,130,.14);--btn:rgba(30,90,170,.06);--up:#0e8a57;--dn:#c4314b;--acc:#1f6fd1;--trk:rgba(30,70,130,.12)}
 *{box-sizing:border-box}
 body{margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
 .wrap{max-width:980px;margin:0 auto;padding-block:max(14px,env(safe-area-inset-top)) 40px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
