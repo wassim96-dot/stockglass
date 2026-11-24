@@ -60,7 +60,8 @@ const batch = await page.evaluate(() => window.SG_BATCH);
 await browser.close(); server.close();
 if (!batch || !batch.results) { console.error("No results produced"); process.exit(1); }
 
-const day = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" }); // YYYY-MM-DD, Paris date
+const day = /^\d{4}-\d{2}-\d{2}$/.test(process.env.RUN_DAY || "") ? process.env.RUN_DAY // a Saturday backup run keeps Friday's date
+  : new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" }); // YYYY-MM-DD, Paris date
 let market = null;
 try { const m = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "market.json"), "utf8")); delete m.history; market = m; } catch (e) {}
 const out = { date: day, run_at: new Date().toISOString(), seconds: batch.seconds, total: batch.total, market, results: batch.results };
