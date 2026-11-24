@@ -44,12 +44,14 @@ async function chart(sym, range = "20y") {
   }
   throw Error("no data for " + sym);
 }
-async function fredSeries(id) {
-  for (const u of [`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}&cosd=2006-01-01`]) {
+async function fredSeries(id, cosd = "2006-01-01") {
+  // FRED often answers slowly to GitHub's servers: a long direct try, then the public relays the StockGlass page uses
+  const base = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}&cosd=${cosd}`;
+  for (const [u, to] of [[base, 45000], ["https://r.jina.ai/" + base, 45000], ["https://api.allorigins.win/raw?url=" + encodeURIComponent(base), 30000], ["https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(base), 30000]]) {
     try {
-      const r = await fetch(u, { headers: { "user-agent": UA, accept: "text/csv" }, signal: AbortSignal.timeout(15000) });
+      const r = await fetch(u, { headers: { "user-agent": UA, accept: "text/csv" }, signal: AbortSignal.timeout(to) });
       if (!r.ok) throw Error("HTTP " + r.status);
-      const m = new Map((await r.text()).trim().split("\n").slice(1).map(l => l.split(",")).filter(x => x[1] && !isNaN(+x[1])).map(x => [x[0], +x[1]]));
+      const m = new Map((await r.text()).trim().split("\n").map(l => l.trim().split(",")).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x[0]) && x[1] && !isNaN(+x[1])).map(x => [x[0], +x[1]]));
       if (m.size > 100) return m;
     } catch (e) { console.log("FRED", id, e.cause?.code || e.message); }
   }
@@ -143,17 +145,28 @@ if (process.argv[1] && process.argv[1].endsWith("market-fear.mjs")) {
   const [oas, fg] = await Promise.all([fredSeries("BAMLH0A0HYM2"), cnnFearGreed()]);
   if (oas) { const k = [...oas.keys()].sort(), v = k.map(x => oas.get(x)), w = v.slice(-WIN10), lv = v[v.length - 1]; out.credit_spread = { date: k[k.length - 1], value: lv, pct: Math.round(100 * w.filter(x => x < lv).length / w.length), high_20d: Math.max(...v.slice(-20)) }; } else out.credit_spread = null;
   out.credit_proxy = credit ? { series: "HYG/IEF total-return ratio", easing: S[S.length - 1].credit_easing } : null;
-  // credit check (context only, never scored): high-yield (HYG) and investment-grade (LQD) bond funds vs Treasuries (IEF),
-  // change of the ratio over 1 and 4 weeks, next to the S&P 500. A falling ratio = corporate bonds lag Treasuries = credit widening.
+  // credit check (context only, never scored). Main measure: ICE BofA option-adjusted spreads from FRED (high yield BAMLH0A0HYM2,
+  // investment grade BAMLC0A0CM), change over 1 and 4 weeks and rank over the available years. Plain fund ratios also move with
+  // interest rates (HYG duration ~3.2 y, LQD ~8.3 y, IEF ~7.3 y), so the backup measure is a rate-adjusted return:
+  // fund return minus (fund duration / IEF duration) x IEF return. Plus the 10-year Treasury yield (^TNX) and the S&P 500.
   try {
-    const [lqd, ief2] = await Promise.all([chart("LQD"), chart("IEF")]);
-    const ig = new Map([...lqd].filter(([d]) => ief2.has(d)).map(([d, v]) => [d, v / ief2.get(d)]));
-    const chg = (m, n) => { const k = [...m.keys()].sort(); if (k.length <= n) return null; const a = m.get(k[k.length - 1 - n]), b = m.get(k[k.length - 1]); return +((b / a - 1) * 100).toFixed(2); };
-    const last = m => [...m.keys()].sort().pop();
-    out.credit_check = { date: credit ? last(credit) : last(ig),
+    const D = { HYG: 3.2, LQD: 8.3, IEF: 7.3 };
+    const [hyg, lqd, ief2, tnx] = await Promise.all([chart("HYG"), chart("LQD"), chart("IEF"), chart("^TNX").catch(() => null)]);
+    const keys = m => [...m.keys()].sort();
+    const chg = (m, n) => { const k = keys(m); if (k.length <= n) return null; const a = m.get(k[k.length - 1 - n]), b = m.get(k[k.length - 1]); return +((b / a - 1) * 100).toFixed(2); };
+    const dif = (m, n, dp = 2) => { const k = keys(m); if (k.length <= n) return null; return +(m.get(k[k.length - 1]) - m.get(k[k.length - 1 - n])).toFixed(dp); };
+    const adj = (f, n) => { const a = chg(f === "HYG" ? hyg : lqd, n), b = chg(ief2, n); return a == null || b == null ? null : +(a - D[f] / D.IEF * b).toFixed(2); };
+    const sp = async id => { const m = await fredSeries(id, "2019-01-01"); if (!m || m.size < 30) return null;
+      const k = keys(m), v = k.map(x => m.get(x)), lv = v[v.length - 1], w = v.slice(-756);
+      return { value: lv, date: k[k.length - 1], chg_1w: dif(m, 5), chg_4w: dif(m, 20), pct_3y: Math.round(100 * w.filter(x => x < lv).length / w.length) }; };
+    const [hyS, igS] = await Promise.all([sp("BAMLH0A0HYM2"), sp("BAMLC0A0CM")]);
+    out.credit_check = { version: 2, date: keys(hyg).pop(),
+      spreads: hyS || igS ? { source: "ICE BofA option-adjusted spreads (FRED), percentage points", hy: hyS, ig: igS } : null,
+      hy_adj: { series: "HYG vs IEF, rate-adjusted", chg_1w: adj("HYG", 5), chg_4w: adj("HYG", 20) },
+      ig_adj: { series: "LQD vs IEF, rate-adjusted", chg_1w: adj("LQD", 5), chg_4w: adj("LQD", 20) },
       hy: credit ? { series: "HYG/IEF", chg_1w: chg(credit, 5), chg_4w: chg(credit, 20) } : null,
-      ig: { series: "LQD/IEF", chg_1w: chg(ig, 5), chg_4w: chg(ig, 20) },
-      spx: { chg_1w: chg(spx, 5), chg_4w: chg(spx, 20) } };
+      ust10: tnx ? { value: +tnx.get(keys(tnx).pop()).toFixed(2), chg_1w: dif(tnx, 5), chg_4w: dif(tnx, 20) } : null,
+      spx: { chg_1w: chg(spx, 5), chg_4w: chg(spx, 20) }, durations: D };
   } catch (e) { out.credit_check = null; console.log("credit check unavailable", e.message); }
   out.cnn_fear_greed = fg;
   out.updated = new Date().toISOString();
