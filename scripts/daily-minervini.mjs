@@ -37,7 +37,7 @@ const STAT = {};   // which route worked / failed, printed at the end
 let order = RELAYS.map(r => r[0]);   // routes that work move to the front
 async function yahoo(sym) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=2y&interval=1d`;
-  for (const name of [...order]) {
+  for (const name of [...order]) for (let k = 0; k < (name === order[0] ? 3 : 1); k++) {   // the working route gets 2 retries after throttling
     const w = RELAYS.find(r => r[0] === name)[1];
     try {
       const ac = new AbortController(), to = setTimeout(() => ac.abort(), 15000);
@@ -47,8 +47,9 @@ async function yahoo(sym) {
       if (res?.timestamp?.length) { STAT[name] = (STAT[name] || 0) + 1; order = [name, ...order.filter(x => x !== name)]; return { res, via: "Yahoo" + (name.startsWith("direct") ? "" : " via " + name) }; }
       if (j?.chart?.error?.code === "Not Found") return null;
       STAT[name + "_fail"] = (STAT[name + "_fail"] || 0) + 1; STAT[name + "_last"] = r.status;
+      if (r.status === 429 && k < 2 && name === order[0]) { await sleep(5000 * (k + 1)); continue; }
     } catch (e) { STAT[name + "_fail"] = (STAT[name + "_fail"] || 0) + 1; STAT[name + "_last"] = e.name; }
-    await sleep(300);
+    await sleep(300); break;
   }
   return null;
 }
