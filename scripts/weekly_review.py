@@ -215,34 +215,67 @@ fd = lambda d: D(d).strftime("%-d %b %Y")
 def ul(items, empty): return "<ul>" + ("".join(items) or f'<li class="mt">{empty}</li>') + "</ul>"
 def li(x, right, sub=None): return f'<li><b>{e(x["sym"])}</b>{badge(x)} <span class="nm">{e(sub if sub is not None else x["name"])}</span><span class="r">{right}</span></li>'
 def credit_read(cc):
-    """Credit check (context only, never scored): high-yield (HYG) and investment-grade (LQD) bond funds vs Treasuries (IEF), change over
-    1 and 4 weeks, next to the S&P 500. Same rules as creditRead() in StockGlass index.html. Returns None without data."""
+    """Credit check (context only, never scored), version 2: ICE BofA option-adjusted spreads (FRED) as the main measure, bond funds vs
+    Treasuries with the interest-rate effect removed as backup, the 10-year Treasury yield and a stocks-vs-credit line. Older files
+    (no "version") only have plain fund ratios. Same rules as creditRead() in StockGlass index.html. Returns None without data."""
     if not cc: return None
-    def tone(c1, c4, t1, t4):
-        if c1 is None and c4 is None: return None
-        w = "neu" if c4 is None else "neg" if c4 <= -t4 else "pos" if c4 >= t4 else "neu"
-        s = "neu" if c1 is None else "neg" if c1 <= -t1 else "pos" if c1 >= t1 else "neu"
-        return s if w == "neu" else ("mix" if s != "neu" and s != w else w)
-    W = {"pos": "corporate bonds beating Treasuries: lenders are calmer", "neg": "corporate bonds lagging Treasuries: lenders are more worried",
-         "neu": "little change", "mix": "the last week goes against the 4-week trend"}
     pc = lambda v: "∅" if v is None else f"{v:+.2f}%"
-    hyd, igd, sp = cc.get("hy") or {}, cc.get("ig") or {}, cc.get("spx") or {}
-    L = []
-    hy = tone(hyd.get("chg_1w"), hyd.get("chg_4w"), .5, 1) if hyd else None
-    ig = tone(igd.get("chg_1w"), igd.get("chg_4w"), .25, .5) if igd else None
-    if hy: L.append(("High-yield bonds vs Treasuries (HYG/IEF)", f'{pc(hyd.get("chg_1w"))} over 1 week, {pc(hyd.get("chg_4w"))} over 4 weeks', hy, W[hy]))
-    if ig: L.append(("Investment-grade bonds vs Treasuries (LQD/IEF)", f'{pc(igd.get("chg_1w"))} over 1 week, {pc(igd.get("chg_4w"))} over 4 weeks', ig,
-                     W[ig] + (" (the bonds of large, solid companies such as the AI hyperscalers sit here)" if ig == "neg" else "")))
-    if sp.get("chg_1w") is not None and hyd.get("chg_1w") is not None:
-        s1, h1 = sp["chg_1w"], hyd["chg_1w"]
-        k, w = (("neg", "stocks rising while credit weakens: the bond market does not confirm the rally") if s1 >= 1 and h1 <= -.3
-                else ("mix", "stocks falling while credit holds: the selling is not confirmed by credit") if s1 <= -1 and h1 >= .3 else ("neu", "stocks and credit tell the same story"))
-        L.append(("Stocks vs credit", f"S&P 500 {pc(s1)} over 1 week, high-yield ratio {pc(h1)}", k, w))
-    ts = [l[2] for l in L]; bad = "neg" in ts
-    st = ("Widening", "var(--bad)") if bad else ("Easing", "var(--good)") if ts and all(t == "pos" for t in ts[:2]) else ("Mixed", "var(--warn)") if "mix" in ts else ("Stable", "var(--ink2)")
+    pt = lambda v: "∅" if v is None else f"{v:+.2f} pt"
+    def tone(c1, c4, t1, t4, up):
+        if c1 is None and c4 is None: return None
+        def f(c, t):
+            if c is None: return "neu"
+            if (c >= t) if up else (c <= -t): return "neg"
+            if (c <= -t) if up else (c >= t): return "pos"
+            return "neu"
+        w, s = f(c4, t4), f(c1, t1)
+        return s if w == "neu" else ("mix" if s != "neu" and s != w else w)
+    W = {"pos": "lenders are calmer", "neg": "lenders are more worried", "neu": "little change", "mix": "the last week goes against the 4-week trend"}
+    lvl = lambda x: "" if x.get("pct_3y") is None else "; already high versus the last 3 years" if x["pct_3y"] >= 80 else "; low versus the last 3 years" if x["pct_3y"] <= 20 else ""
+    sp = cc.get("spreads") or {}; HY, IG, A, B = sp.get("hy"), sp.get("ig"), cc.get("hy_adj"), cc.get("ig_adj")
+    L, C = [], []
+    for X, nm, t1, t4, extra in ((HY, "High-yield credit spread", .2, .4, ""), (IG, "Investment-grade credit spread", .05, .1, " (the bonds of large, solid companies such as the AI hyperscalers sit here)")):
+        if not X: continue
+        k = tone(X.get("chg_1w"), X.get("chg_4w"), t1, t4, True)
+        L.append((nm, f'{X["value"]:.2f}% · {pt(X.get("chg_1w"))} over 1 week, {pt(X.get("chg_4w"))} over 4 weeks · higher than {X.get("pct_3y")}% of the last 3 years' + (f' (last value, {X.get("date")})' if X.get("stale") else ""),
+                  k, ("spread widening: " + W["neg"] + extra if k == "neg" else "spread narrowing: " + W["pos"] if k == "pos" else W[k]) + lvl(X)))
+        C.append(k)
+    if A or B:
+        ka = tone(A.get("chg_1w"), A.get("chg_4w"), .5, 1, False) if A else None
+        kb = tone(B.get("chg_1w"), B.get("chg_4w"), .25, .5, False) if B else None
+        ks = [x for x in (ka, kb) if x]
+        k = "neg" if "neg" in ks else "pos" if ks and all(x == "pos" for x in ks) else "mix" if "mix" in ks else "neu"
+        L.append(("Bond funds vs Treasuries (rate-adjusted)", " · ".join(x for x in (f'high-yield {pc(A.get("chg_1w"))} / {pc(A.get("chg_4w"))}' if A else None,
+                  f'investment-grade {pc(B.get("chg_1w"))} / {pc(B.get("chg_4w"))}' if B else None) if x) + " (1 / 4 weeks)", k,
+                  "corporate bonds lag Treasuries even after removing the rate effect" if k == "neg" else "corporate bonds beat Treasuries after removing the rate effect" if k == "pos" else W[k]))
+        if not HY and not IG: C.append(k)
+    if not cc.get("version"):
+        for key, nm, t1, t4, extra in (("hy", "High-yield bonds vs Treasuries (HYG/IEF, not rate-adjusted)", .5, 1, "; part of a move can come from interest rates"), ("ig", "Investment-grade bonds vs Treasuries (LQD/IEF)", .25, .5, "")):
+            X = cc.get(key)
+            if not X: continue
+            k = tone(X.get("chg_1w"), X.get("chg_4w"), t1, t4, False)
+            if k: L.append((nm, f'{pc(X.get("chg_1w"))} over 1 week, {pc(X.get("chg_4w"))} over 4 weeks', k, W[k] + extra)); C.append(k)
+    S, U = cc.get("spx") or {}, cc.get("ust10")
+    if U and U.get("chg_1w") is not None:
+        y = U["chg_1w"]; k = ("neg" if (S.get("chg_1w") is not None and S["chg_1w"] < 0) else "pos") if y <= -.15 else "neg" if y >= .15 else "neu"
+        L.append(("10-year Treasury yield", f'{U["value"]:.2f}% · {pt(U.get("chg_1w"))} over 1 week, {pt(U.get("chg_4w"))} over 4 weeks', k,
+                  ("falling while stocks fall: safe-haven buying, investors moving into Treasuries" if k == "neg" else "falling: lower rates support stock valuations") if y <= -.15
+                  else "rising: higher rates weigh on stock valuations" if y >= .15 else "little change in rates"))
+    if S.get("chg_1w") is not None:
+        s1 = S["chg_1w"]; w1 = HY.get("chg_1w") if HY else None
+        a1 = A.get("chg_1w") if A else (cc.get("hy") or {}).get("chg_1w")
+        weak = (w1 >= .1) if w1 is not None else (a1 is not None and a1 <= -.3)
+        firm = (w1 <= -.1) if w1 is not None else (a1 is not None and a1 >= .3)
+        k, w = (("neg", "stocks rising while credit weakens: the bond market does not confirm the rally") if s1 >= 1 and weak
+                else ("mix", "stocks falling while credit holds: the selling is not confirmed by credit") if s1 <= -1 and firm else ("neu", "stocks and credit tell the same story"))
+        L.append(("Stocks vs credit", f"S&P 500 {pc(s1)} over 1 week" + (f", high-yield spread {pt(w1)}" if w1 is not None else f", high-yield bonds {pc(a1)}" if a1 is not None else ""), k, w))
+    bad = "neg" in C
+    st = ("Widening", "var(--bad)") if bad else ("Easing", "var(--good)") if C and all(t == "pos" for t in C) else ("Mixed", "var(--warn)") if "mix" in C else ("Stable", "var(--ink2)")
     meaning = ("Bond investors are more cautious than stock investors right now. Credit stress has tended to come before or with weaker stocks; if it spreads to high-yield bonds, the fading-fear check turns negative and the fear score stays low." if bad
                else "Credit markets back the stock market: lenders are calm, which has tended to go with steadier stocks." if st[0] == "Easing" else "No clear message from credit markets.")
-    return {"status": st[0], "col": st[1], "lines": L, "date": cc.get("date"), "meaning": meaning}
+    note = ("Spreads: ICE BofA option-adjusted spreads (FRED). Fund prices also move with interest rates (high-yield fund ≈ 3 years of duration, investment-grade ≈ 8, Treasuries ≈ 7), so the fund line removes that effect; spreads measure credit risk directly."
+            if cc.get("version") else "Bond-fund ratios with dividends; part of their moves can come from interest rates.")
+    return {"status": st[0], "col": st[1], "lines": L, "date": cc.get("date"), "meaning": meaning, "note": note}
 
 RD_COL = {"pos": ("Positive", "var(--good)"), "neg": ("Negative", "var(--bad)"), "neu": ("Neutral", "var(--ink2)"), "mix": ("Mixed", "var(--warn)")}
 def rd(k, w): return f' → <b style="color:{RD_COL[k][1]}">{RD_COL[k][0]}</b><span class="sub">: {w}.</span>'
@@ -391,7 +424,7 @@ CRD = credit_read(_mk.get("credit_check"))
 if CRD and CRD["lines"]:
     credit_card = card(f'Credit markets <span style="color:{CRD["col"]};font-size:12px">· {CRD["status"]}</span>',
         "".join(f'<p><b>{e(h)}</b>: {e(t)}{rd(k, e(w))}</p>' for h, t, k, w in CRD["lines"]) + f'<p>{e(CRD["meaning"])}</p>',
-        f'Context, not scored · short and long term · bond-fund ratios with dividends, close of {e(CRD["date"] or "?")}. The high-yield ratio already feeds the fading-fear check.')
+        f'Context, not scored · short and long term · close of {e(CRD["date"] or "?")}. {e(CRD["note"])} The fading-fear check still uses the plain high-yield/Treasury fund ratio.')
 crypto_card = ""
 if CRY and CRY.get("assets"):
     def _cl(a, nm):

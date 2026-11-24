@@ -159,7 +159,12 @@ if (process.argv[1] && process.argv[1].endsWith("market-fear.mjs")) {
     const sp = async id => { const m = await fredSeries(id, "2019-01-01"); if (!m || m.size < 30) return null;
       const k = keys(m), v = k.map(x => m.get(x)), lv = v[v.length - 1], w = v.slice(-756);
       return { value: lv, date: k[k.length - 1], chg_1w: dif(m, 5), chg_4w: dif(m, 20), pct_3y: Math.round(100 * w.filter(x => x < lv).length / w.length) }; };
-    const [hyS, igS] = await Promise.all([sp("BAMLH0A0HYM2"), sp("BAMLC0A0CM")]);
+    // one FRED call at a time (parallel calls get refused by the relays), a second round for what failed, else the last good value (≤ 5 days)
+    let hyS = await sp("BAMLH0A0HYM2"), igS = await sp("BAMLC0A0CM");
+    if (!hyS || !igS) { await new Promise(r => setTimeout(r, 20000)); if (!hyS) hyS = await sp("BAMLH0A0HYM2"); if (!igS) igS = await sp("BAMLC0A0CM"); }
+    let prev = null; try { prev = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "market.json"), "utf8")).credit_check?.spreads; } catch {}
+    const keep = (n, o) => n || (o && o.date && Date.now() - Date.parse(o.date) < 5 * 864e5 ? { ...o, stale: true } : null);
+    hyS = keep(hyS, prev?.hy); igS = keep(igS, prev?.ig);
     out.credit_check = { version: 2, date: keys(hyg).pop(),
       spreads: hyS || igS ? { source: "ICE BofA option-adjusted spreads (FRED), percentage points", hy: hyS, ig: igS } : null,
       hy_adj: { series: "HYG vs IEF, rate-adjusted", chg_1w: adj("HYG", 5), chg_4w: adj("HYG", 20) },
