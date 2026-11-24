@@ -27,19 +27,28 @@ const ctx = vm.createContext({ Math, Date, Map, JSON, Number, String, Array, Obj
 vm.runInContext(html.slice(a, b), ctx);
 
 // ---- prices ----
+// Yahoo often refuses direct requests from GitHub's servers, so after one direct try per host the request goes
+// through the same public relays the StockGlass page uses (allorigins, codetabs, corsproxy, jina).
+const RELAYS = [["direct", u => u], ["direct2", u => u.replace("query1", "query2")],
+  ["allorigins", u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u)], ["codetabs", u => "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u)],
+  ["corsproxy", u => "https://corsproxy.io/?url=" + encodeURIComponent(u)], ["jina", u => "https://r.jina.ai/" + u]];
+const parseJ = t => { try { return JSON.parse(t); } catch { const i = t.indexOf("{"), k = t.lastIndexOf("}"); return i >= 0 && k > i ? JSON.parse(t.slice(i, k + 1)) : null; } };
+const STAT = {};   // which route worked / failed, printed at the end
+let order = RELAYS.map(r => r[0]);   // routes that work move to the front
 async function yahoo(sym) {
-  for (const host of ["query1", "query2"]) {
-    for (let k = 0; k < 2; k++) {
-      try {
-        const r = await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=2y&interval=1d`, { headers: UA });
-        if (r.ok) {
-          const j = await r.json(), res = j?.chart?.result?.[0];
-          if (res?.timestamp?.length) return { res, via: "Yahoo" };
-        }
-        if (r.status === 404) return null;
-      } catch {}
-      await sleep(1500 * (k + 1));
-    }
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=2y&interval=1d`;
+  for (const name of [...order]) {
+    const w = RELAYS.find(r => r[0] === name)[1];
+    try {
+      const ac = new AbortController(), to = setTimeout(() => ac.abort(), 15000);
+      const r = await fetch(w(url), { headers: UA, signal: ac.signal }); clearTimeout(to);
+      const t = r.ok ? await r.text() : "";
+      const j = t ? parseJ(t) : null, res = j?.chart?.result?.[0];
+      if (res?.timestamp?.length) { STAT[name] = (STAT[name] || 0) + 1; order = [name, ...order.filter(x => x !== name)]; return { res, via: "Yahoo" + (name.startsWith("direct") ? "" : " via " + name) }; }
+      if (j?.chart?.error?.code === "Not Found") return null;
+      STAT[name + "_fail"] = (STAT[name + "_fail"] || 0) + 1; STAT[name + "_last"] = r.status;
+    } catch (e) { STAT[name + "_fail"] = (STAT[name + "_fail"] || 0) + 1; STAT[name + "_last"] = e.name; }
+    await sleep(300);
   }
   return null;
 }
@@ -74,7 +83,7 @@ const IDX = { us: ["SPY", "S&P 500 (SPY)"], ca: ["^GSPTSE", "S&P/TSX Composite"]
 const MK = {};
 for (const [k, [sym, name]] of Object.entries(IDX)) {
   const y = await yahoo(sym); await sleep(400);
-  if (!y) { MK[k] = null; continue; }
+  if (!y) { MK[k] = null; console.error(`index ${sym}: no data`); continue; }
   const c0 = y.res.indicators.quote[0].close || [], map = new Map();
   (y.res.timestamp || []).forEach((t, i) => { if (c0[i] != null) map.set(new Date(t * 1e3).toISOString().slice(0, 10), c0[i]); });
   const c = [...map.values()], sma = n => c.slice(-n).reduce((p, q) => p + q, 0) / n;
@@ -85,7 +94,7 @@ for (const [k, [sym, name]] of Object.entries(IDX)) {
 const day = MK.us?.last || new Date().toISOString().slice(0, 10);   // market date of the run (last S&P 500 bar)
 fs.mkdirSync(P("data/daily"), { recursive: true });
 const outF = `data/daily/${day}.json`;
-if (fs.existsSync(P(outF)) && process.env.FORCE !== "1") { console.log(`${outF} already exists: nothing to do`); process.exit(0); }
+if (fs.existsSync(P(outF)) && process.env.FORCE !== "1" && (read(outF)?.counts?.stocks || 0) > 0) { console.log(`${outF} already exists: nothing to do`); process.exit(0); }
 
 const m = read("data/market.json");
 const MF = m && m.date && Math.abs(Date.parse(day) - Date.parse(m.date)) < 8 * 864e5 ? m : null;
@@ -136,6 +145,8 @@ const out = { date: day, generated: new Date().toISOString(), previous: prevDay 
   counts: { green: cnt("🟢"), yellow: cnt("🟡"), red: cnt("🔴"), stocks: items.length, skipped: skipped.length, failed: failed.length },
   changes: ch, items, skipped, failed,
   note: "Minervini Trend Template (version 2), same code as the StockGlass card. Context only, not a score, not investment advice." };
+console.log("routes:", JSON.stringify(STAT));
+if (!items.length) { console.error(`No stock could be priced (${failed.length} failed): nothing saved, no alert.`); process.exit(1); }
 fs.writeFileSync(P(outF), JSON.stringify(out));
 
 // ---- keep the 5 newest files ----
