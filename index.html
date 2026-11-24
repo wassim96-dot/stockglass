@@ -913,6 +913,23 @@ function dirNote(){if(S.tscore==null)return null;if(S.kind==="crypto")return dir
 /* Minervini Trend Template (Trade Like a Stock Market Wizard, 2013), shown under entry timing, NOT scored.
    The 7 price rules use daily closes; the 8th rule (IBD relative-strength rank >= 70) is proprietary, so the
    12-month relative strength vs the benchmark is shown as a proxy and not counted. Stop: 2 x ATR(20), max 10%. */
+/* Credit check (context only, never scored): high-yield (HYG) and investment-grade (LQD) bond funds vs Treasuries (IEF).
+   A falling ratio means corporate bonds lag safe Treasuries: lenders want more pay for risk. Credit stress has tended to come
+   before or with weaker stocks and activity (excess bond premium: Gilchrist & Zakrajsek 2012). Same rules in today.html,
+   scripts/weekly_review.py and the stock-verdict skill. */
+function creditRead(cc){if(!cc)return null;
+ const tone=(c1,c4,t1,t4)=>{if(c4==null&&c1==null)return null;const w=c4==null?"neu":c4<=-t4?"neg":c4>=t4?"pos":"neu",s=c1==null?"neu":c1<=-t1?"neg":c1>=t1?"pos":"neu";
+  return w==="neu"?s:(s!=="neu"&&s!==w?"mix":w)};
+ const W={pos:"corporate bonds beating Treasuries: lenders are calmer",neg:"corporate bonds lagging Treasuries: lenders are more worried",neu:"little change",mix:"the last week goes against the 4-week trend"};
+ const pc=v=>v==null?"∅":(v>=0?"+":"")+v.toFixed(2)+"%",L=[];
+ const hy=cc.hy?tone(cc.hy.chg_1w,cc.hy.chg_4w,.5,1):null,ig=cc.ig?tone(cc.ig.chg_1w,cc.ig.chg_4w,.25,.5):null;
+ if(hy)L.push(["High-yield bonds vs Treasuries (HYG/IEF)",`${pc(cc.hy.chg_1w)} over 1 week, ${pc(cc.hy.chg_4w)} over 4 weeks`,hy,W[hy]]);
+ if(ig)L.push(["Investment-grade bonds vs Treasuries (LQD/IEF)",`${pc(cc.ig.chg_1w)} over 1 week, ${pc(cc.ig.chg_4w)} over 4 weeks`,ig,W[ig]+(ig==="neg"?" (the bonds of large, solid companies such as the AI hyperscalers sit here)":"")]);
+ if(cc.spx&&cc.hy&&cc.spx.chg_1w!=null&&cc.hy.chg_1w!=null){const s1=cc.spx.chg_1w,h1=cc.hy.chg_1w;
+  L.push(["Stocks vs credit",`S&P 500 ${pc(s1)} over 1 week, high-yield ratio ${pc(h1)}`,...(s1>=1&&h1<=-.3?["neg","stocks rising while credit weakens: the bond market does not confirm the rally"]:s1<=-1&&h1>=.3?["mix","stocks falling while credit holds: the selling is not confirmed by credit"]:["neu","stocks and credit tell the same story"])])}
+ const ts=L.map(l=>l[2]),bad=ts.includes("neg"),st=bad?["Widening","var(--bad)"]:ts.length&&ts.slice(0,2).every(t=>t==="pos")?["Easing","var(--good)"]:ts.includes("mix")?["Mixed","var(--warn)"]:["Stable","var(--ink2)"];
+ return{status:st[0],col:st[1],lines:L,date:cc.date,
+  meaning:bad?"Bond investors are more cautious than stock investors right now. Credit stress has tended to come before or with weaker stocks; if it spreads to high-yield bonds, the fading-fear check turns negative and the fear score stays low.":st[0]==="Easing"?"Credit markets back the stock market: lenders are calm, which has tended to go with steadier stocks.":"No clear message from credit markets."}}
 /* @tt-begin: from here to @tt-end is also run by scripts/daily-minervini.mjs (needs only S, MF, sum, last, isN) */
 /* Minervini Trend Template (context, not scored). Rules from Trade Like a Stock Market Wizard (2013) and Think & Trade Like a Champion (2017).
    Revised 24 Nov 2026 after an evidence review: rules 1, 2, 4 and 5 are one condition (price > 50 > 150 > 200-day), so the verdict counts 5 blocks
@@ -1029,6 +1046,9 @@ function render(){
     ["Variance risk premium",P(`${isN(F.premium_score)?F.premium_score.toFixed(1):"∅"}/10 (HAR model, percentile ${F.vrp_pct}): how much options price in beyond the volatility expected.`+(!isN(F.premium_score)?"":F.premium_score>=6?RD("pos","a high premium has preceded better returns (Bollerslev et al. 2009)"):F.premium_score<=4?RD("neg","a low premium: less reward priced for risk"):RD("neu","average premium")))],
     k?["Fading checks",P(`Credit ${k.credit_easing===false?"still widening":k.credit_easing?"easing":"n/a"} · new 20-day low in 5 days: ${k.new_low_5d?"yes":"no"} · bear state: ${k.bear_state?"yes":"no"}${F.credit_spread?` · high-yield spread ${F.credit_spread.value.toFixed(2)}%`:""}${F.cnn_fear_greed?` · CNN Fear &amp; Greed ${F.cnn_fear_greed.score} (${esc(F.cnn_fear_greed.rating)}, context)`:""}`+(k.bear_state?RD("neg","bear state"):k.credit_easing&&!k.new_low_5d?RD("pos","all checks confirm fading fear"):RD("mix","checks not all confirmed yet")))]:null,
     ["Effect on this asset",P(S.fear?`${S.fearAdj.toFixed(1)}/10 after beta scaling (beta ${S.fearBeta.toFixed(2)}, clipped 0.5–1.5); counts for ${Math.round(FEAR_W*100)}% of entry timing${isN(S.tbase)?` (timing before fear: ${S.tbase.toFixed(1)})`:""}.`+(S.fearAdj>=5.5?RD("pos","lifts the entry-timing score a little"):S.fearAdj<=4.5?RD("neg","pulls the entry-timing score down a little"):RD("neu","almost no effect on entry timing")):S.kind==="crypto"?"Not applied to crypto: the evidence is for equities.":"Not applied.")+mu(`Score = 0.3 × premium + 0.7 × phase · reading of the ${fdClose(F.date)} close`)]],"","S",S.fear?`scored: ${Math.round(FEAR_W*100)}% of entry timing`:"not scored")}
+  {const CR=creditRead((S.fear||MF||{}).credit_check);if(CR&&CR.lines.length)add("Credit markets",CR.status,CR.col,[
+    ...CR.lines.map(([h,t,k,w])=>[h,P(esc(t)+RD(k,w))]),
+    ["What it means",P(esc(CR.meaning))+mu(`Context, not scored. Bond-fund ratios with dividends, close of ${esc(CR.date||"?")}; the high-yield ratio already feeds the fading-fear check. Prices of individual companies' credit insurance (CDS) are not available from free sources.`)]],"","B")}
   if(S.dir){const D_=S.dir;add("Direction",D_.label,null,[["Setup",P(esc(D_.note)+(/^Long/.test(D_.label)?RD("pos","trend and timing line up for long positions"):/^Short setups/.test(D_.label)?RD("neg","for a long position: the trend points down"):/risky/.test(D_.label)?RD("neg","for a long position: no long setup"):RD("neu","no clear edge either way")))],["How it is read",mu("A trend counts when 12-1 momentum exceeds half its volatility; shorts only in a calm, rising market because of momentum-crash risk (Daniel &amp; Moskowitz 2016).")]],"","S")}
   const T=S.tt=trendTemplate();
   if(T){const X=T.X,sg=v=>(v>=0?"+":"")+v.toFixed(1),ctx=[];
