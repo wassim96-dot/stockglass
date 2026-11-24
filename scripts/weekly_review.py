@@ -214,6 +214,39 @@ badge = lambda x: f'<span class="k">{KIND[x["kind"]]}</span>' if x["kind"] in KI
 fd = lambda d: D(d).strftime("%-d %b %Y")
 def ul(items, empty): return "<ul>" + ("".join(items) or f'<li class="mt">{empty}</li>') + "</ul>"
 def li(x, right, sub=None): return f'<li><b>{e(x["sym"])}</b>{badge(x)} <span class="nm">{e(sub if sub is not None else x["name"])}</span><span class="r">{right}</span></li>'
+def credit_read(cc):
+    """Credit check (context only, never scored): high-yield (HYG) and investment-grade (LQD) bond funds vs Treasuries (IEF), change over
+    1 and 4 weeks, next to the S&P 500. Same rules as creditRead() in StockGlass index.html. Returns None without data."""
+    if not cc: return None
+    def tone(c1, c4, t1, t4):
+        if c1 is None and c4 is None: return None
+        w = "neu" if c4 is None else "neg" if c4 <= -t4 else "pos" if c4 >= t4 else "neu"
+        s = "neu" if c1 is None else "neg" if c1 <= -t1 else "pos" if c1 >= t1 else "neu"
+        return s if w == "neu" else ("mix" if s != "neu" and s != w else w)
+    W = {"pos": "corporate bonds beating Treasuries: lenders are calmer", "neg": "corporate bonds lagging Treasuries: lenders are more worried",
+         "neu": "little change", "mix": "the last week goes against the 4-week trend"}
+    pc = lambda v: "∅" if v is None else f"{v:+.2f}%"
+    hyd, igd, sp = cc.get("hy") or {}, cc.get("ig") or {}, cc.get("spx") or {}
+    L = []
+    hy = tone(hyd.get("chg_1w"), hyd.get("chg_4w"), .5, 1) if hyd else None
+    ig = tone(igd.get("chg_1w"), igd.get("chg_4w"), .25, .5) if igd else None
+    if hy: L.append(("High-yield bonds vs Treasuries (HYG/IEF)", f'{pc(hyd.get("chg_1w"))} over 1 week, {pc(hyd.get("chg_4w"))} over 4 weeks', hy, W[hy]))
+    if ig: L.append(("Investment-grade bonds vs Treasuries (LQD/IEF)", f'{pc(igd.get("chg_1w"))} over 1 week, {pc(igd.get("chg_4w"))} over 4 weeks', ig,
+                     W[ig] + (" (the bonds of large, solid companies such as the AI hyperscalers sit here)" if ig == "neg" else "")))
+    if sp.get("chg_1w") is not None and hyd.get("chg_1w") is not None:
+        s1, h1 = sp["chg_1w"], hyd["chg_1w"]
+        k, w = (("neg", "stocks rising while credit weakens: the bond market does not confirm the rally") if s1 >= 1 and h1 <= -.3
+                else ("mix", "stocks falling while credit holds: the selling is not confirmed by credit") if s1 <= -1 and h1 >= .3 else ("neu", "stocks and credit tell the same story"))
+        L.append(("Stocks vs credit", f"S&P 500 {pc(s1)} over 1 week, high-yield ratio {pc(h1)}", k, w))
+    ts = [l[2] for l in L]; bad = "neg" in ts
+    st = ("Widening", "var(--bad)") if bad else ("Easing", "var(--good)") if ts and all(t == "pos" for t in ts[:2]) else ("Mixed", "var(--warn)") if "mix" in ts else ("Stable", "var(--ink2)")
+    meaning = ("Bond investors are more cautious than stock investors right now. Credit stress has tended to come before or with weaker stocks; if it spreads to high-yield bonds, the fading-fear check turns negative and the fear score stays low." if bad
+               else "Credit markets back the stock market: lenders are calm, which has tended to go with steadier stocks." if st[0] == "Easing" else "No clear message from credit markets.")
+    return {"status": st[0], "col": st[1], "lines": L, "date": cc.get("date"), "meaning": meaning}
+
+RD_COL = {"pos": ("Positive", "var(--good)"), "neg": ("Negative", "var(--bad)"), "neu": ("Neutral", "var(--ink2)"), "mix": ("Mixed", "var(--warn)")}
+def rd(k, w): return f' → <b style="color:{RD_COL[k][1]}">{RD_COL[k][0]}</b><span class="sub">: {w}.</span>'
+
 def card(title, body, note=""): return f'<section class="c"><h3>{title}</h3>{body}{f"<p class=sub>{note}</p>" if note else ""}</section>'
 def spark(path):
     pts = [(i, p["lt"], p["tm"]) for i, p in enumerate(path)]
@@ -349,6 +382,16 @@ if FN:
         + f'<p>VIX {FN["vix"]:.1f}, higher than {FN["vix_pct"]}% of the last {round(FN.get("window_years") or 5)} years' + (f' · VIX/VIX3M {FN["vix_vix3m"]:.2f}' if FN.get("vix_vix3m") else "") + f'. Variance risk premium higher than {FN["vrp_pct"]}% of the last {round(FN.get("window_years") or 5)} years.'
         + (f' {" · ".join(chg)}.' if chg else "") + "</p>" + (f'<p class="sub">{e(FN["note"])}</p>' if FN.get("note") else ""),
         "Fear score = 0.3 premium (HAR variance risk premium, 10-year rank, mapped to 3–7) + 0.7 fear phase; scaled by each stock’s beta, 10% of entry timing (not crypto). Early fear is a high-risk entry, not the bottom; confirmed fading fear (credit easing, no new low, no bear market) was the best phase in both 2007–2016 and 2016–2026.")
+credit_card = ""
+try:
+    _mk = json.load(open(os.path.join(ROOT, "data", "market.json")))
+except Exception:
+    _mk = {}
+CRD = credit_read(_mk.get("credit_check"))
+if CRD and CRD["lines"]:
+    credit_card = card(f'Credit markets <span style="color:{CRD["col"]};font-size:12px">· {CRD["status"]}</span>',
+        "".join(f'<p><b>{e(h)}</b>: {e(t)}{rd(k, e(w))}</p>' for h, t, k, w in CRD["lines"]) + f'<p>{e(CRD["meaning"])}</p>',
+        f'Context, not scored · short and long term · bond-fund ratios with dividends, close of {e(CRD["date"] or "?")}. The high-yield ratio already feeds the fading-fear check.')
 crypto_card = ""
 if CRY and CRY.get("assets"):
     def _cl(a, nm):
@@ -399,7 +442,7 @@ svg.sp{{width:100%;height:64px;display:block;margin-top:8px}}
 <div class="w">
 <div class="top"><h1>Watchlist review</h1><span class="sub">{fd(cur_d)} · {len(CUR)} tickers · {len(RUNS)} weekly run{"s" if len(RUNS) != 1 else ""} since {fd(RUNS[0])}</span></div>
 <nav class="nav"><a href="#start">Since the start</a><a href="#month">Last month</a><a href="#week">Last week</a><a href="#each">Each ticker</a><a href="#all">All scores</a></nav>
-<div class="g2">{card("Worth a closer look", watch_html, "Long-term ≥ 6.2 with timing ≥ 6.2 or up 1+ point this week. Scores: long-term · timing.")}{card("Alerts", alert_html, "Earnings within 14 days and data warnings.")}{fear_card}{crypto_card}</div>
+<div class="g2">{card("Worth a closer look", watch_html, "Long-term ≥ 6.2 with timing ≥ 6.2 or up 1+ point this week. Scores: long-term · timing.")}{card("Alerts", alert_html, "Earnings within 14 days and data warnings.")}{fear_card}{credit_card}{crypto_card}</div>
 {section(H["start"])}{section(H["month"])}{section(H["week"])}
 <h2 id="each">Each ticker <span class="sub">interpretation · score changes · groups · indicators that moved</span></h2>{interp_note}{cards}
 <h2 id="all">All scores <span class="sub">change vs last week · since start</span></h2>{tables}

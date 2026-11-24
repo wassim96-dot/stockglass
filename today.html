@@ -70,6 +70,23 @@ footer{color:var(--ink3);font-size:11.5px;margin-top:18px}
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
 const sg=v=>v==null?"∅":(v>=0?"+":"")+v.toFixed(1),RDT={pos:["Positive","var(--good)"],neg:["Negative","var(--bad)"],neu:["Neutral","var(--ink2)"],mix:["Mixed","var(--warn)"]};
 const RD=(k,w)=>` → <span class="tag" style="color:${RDT[k][1]}">${RDT[k][0]}</span><span class="muted">: ${w}.</span>`;
+/* Credit check (context only, never scored): high-yield (HYG) and investment-grade (LQD) bond funds vs Treasuries (IEF).
+   A falling ratio means corporate bonds lag safe Treasuries: lenders want more pay for risk. Credit stress has tended to come
+   before or with weaker stocks and activity (excess bond premium: Gilchrist & Zakrajsek 2012). Same rules in today.html,
+   scripts/weekly_review.py and the stock-verdict skill. */
+function creditRead(cc){if(!cc)return null;
+ const tone=(c1,c4,t1,t4)=>{if(c4==null&&c1==null)return null;const w=c4==null?"neu":c4<=-t4?"neg":c4>=t4?"pos":"neu",s=c1==null?"neu":c1<=-t1?"neg":c1>=t1?"pos":"neu";
+  return w==="neu"?s:(s!=="neu"&&s!==w?"mix":w)};
+ const W={pos:"corporate bonds beating Treasuries: lenders are calmer",neg:"corporate bonds lagging Treasuries: lenders are more worried",neu:"little change",mix:"the last week goes against the 4-week trend"};
+ const pc=v=>v==null?"∅":(v>=0?"+":"")+v.toFixed(2)+"%",L=[];
+ const hy=cc.hy?tone(cc.hy.chg_1w,cc.hy.chg_4w,.5,1):null,ig=cc.ig?tone(cc.ig.chg_1w,cc.ig.chg_4w,.25,.5):null;
+ if(hy)L.push(["High-yield bonds vs Treasuries (HYG/IEF)",`${pc(cc.hy.chg_1w)} over 1 week, ${pc(cc.hy.chg_4w)} over 4 weeks`,hy,W[hy]]);
+ if(ig)L.push(["Investment-grade bonds vs Treasuries (LQD/IEF)",`${pc(cc.ig.chg_1w)} over 1 week, ${pc(cc.ig.chg_4w)} over 4 weeks`,ig,W[ig]+(ig==="neg"?" (the bonds of large, solid companies such as the AI hyperscalers sit here)":"")]);
+ if(cc.spx&&cc.hy&&cc.spx.chg_1w!=null&&cc.hy.chg_1w!=null){const s1=cc.spx.chg_1w,h1=cc.hy.chg_1w;
+  L.push(["Stocks vs credit",`S&P 500 ${pc(s1)} over 1 week, high-yield ratio ${pc(h1)}`,...(s1>=1&&h1<=-.3?["neg","stocks rising while credit weakens: the bond market does not confirm the rally"]:s1<=-1&&h1>=.3?["mix","stocks falling while credit holds: the selling is not confirmed by credit"]:["neu","stocks and credit tell the same story"])])}
+ const ts=L.map(l=>l[2]),bad=ts.includes("neg"),st=bad?["Widening","var(--bad)"]:ts.length&&ts.slice(0,2).every(t=>t==="pos")?["Easing","var(--good)"]:ts.includes("mix")?["Mixed","var(--warn)"]:["Stable","var(--ink2)"];
+ return{status:st[0],col:st[1],lines:L,date:cc.date,
+  meaning:bad?"Bond investors are more cautious than stock investors right now. Credit stress has tended to come before or with weaker stocks; if it spreads to high-yield bonds, the fading-fear check turns negative and the fear score stays low.":st[0]==="Easing"?"Credit markets back the stock market: lenders are calm, which has tended to go with steadier stocks.":"No clear message from credit markets."}}
 let IDX=null,CUR=null,PREV=null;
 async function getJ(u){const r=await fetch(u+"?v="+Date.now());if(!r.ok)throw new Error(u);return r.json()}
 function ctxLines(x){const c=x.ctx||{},L=[];
@@ -92,8 +109,8 @@ function render(){if(!CUR)return;const D=CUR,q=$("q").value.trim().toLowerCase()
  $("dt").textContent=`market date ${D.date}`;$("vs").textContent=D.previous?`(${D.date} vs ${D.previous})`:"(first run)";
  const F=D.market_fear,M=D.markets||{},mk=Object.values(M).filter(Boolean);
  $("sum").innerHTML=[["🟢 Meets template",D.counts.green,"a setup filter, not a buy signal"],["🟡 Partial or stress",D.counts.yellow,"1–2 blocks missing, or market stress"],["🔴 Not stage 2",D.counts.red,"several blocks missing or 200-day falling"],
-  ["Market fear",F?F.phase_label:"∅",F?`${F.score}/10 ${F.label} · VIX ${F.vix} (${F.date})`:"reading too old"],["Market regimes",mk.length?"":"∅",mk.map(m=>m.name.replace(/ \(.*\)/,"").replace("S&P/TSX Composite","S&P/TSX").replace("STOXX Europe 600","STOXX 600")+": "+m.label).join(" · ")]]
-  .map(([b,s,sm])=>`<div class="tile"><b>${esc(b)}</b><span>${esc(s)}</span><small>${esc(sm)}</small></div>`).join("");
+  ["Market fear",F?F.phase_label:"∅",F?`${F.score}/10 ${F.label} · VIX ${F.vix} (${F.date})`:"reading too old"],...(()=>{const CR=creditRead(F&&F.credit_check);return CR?[["Credit markets",CR.status,(CR.lines.find(l=>l[2]==="neg")||CR.lines[0]||[,""])[1]+" · not scored, short and long term",CR.col]]:[]})(),["Market regimes",mk.length?"":"∅",mk.map(m=>m.name.replace(/ \(.*\)/,"").replace("S&P/TSX Composite","S&P/TSX").replace("STOXX Europe 600","STOXX 600")+": "+m.label).join(" · ")]]
+  .map(([b,s,sm,c])=>`<div class="tile"><b>${esc(b)}</b><span${c?` style="color:${c}"`:""}>${esc(s)}</span><small>${esc(sm)}</small></div>`).join("");
  const L=(lab,arr)=>arr&&arr.length?`<p><b>${lab}</b>: ${arr.map(t=>`<a href="#" data-t="${esc(t)}">${esc(t)}</a>`).join(", ")}</p>`:"";
  $("chg").innerHTML=(L("🟢 Newly meet the template",ch.new_green)+L("No longer meet it",ch.lost_green)+L("🟡 Met, but under market stress",ch.new_met)+L("No longer met (was under stress)",ch.lost_met)+L("200-day average turned down",ch.new_falling_200))||(D.previous?`<p class="empty">No stock newly met or lost the template.</p>`:`<p class="empty">Changes appear from the second run.</p>`);
  const nw=new Map();(ch.new_green||[]).forEach(t=>nw.set(t,"new"));(ch.new_met||[]).forEach(t=>nw.set(t,"new"));

@@ -143,6 +143,18 @@ if (process.argv[1] && process.argv[1].endsWith("market-fear.mjs")) {
   const [oas, fg] = await Promise.all([fredSeries("BAMLH0A0HYM2"), cnnFearGreed()]);
   if (oas) { const k = [...oas.keys()].sort(), v = k.map(x => oas.get(x)), w = v.slice(-WIN10), lv = v[v.length - 1]; out.credit_spread = { date: k[k.length - 1], value: lv, pct: Math.round(100 * w.filter(x => x < lv).length / w.length), high_20d: Math.max(...v.slice(-20)) }; } else out.credit_spread = null;
   out.credit_proxy = credit ? { series: "HYG/IEF total-return ratio", easing: S[S.length - 1].credit_easing } : null;
+  // credit check (context only, never scored): high-yield (HYG) and investment-grade (LQD) bond funds vs Treasuries (IEF),
+  // change of the ratio over 1 and 4 weeks, next to the S&P 500. A falling ratio = corporate bonds lag Treasuries = credit widening.
+  try {
+    const [lqd, ief2] = await Promise.all([chart("LQD"), chart("IEF")]);
+    const ig = new Map([...lqd].filter(([d]) => ief2.has(d)).map(([d, v]) => [d, v / ief2.get(d)]));
+    const chg = (m, n) => { const k = [...m.keys()].sort(); if (k.length <= n) return null; const a = m.get(k[k.length - 1 - n]), b = m.get(k[k.length - 1]); return +((b / a - 1) * 100).toFixed(2); };
+    const last = m => [...m.keys()].sort().pop();
+    out.credit_check = { date: credit ? last(credit) : last(ig),
+      hy: credit ? { series: "HYG/IEF", chg_1w: chg(credit, 5), chg_4w: chg(credit, 20) } : null,
+      ig: { series: "LQD/IEF", chg_1w: chg(ig, 5), chg_4w: chg(ig, 20) },
+      spx: { chg_1w: chg(spx, 5), chg_4w: chg(spx, 20) } };
+  } catch (e) { out.credit_check = null; console.log("credit check unavailable", e.message); }
   out.cnn_fear_greed = fg;
   out.updated = new Date().toISOString();
   out.method = "Fear score = 0.3 × (3 + 4 × HAR variance-risk-premium percentile over 10 years) + 0.7 × fear-phase score (calm 5, early fear 5 + risk flag, peak stress 5.5, fading fear 7.5 if confirmed by credit, no new low and no bear state, else 5.5, after fear 4.5). Per stock: 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing. Holdout-tested on 2007–2016.";

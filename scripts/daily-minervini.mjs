@@ -142,7 +142,7 @@ for (const x of items) {
 }
 const cnt = k => items.filter(x => x.icon === k).length;
 const out = { date: day, generated: new Date().toISOString(), previous: prevDay || null, version: 2,
-  market_fear: MF ? { date: MF.date, phase: MF.phase, phase_label: MF.phase_label, score: MF.score, label: MF.label, vix: MF.vix } : null,
+  market_fear: MF ? { date: MF.date, phase: MF.phase, phase_label: MF.phase_label, score: MF.score, label: MF.label, vix: MF.vix, credit_check: MF.credit_check || null } : null,
   markets: Object.fromEntries(Object.entries(MK).map(([k, v]) => [k, v?.mkt ? { name: v.name, label: v.mkt.lab, vs_200d: Math.round(v.mkt.iv * 10) / 10, last: v.last } : null])),
   counts: { green: cnt("🟢"), yellow: cnt("🟡"), red: cnt("🔴"), stocks: items.length, skipped: skipped.length, failed: failed.length },
   changes: ch, items, skipped, failed,
