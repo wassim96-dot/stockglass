@@ -188,6 +188,13 @@ for s, r in CUR.items():
                "ind_week": {"up": up_w, "down": dn_w}, "ind_start": {"up": up_s, "down": dn_s},
                "key": {M[k].get("l", k): M[k].get("d") for k in KEYF[kd] if k in M and M[k].get("d") not in (None, "∅")},
                "warning": r.get("warning"), "earnings": (r.get("next_earnings") or {}).get("date"), "direction": (r.get("timing") or {}).get("direction"), "crypto": r.get("crypto"), "trend_template": r.get("trend_template")})
+# IBD-style relative-strength rank inside the watchlist (stocks only, version-2 template files): percentile 1-99 of the
+# weighted return (40% 3-month, 20% each 6/9/12-month), the closest free stand-in for Minervini's RS rank >= 70. Context, not scored.
+_rw = [(t, t["trend_template"]["rs_w"]["w"]) for t in TK if isinstance(t.get("trend_template"), dict) and (t["trend_template"].get("rs_w") or {}).get("w") is not None]
+if len(_rw) >= 10:
+    _vals = sorted(v for _, v in _rw)
+    for t, v in _rw:
+        t["trend_template"] = dict(t["trend_template"], rs_rank=max(1, min(99, round(99 * sum(1 for x in _vals if x < v) / (len(_vals) - 1)))) if len(_vals) > 1 else None)
 facts = {"date": cur_d, "first_run": RUNS[0], "runs": len(RUNS), "count": len(CUR), "watch": watch, "alerts": alerts,
          "horizons": {k: {kk: vv for kk, vv in v.items() if kk != "rows"} for k, v in H.items()}, "tickers": TK,
          "crypto_cycle": ({a: {k: v for k, v in (r or {}).items()} for a, r in (CRY.get("assets") or {}).items()} | {"fng": CRY.get("fng")}) if CRY else None,
@@ -297,7 +304,9 @@ def tcard(t):
     if t.get("direction"): notes.append(mw("Direction", e(t["direction"]), tone(t["direction"]), "not scored", "short term · 2–12 wk"))
     TT = t.get("trend_template")
     if TT: notes.append(mw("Minervini template", f'{e(TT.get("verdict") or "")} {TT["passed"]}/{TT["total"]}', "var(--good)" if TT.get("verdict") == "🟢" else "var(--bad)" if TT.get("verdict") == "🔴" else "var(--warn)",
-                           ("stop guide −" + f'{TT["stop_pct"]:.1f}%' + " · " if TT.get("stop_pct") is not None else "") + "not scored", "short term · 2–12 wk"))
+                           (f'RS rank {TT["rs_rank"]} in watchlist · ' if TT.get("rs_rank") is not None else "")
+                           + (("stop > 10%: too volatile" if TT.get("stop_over_10") else "stop guide −" + f'{TT["stop_pct"]:.1f}%') + " · " if TT.get("stop_pct") is not None else "")
+                           + ("200-day falling · " if TT.get("falling_200") else "") + "not scored", "short term · 2–12 wk"))
     if t["earnings"]: notes.append(mw("Next earnings", e(t["earnings"]), "var(--ink)", "date · not scored", "short term · 2–12 wk"))
     if t["warning"]: notes.append(mw("Warning", "⚠ " + e(t["warning"]), "var(--bad)"))
     it = INTERP.get(t["sym"].upper())
