@@ -1,29 +1,33 @@
 {
- "date": "2026-11-20",
- "vix": 35.89,
- "vix3m": 30.94,
- "vix_vix3m": 1.16,
- "rv22": 683.2,
- "rv_expected": 825.4,
- "vrp": 462.7,
- "vrp_pct": 98,
- "vix_pct": 98,
+ "date": "2026-11-23",
+ "vix": 26.62,
+ "vix3m": 25.5,
+ "vix_vix3m": 1.044,
+ "rv22": 910.8,
+ "rv_expected": 1214.6,
+ "vrp": -506,
+ "vrp_pct": 1,
+ "vix_pct": 89,
  "window_years": 10,
- "phase": "early",
- "phase_label": "Early fear",
- "stress_days": 4,
+ "phase": "fading_unconfirmed",
+ "phase_label": "Fading fear (unconfirmed)",
+ "stress_days": 5,
  "vix_peak": 35.88999938964844,
- "risk_flag": true,
- "fading_checks": null,
- "premium_score": 6.9,
- "phase_score": 5,
- "score": 5.6,
+ "risk_flag": false,
+ "fading_checks": {
+  "credit_easing": true,
+  "new_low_5d": true,
+  "bear_state": false
+ },
+ "premium_score": 3,
+ "phase_score": 5.5,
+ "score": 4.8,
  "label": "Neutral",
- "note": "Early fear (day 4 of stress, VIX high 35.9): Fear has just begun and the VIX is near its high. Average returns after such days have been normal, but they were followed by the deepest drops: not the bottom, a high-risk entry. Variance risk premium (HAR) higher than 98% of the last 10 years. VIX above VIX3M: the term structure is inverted, a sign of near-term stress.",
+ "note": "Fading fear (unconfirmed) (day 5 of stress, VIX high 35.9): The VIX is 15%+ below its high, but credit is still widening, the market made a new low or it is in a bear market: in 2008 and 2022 such pauses came before further falls. Variance risk premium (HAR) higher than 1% of the last 10 years. VIX above VIX3M: the term structure is inverted, a sign of near-term stress.",
  "market": {
   "index": "S&P 500",
   "above_200d": false,
-  "ret_24m": 17.7,
+  "ret_24m": 22.8,
   "bear_state": false
  },
  "weights": {
@@ -35,14 +39,14 @@
  "credit_spread": null,
  "credit_proxy": {
   "series": "HYG/IEF total-return ratio",
-  "easing": false
+  "easing": true
  },
  "cnn_fear_greed": {
-  "score": 10,
+  "score": 17,
   "rating": "extreme fear",
-  "date": "2026-11-20"
+  "date": "2026-11-24"
  },
- "updated": "2026-11-21T15:41:13.474Z",
+ "updated": "2026-11-24T05:40:01.059Z",
  "method": "Fear score = 0.3 × (3 + 4 × HAR variance-risk-premium percentile over 10 years) + 0.7 × fear-phase score (calm 5, early fear 5 + risk flag, peak stress 5.5, fading fear 7.5 if confirmed by credit, no new low and no bear state, else 5.5, after fear 4.5). Per stock: 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing. Holdout-tested on 2007–2016.",
  "history": "data/market-history.json"
 }
