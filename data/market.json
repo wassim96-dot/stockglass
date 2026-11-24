@@ -1,13 +1,13 @@
 {
  "date": "2026-11-24",
- "vix": 27.27,
- "vix3m": 26.08,
- "vix_vix3m": 1.046,
- "rv22": 914,
- "rv_expected": 964,
- "vrp": -220.3,
+ "vix": 26.71,
+ "vix3m": 25.7,
+ "vix_vix3m": 1.039,
+ "rv22": 910.6,
+ "rv_expected": 955.5,
+ "vrp": -242,
  "vrp_pct": 2,
- "vix_pct": 90,
+ "vix_pct": 89,
  "window_years": 10,
  "phase": "fading_unconfirmed",
  "phase_label": "Fading fear (unconfirmed)",
@@ -27,7 +27,7 @@
  "market": {
   "index": "S&P 500",
   "above_200d": false,
-  "ret_24m": 21.4,
+  "ret_24m": 21.7,
   "bear_state": false
  },
  "weights": {
@@ -42,28 +42,62 @@
   "easing": true
  },
  "credit_check": {
+  "version": 2,
   "date": "2026-11-24",
+  "spreads": {
+   "source": "ICE BofA option-adjusted spreads (FRED), percentage points",
+   "hy": {
+    "value": 3.63,
+    "date": "2026-11-23",
+    "chg_1w": 0.29,
+    "chg_4w": 0.33,
+    "pct_3y": 96,
+    "stale": true
+   },
+   "ig": {
+    "value": 0.97,
+    "date": "2026-11-23",
+    "chg_1w": 0.07,
+    "chg_4w": 0.07,
+    "pct_3y": 87
+   }
+  },
+  "hy_adj": {
+   "series": "HYG vs IEF, rate-adjusted",
+   "chg_1w": -0.85,
+   "chg_4w": -1.39
+  },
+  "ig_adj": {
+   "series": "LQD vs IEF, rate-adjusted",
+   "chg_1w": -0.5,
+   "chg_4w": -1.14
+  },
   "hy": {
    "series": "HYG/IEF",
-   "chg_1w": -1.66,
-   "chg_4w": -1.98
+   "chg_1w": -1.59,
+   "chg_4w": -1.9
   },
-  "ig": {
-   "series": "LQD/IEF",
-   "chg_1w": -0.36,
-   "chg_4w": -1.06
+  "ust10": {
+   "value": 4.9,
+   "chg_1w": -0.2,
+   "chg_4w": -0.09
   },
   "spx": {
-   "chg_1w": -2.14,
-   "chg_4w": -6.98
+   "chg_1w": -1.9,
+   "chg_4w": -6.75
+  },
+  "durations": {
+   "HYG": 3.2,
+   "LQD": 8.3,
+   "IEF": 7.3
   }
  },
  "cnn_fear_greed": {
-  "score": 16,
+  "score": 17,
   "rating": "extreme fear",
   "date": "2026-11-24"
  },
- "updated": "2026-11-24T20:13:54.198Z",
+ "updated": "2026-11-24T21:09:28.981Z",
  "method": "Fear score = 0.3 × (3 + 4 × HAR variance-risk-premium percentile over 10 years) + 0.7 × fear-phase score (calm 5, early fear 5 + risk flag, peak stress 5.5, fading fear 7.5 if confirmed by credit, no new low and no bear state, else 5.5, after fear 4.5). Per stock: 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing. Holdout-tested on 2007–2016.",
  "history": "data/market-history.json"
 }

@@ -893,14 +893,14 @@ async function liveVix(){try{const {j}=await race(yCh("^VIX","1d","5m"),j=>isN(j
    vs Treasuries (IEF) and of the S&P 500 (SPY), against the previous close. The card's 1- and 4-week readings stay on closes. */
 let LC=null;
 function lcHTML(){if(!LC)return "Live quotes unavailable right now.";const pc=v=>(v>=0?"+":"")+v.toFixed(2)+"%",tm=new Date(LC.t).toLocaleString(undefined,{weekday:"short",hour:"2-digit",minute:"2-digit"});
- const parts=[LC.hy!=null?`high-yield ratio <b>${pc(LC.hy)}</b>`:null,LC.ig!=null?`investment-grade ratio <b>${pc(LC.ig)}</b>`:null,LC.sp!=null?`S&amp;P 500 ${pc(LC.sp)}`:null].filter(Boolean);
+ const parts=[LC.hy!=null?`high-yield bonds <b>${pc(LC.hy)}</b>`:null,LC.ig!=null?`investment-grade bonds <b>${pc(LC.ig)}</b>`:null,LC.sp!=null?`S&amp;P 500 ${pc(LC.sp)}`:null].filter(Boolean);
  const neg=(LC.hy!=null&&LC.hy<=-.3)||(LC.ig!=null&&LC.ig<=-.15),pos=(LC.hy==null||LC.hy>=.3)&&(LC.ig==null||LC.ig>=.15)&&(LC.hy!=null||LC.ig!=null),div=LC.sp!=null&&LC.hy!=null&&LC.sp>=.8&&LC.hy<=-.2;
- return `Today vs the last close: ${parts.join(" · ")} (at ${esc(tm)}${LC.stale?", market closed: last session":""}).`+(div?RD("neg","stocks up while credit weakens today"):neg?RD("neg","credit weakening today"):pos?RD("pos","credit firming today"):RD("neu","little change in credit today"))}
+ return `Today vs the last close, vs Treasuries and rate-adjusted: ${parts.join(" · ")} (at ${esc(tm)}${LC.stale?", market closed: last session":""}).`+(div?RD("neg","stocks up while credit weakens today"):neg?RD("neg","credit weakening today"):pos?RD("pos","credit firming today"):RD("neu","little change in credit today"))}
 function fillLC(){const el=document.getElementById("lcred");if(el)el.innerHTML=lcHTML()}
 async function liveCredit(){try{const q=async s=>{const {j}=await race(yCh(s,"1d","5m"),j=>isN(j?.chart?.result?.[0]?.meta?.regularMarketPrice));const m=j.chart.result[0].meta;return{p:m.regularMarketPrice,c:m.chartPreviousClose??m.previousClose,t:(m.regularMarketTime||0)*1e3}};
  const [h,l,i,sp]=await Promise.allSettled(["HYG","LQD","IEF","SPY"].map(q)).then(r=>r.map(x=>x.status==="fulfilled"?x.value:null));
- const rt=(a,b)=>a&&b&&a.c&&b.c?((a.p/a.c)/(b.p/b.c)-1)*100:null,t=Math.max(...[h,l,i,sp].filter(Boolean).map(x=>x.t),0);
- LC=i?{hy:rt(h,i),ig:rt(l,i),sp:sp&&sp.c?(sp.p/sp.c-1)*100:null,t:t||Date.now(),stale:t&&Date.now()-t>6*3600e3}:null}catch(e){LC=null}fillLC()}
+ const D={h:3.2/7.3,l:8.3/7.3},rt=(a,b,k)=>a&&b&&a.c&&b.c?((a.p/a.c-1)-D[k]*(b.p/b.c-1))*100:null,t=Math.max(...[h,l,i,sp].filter(Boolean).map(x=>x.t),0);
+ LC=i?{hy:rt(h,i,"h"),ig:rt(l,i,"l"),sp:sp&&sp.c?(sp.p/sp.c-1)*100:null,t:t||Date.now(),stale:t&&Date.now()-t>6*3600e3}:null}catch(e){LC=null}fillLC()}
 liveVix();liveCredit();setInterval(()=>{if(!document.hidden){liveVix();liveCredit()}},5*60e3);
 /* Long / short setup note under the timing score (not a score; version 2, 21 Nov 2026). A trend counts only when the
    12-1 momentum is large relative to volatility (|12-1 return| > 0.5 × annual σ; mom is already risk-adjusted), as in the
@@ -925,22 +925,31 @@ function dirNote(){if(S.tscore==null)return null;if(S.kind==="crypto")return dir
 /* Minervini Trend Template (Trade Like a Stock Market Wizard, 2013), shown under entry timing, NOT scored.
    The 7 price rules use daily closes; the 8th rule (IBD relative-strength rank >= 70) is proprietary, so the
    12-month relative strength vs the benchmark is shown as a proxy and not counted. Stop: 2 x ATR(20), max 10%. */
-/* Credit check (context only, never scored): high-yield (HYG) and investment-grade (LQD) bond funds vs Treasuries (IEF).
-   A falling ratio means corporate bonds lag safe Treasuries: lenders want more pay for risk. Credit stress has tended to come
-   before or with weaker stocks and activity (excess bond premium: Gilchrist & Zakrajsek 2012). Same rules in today.html,
-   scripts/weekly_review.py and the stock-verdict skill. */
+/* Credit check (context only, never scored), version 2. Main measure: ICE BofA option-adjusted credit spreads (FRED), high yield
+   and investment grade; backup: bond funds vs Treasuries with the interest-rate effect removed (HYG duration ~3.2 y, LQD ~8.3 y,
+   IEF ~7.3 y); plus the 10-year Treasury yield and a stocks-vs-credit line. Credit stress has tended to come before or with weaker
+   stocks and activity (excess bond premium: Gilchrist & Zakrajsek 2012). Same rules in today.html, scripts/weekly_review.py and
+   the stock-verdict skill. Older files (version 1) only have plain fund ratios. */
 function creditRead(cc){if(!cc)return null;
- const tone=(c1,c4,t1,t4)=>{if(c4==null&&c1==null)return null;const w=c4==null?"neu":c4<=-t4?"neg":c4>=t4?"pos":"neu",s=c1==null?"neu":c1<=-t1?"neg":c1>=t1?"pos":"neu";
-  return w==="neu"?s:(s!=="neu"&&s!==w?"mix":w)};
- const W={pos:"corporate bonds beating Treasuries: lenders are calmer",neg:"corporate bonds lagging Treasuries: lenders are more worried",neu:"little change",mix:"the last week goes against the 4-week trend"};
- const pc=v=>v==null?"∅":(v>=0?"+":"")+v.toFixed(2)+"%",L=[];
- const hy=cc.hy?tone(cc.hy.chg_1w,cc.hy.chg_4w,.5,1):null,ig=cc.ig?tone(cc.ig.chg_1w,cc.ig.chg_4w,.25,.5):null;
- if(hy)L.push(["High-yield bonds vs Treasuries (HYG/IEF)",`${pc(cc.hy.chg_1w)} over 1 week, ${pc(cc.hy.chg_4w)} over 4 weeks`,hy,W[hy]]);
- if(ig)L.push(["Investment-grade bonds vs Treasuries (LQD/IEF)",`${pc(cc.ig.chg_1w)} over 1 week, ${pc(cc.ig.chg_4w)} over 4 weeks`,ig,W[ig]+(ig==="neg"?" (the bonds of large, solid companies such as the AI hyperscalers sit here)":"")]);
- if(cc.spx&&cc.hy&&cc.spx.chg_1w!=null&&cc.hy.chg_1w!=null){const s1=cc.spx.chg_1w,h1=cc.hy.chg_1w;
-  L.push(["Stocks vs credit",`S&P 500 ${pc(s1)} over 1 week, high-yield ratio ${pc(h1)}`,...(s1>=1&&h1<=-.3?["neg","stocks rising while credit weakens: the bond market does not confirm the rally"]:s1<=-1&&h1>=.3?["mix","stocks falling while credit holds: the selling is not confirmed by credit"]:["neu","stocks and credit tell the same story"])])}
- const ts=L.map(l=>l[2]),bad=ts.includes("neg"),st=bad?["Widening","var(--bad)"]:ts.length&&ts.slice(0,2).every(t=>t==="pos")?["Easing","var(--good)"]:ts.includes("mix")?["Mixed","var(--warn)"]:["Stable","var(--ink2)"];
- return{status:st[0],col:st[1],lines:L,date:cc.date,
+ const pc=v=>v==null?"∅":(v>=0?"+":"")+v.toFixed(2)+"%",pt=v=>v==null?"∅":(v>=0?"+":"")+v.toFixed(2)+" pt";
+ const tone=(c1,c4,t1,t4,up)=>{if(c4==null&&c1==null)return null;const f=(c,t)=>c==null?"neu":(up?c>=t:c<=-t)?"neg":(up?c<=-t:c>=t)?"pos":"neu";
+  const w=f(c4,t4),s=f(c1,t1);return w==="neu"?s:(s!=="neu"&&s!==w?"mix":w)};
+ const W={pos:"lenders are calmer",neg:"lenders are more worried",neu:"little change",mix:"the last week goes against the 4-week trend"};
+ const L=[],C=[],sp=cc.spreads||{},HY=sp.hy,IG=sp.ig,A=cc.hy_adj,B=cc.ig_adj;
+ const lvl=x=>x.pct_3y==null?"":x.pct_3y>=80?"; already high versus the last 3 years":x.pct_3y<=20?"; low versus the last 3 years":"";
+ if(HY){const k=tone(HY.chg_1w,HY.chg_4w,.2,.4,1);L.push(["High-yield credit spread",`${HY.value.toFixed(2)}% · ${pt(HY.chg_1w)} over 1 week, ${pt(HY.chg_4w)} over 4 weeks · higher than ${HY.pct_3y}% of the last 3 years${HY.stale?` (last value, ${HY.date})`:""}`,k,(k==="neg"?"spread widening: "+W.neg:k==="pos"?"spread narrowing: "+W.pos:W[k])+lvl(HY)]);C.push(k)}
+ if(IG){const k=tone(IG.chg_1w,IG.chg_4w,.05,.1,1);L.push(["Investment-grade credit spread",`${IG.value.toFixed(2)}% · ${pt(IG.chg_1w)} over 1 week, ${pt(IG.chg_4w)} over 4 weeks · higher than ${IG.pct_3y}% of the last 3 years${IG.stale?` (last value, ${IG.date})`:""}`,k,(k==="neg"?"spread widening: "+W.neg+" (the bonds of large, solid companies such as the AI hyperscalers sit here)":k==="pos"?"spread narrowing: "+W.pos:W[k])+lvl(IG)]);C.push(k)}
+ if(A||B){const ka=A?tone(A.chg_1w,A.chg_4w,.5,1,0):null,kb=B?tone(B.chg_1w,B.chg_4w,.25,.5,0):null,ks=[ka,kb].filter(Boolean),k=ks.includes("neg")?"neg":ks.length&&ks.every(x=>x==="pos")?"pos":ks.includes("mix")?"mix":"neu";
+  L.push(["Bond funds vs Treasuries (rate-adjusted)",[A?`high-yield ${pc(A.chg_1w)} / ${pc(A.chg_4w)}`:null,B?`investment-grade ${pc(B.chg_1w)} / ${pc(B.chg_4w)}`:null].filter(Boolean).join(" · ")+" (1 / 4 weeks)",k,k==="neg"?"corporate bonds lag Treasuries even after removing the rate effect":k==="pos"?"corporate bonds beat Treasuries after removing the rate effect":W[k]]);if(!HY&&!IG)C.push(k)}
+ if(!cc.version&&cc.hy){const k=tone(cc.hy.chg_1w,cc.hy.chg_4w,.5,1,0);L.push(["High-yield bonds vs Treasuries (HYG/IEF, not rate-adjusted)",`${pc(cc.hy.chg_1w)} over 1 week, ${pc(cc.hy.chg_4w)} over 4 weeks`,k,W[k]+"; part of a move can come from interest rates"]);C.push(k)}
+ if(!cc.version&&cc.ig){const k=tone(cc.ig.chg_1w,cc.ig.chg_4w,.25,.5,0);L.push(["Investment-grade bonds vs Treasuries (LQD/IEF)",`${pc(cc.ig.chg_1w)} over 1 week, ${pc(cc.ig.chg_4w)} over 4 weeks`,k,W[k]]);C.push(k)}
+ const S=cc.spx||{},U=cc.ust10;
+ if(U&&U.chg_1w!=null){const y=U.chg_1w,k=y<=-.15?(S.chg_1w!=null&&S.chg_1w<0?"neg":"pos"):y>=.15?"neg":"neu";
+  L.push(["10-year Treasury yield",`${U.value.toFixed(2)}% · ${pt(U.chg_1w)} over 1 week, ${pt(U.chg_4w)} over 4 weeks`,k,y<=-.15?(k==="neg"?"falling while stocks fall: safe-haven buying, investors moving into Treasuries":"falling: lower rates support stock valuations"):y>=.15?"rising: higher rates weigh on stock valuations":"little change in rates"])}
+ if(S.chg_1w!=null){const s1=S.chg_1w,w1=HY&&HY.chg_1w!=null?HY.chg_1w:null,a1=A&&A.chg_1w!=null?A.chg_1w:cc.hy?cc.hy.chg_1w:null,weak=w1!=null?w1>=.1:a1!=null&&a1<=-.3,firm=w1!=null?w1<=-.1:a1!=null&&a1>=.3;
+  L.push(["Stocks vs credit",`S&P 500 ${pc(s1)} over 1 week`+(w1!=null?`, high-yield spread ${pt(w1)}`:a1!=null?`, high-yield bonds ${pc(a1)}`:""),...(s1>=1&&weak?["neg","stocks rising while credit weakens: the bond market does not confirm the rally"]:s1<=-1&&firm?["mix","stocks falling while credit holds: the selling is not confirmed by credit"]:["neu","stocks and credit tell the same story"])])}
+ const bad=C.includes("neg"),st=bad?["Widening","var(--bad)"]:C.length&&C.every(t=>t==="pos")?["Easing","var(--good)"]:C.includes("mix")?["Mixed","var(--warn)"]:["Stable","var(--ink2)"];
+ return{status:st[0],col:st[1],lines:L,date:cc.date,v2:!!cc.version,
   meaning:bad?"Bond investors are more cautious than stock investors right now. Credit stress has tended to come before or with weaker stocks; if it spreads to high-yield bonds, the fading-fear check turns negative and the fear score stays low.":st[0]==="Easing"?"Credit markets back the stock market: lenders are calm, which has tended to go with steadier stocks.":"No clear message from credit markets."}}
 /* @tt-begin: from here to @tt-end is also run by scripts/daily-minervini.mjs (needs only S, MF, sum, last, isN) */
 /* Minervini Trend Template (context, not scored). Rules from Trade Like a Stock Market Wizard (2013) and Think & Trade Like a Champion (2017).
@@ -1061,7 +1070,7 @@ function render(){
   {const CR=creditRead((S.fear||MF||{}).credit_check);if(CR&&CR.lines.length)add("Credit markets",CR.status,CR.col,[
     ...CR.lines.map(([h,t,k,w])=>[h,P(esc(t)+RD(k,w))]),
     ["Live · today vs the last close (context only)",`<p id="lcred">${LC?lcHTML():"Loading live quotes…"}</p>`],
-    ["What it means",P(esc(CR.meaning))+mu(`Context, not scored. Bond-fund ratios with dividends, close of ${esc(CR.date||"?")}; the high-yield ratio already feeds the fading-fear check. Prices of individual companies' credit insurance (CDS) are not available from free sources.`)]],"","B")}
+    ["What it means",P(esc(CR.meaning))+mu(CR.v2?`Context, not scored. Spreads: ICE BofA option-adjusted spreads (FRED). Fund prices also move with interest rates (high-yield fund ≈ 3 years of duration, investment-grade ≈ 8, Treasuries ≈ 7), so the fund line removes that effect; spreads measure credit risk directly. Close of ${esc(CR.date||"?")}. The fading-fear check still uses the plain high-yield/Treasury fund ratio. Company CDS prices are not available from free sources.`:`Context, not scored. Bond-fund ratios with dividends, close of ${esc(CR.date||"?")}; part of their moves can come from interest rates. Company CDS prices are not available from free sources.`)]],"","B")}
   if(S.dir){const D_=S.dir;add("Direction",D_.label,null,[["Setup",P(esc(D_.note)+(/^Long/.test(D_.label)?RD("pos","trend and timing line up for long positions"):/^Short setups/.test(D_.label)?RD("neg","for a long position: the trend points down"):/risky/.test(D_.label)?RD("neg","for a long position: no long setup"):RD("neu","no clear edge either way")))],["How it is read",mu("A trend counts when 12-1 momentum exceeds half its volatility; shorts only in a calm, rising market because of momentum-crash risk (Daniel &amp; Moskowitz 2016).")]],"","S")}
   const T=S.tt=trendTemplate();
   if(T){const X=T.X,sg=v=>(v>=0?"+":"")+v.toFixed(1),ctx=[];
