@@ -199,7 +199,7 @@ ol.hl{margin:4px 0 8px;padding-left:18px;font-size:12px}ol.hl li{display:flex;ga
  <header id="top" class="glass">
   <div class="brand"><span class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M6 4v3M6 15v4M4 7h4v8H4zM12 2v4M12 16v5M10 6h4v10h-4zM18 5v3M18 17v3M16 8h4v9h-4z"/></svg></span><b>StockGlass Lite</b></div>
   <div class="searchwrap"><div class="sbox"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".55"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Ticker or name — AAPL, MSFT, ASML.AS…" autocomplete="off" spellcheck="false" aria-label="Search stocks"><div id="spin"></div></div><div id="drop" class="glass" role="listbox"></div></div>
-  <div class="tools"><button class="btn" id="refresh" title="Reload live data" aria-label="Reload">⟳</button><button class="btn" id="copy" title="Copy indices">Copy</button><a class="btn" id="wl" href="history.html" title="Weekly watchlist results" style="text-decoration:none;color:inherit">Watchlist</a><button class="btn" id="theme" title="Toggle light / dark" aria-label="Toggle theme"></button></div>
+  <div class="tools"><button class="btn" id="refresh" title="Reload live data" aria-label="Reload">⟳</button><button class="btn" id="copy" title="Copy indices">Copy</button><a class="btn" id="wl" href="history.html" title="Weekly watchlist results" style="text-decoration:none;color:inherit">Watchlist</a><a class="btn" id="mtd" href="today.html" title="Daily Minervini check of the watchlist" style="text-decoration:none;color:inherit">Today</a><button class="btn" id="theme" title="Toggle light / dark" aria-label="Toggle theme"></button></div>
  </header>
  <div id="banner">Live sources unreachable. Retry, or set MY_PROXY in the script (see top of code).<button class="btn" id="retry">Retry</button></div>
  <section id="id" class="glass">
@@ -913,6 +913,7 @@ function dirNote(){if(S.tscore==null)return null;if(S.kind==="crypto")return dir
 /* Minervini Trend Template (Trade Like a Stock Market Wizard, 2013), shown under entry timing, NOT scored.
    The 7 price rules use daily closes; the 8th rule (IBD relative-strength rank >= 70) is proprietary, so the
    12-month relative strength vs the benchmark is shown as a proxy and not counted. Stop: 2 x ATR(20), max 10%. */
+/* @tt-begin: from here to @tt-end is also run by scripts/daily-minervini.mjs (needs only S, MF, sum, last, isN) */
 /* Minervini Trend Template (context, not scored). Rules from Trade Like a Stock Market Wizard (2013) and Think & Trade Like a Champion (2017).
    Revised 24 Nov 2026 after an evidence review: rules 1, 2, 4 and 5 are one condition (price > 50 > 150 > 200-day), so the verdict counts 5 blocks
    (MA stack, rising 200-day, distance from the low, distance from the high, relative strength); a falling 200-day is a hard fail; relative strength
@@ -965,6 +966,7 @@ function trendTemplate(){const d=S.closes||[];if((S.kind&&S.kind!=="equity")||d.
  return{rules:R,blocks:B,passed:n,total:Bk.length,met,fall,missing:miss,rsW,rsParts:sw,verdict,why,
   stop:st!=null?{pct:st,level:p*(1-st/100),over:st>10,size:Math.min(100,1.25/Math.min(Math.max(st,.1),10)*100)}:null,
   slope:{m1:sl1,m5:sl5},X}}
+/* @tt-end */
 function priceBeta(){const M=S.mktC;if(!M||!S.closes||S.closes.length<200)return null;
  const P=[];S.closes.forEach(x=>{const d=new Date(x.t).toISOString().slice(0,10);if(M.has(d))P.push([x.c,M.get(d)])});const z=P.slice(-261);if(z.length<160)return null;
  const a=[],b=[];for(let i=5;i<z.length;i+=5){a.push(z[i][0]/z[i-5][0]-1);b.push(z[i][1]/z[i-5][1]-1)}if(a.length<30)return null;
