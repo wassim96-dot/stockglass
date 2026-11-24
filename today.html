@@ -64,7 +64,7 @@ footer{color:var(--ink3);font-size:11.5px;margin-top:18px}
 <h2>Changes since the previous run <small id="vs"></small></h2>
 <div class="chg" id="chg"></div>
 <div id="groups"></div>
-<footer>Daily check, Monday to Friday after the US close: one price request per stock and the same Minervini Trend Template code as the StockGlass card (version 2: moving-average stack, rising 200-day, at least 25% above the 52-week low, within 25% of the 52-week high, relative strength vs the broad index). The last 5 runs are kept. 🟢 = meets his template, a setup filter, not a buy signal: he also requires a proper base with a breakout on volume and strong earnings. ETFs, indices and crypto are not checked. Rule-based screen on public data, not investment advice.</footer>
+<footer>Daily check, Monday to Friday after the US close: one price request per stock and the same Minervini Trend Template code as the StockGlass card (version 2: moving-average stack, rising 200-day, at least 25% above the 52-week low, within 25% of the 52-week high, relative strength vs the broad index). The last 5 runs are kept. 🟢 = meets his template, a setup filter, not a buy signal: he also requires a proper base with a breakout on volume and strong earnings. "Full" adds the entry points (RS line at a new high, not extended, no lottery-like spike, volume support, liquidity): weaker evidence and rule-of-thumb thresholds, so the template count stays the main reading. Each list is sorted by the full check, then by relative strength. ETFs, indices and crypto are not checked. Rule-based screen on public data, not investment advice.</footer>
 </div>
 <script>
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
@@ -79,9 +79,11 @@ function ctxLines(x){const c=x.ctx||{},L=[];
  if(c.up_vol!=null||c.vol_dry!=null){const g=(c.up_vol??0)>=1.4||(c.vol_dry??9)<.75;L.push([c.up_vol!=null?`last up day on ${c.up_vol.toFixed(1)} × the 50-day volume`:null,c.vol_dry!=null?`10-day volume ${c.vol_dry.toFixed(2)} × the 50-day`:null].filter(Boolean).join("; ").replace(/^./,m=>m.toUpperCase())+(g?RD("pos",(c.up_vol??0)>=1.4?"strong-volume buying":"volume drying up"):RD("neu","no volume signal")))}
  if(c.turnover_eur!=null)L.push(`Median daily turnover ≈ €${(c.turnover_eur/1e6).toFixed(c.turnover_eur<1e7?1:0)}M`+(c.turnover_eur<1e6?RD("neg","thin trading"):RD("neu","enough liquidity")));
  return L}
+const fcol=f=>{const r=f.total?f.passed/f.total:0;return r>=.85?"var(--good)":r>=.6?"var(--warn)":"var(--bad)"};
 function row(x,isNew){const col=x.icon==="🟢"?"var(--good)":x.icon==="🔴"?"var(--bad)":"var(--warn)";
- return `<details class="row" data-k="${esc((x.t+" "+(x.name||"")).toLowerCase())}"><summary><span class="tk">${esc(x.t)}</span><span class="nm">${esc(x.name||"")}</span>${isNew?`<span class="new">${esc(isNew)}</span>`:""}<span class="px">${x.price!=null?x.price.toFixed(2)+" "+esc(x.cur||""):""}${x.chg_1d!=null?` · ${sg(x.chg_1d)}%`:""}</span><span class="bk" style="color:${col};border-color:color-mix(in srgb,${col} 45%,transparent)">${x.icon} ${x.passed}/${x.total}</span></summary>
- <div class="more"><p style="color:${col};font-weight:700;margin:4px 0">${x.icon} ${esc(x.verdict)}</p>
+ return `<details class="row" data-k="${esc((x.t+" "+(x.name||"")).toLowerCase())}"><summary><span class="tk">${esc(x.t)}</span><span class="nm">${esc(x.name||"")}</span>${isNew?`<span class="new">${esc(isNew)}</span>`:""}<span class="px">${x.price!=null?x.price.toFixed(2)+" "+esc(x.cur||""):""}${x.chg_1d!=null?` · ${sg(x.chg_1d)}%`:""}</span><span class="bk" style="color:${col};border-color:color-mix(in srgb,${col} 45%,transparent)" title="template blocks">${x.icon} ${x.passed}/${x.total}</span>${x.full?`<span class="bk" style="color:${fcol(x.full)}" title="full check: template + entry points">full ${x.full.passed}/${x.full.total}</span>`:""}</summary>
+ <div class="more"><p style="color:${col};font-weight:700;margin:4px 0">Template ${x.passed}/${x.total}: ${x.icon} ${esc(x.verdict)}</p>
+ ${x.full?`<p style="margin:4px 0"><b style="color:${fcol(x.full)}">Full check ${x.full.passed}/${x.full.total}</b> (template blocks + entry points): ${esc(x.full.read)}</p>`:""}
  <ul>${(x.rules||[]).map(([t,ok])=>`<li class="${ok===false?"ff":ok?"ok":""}">${ok==null?"–":ok?"✓":"✗"} <span style="color:var(--ink2)">${esc(t)}</span></li>`).join("")}</ul>
  ${x.stop?`<p>Stop-loss guide: ${x.stop.over_10?`2 × the 20-day range is −${x.stop.pct}%, above his 10% maximum: too volatile for his rules.`:`−${x.stop.pct}% (2 × the 20-day range); his 1.25% risk rule caps the position at ${x.stop.max_position_pct}% of the portfolio.`}</p>`:""}
  <p class="muted" style="margin:6px 0 2px">Context (not counted)</p><ul>${ctxLines(x).map(l=>`<li>${l}</li>`).join("")}</ul>
@@ -97,7 +99,7 @@ function render(){if(!CUR)return;const D=CUR,q=$("q").value.trim().toLowerCase()
  const nw=new Map();(ch.new_green||[]).forEach(t=>nw.set(t,"new"));(ch.new_met||[]).forEach(t=>nw.set(t,"new"));
  const it=(D.items||[]).filter(x=>!q||(x.t+" "+(x.name||"")).toLowerCase().includes(q));
  const G=[["🟢 Meets Minervini's Trend Template",x=>x.icon==="🟢",true],["🟡 Template met, market under stress",x=>x.icon==="🟡"&&x.met,true],["🟡 Partial: 1–2 blocks missing",x=>x.icon==="🟡"&&!x.met,false],["🔴 Not a stage-2 uptrend",x=>x.icon==="🔴",false]];
- $("groups").innerHTML=G.map(([h,f,open])=>{const a=it.filter(f).sort((p,q)=>(q.rs_w??-1e9)-(p.rs_w??-1e9));
+ $("groups").innerHTML=G.map(([h,f,open])=>{const fr=x=>x.full&&x.full.total?x.full.passed/x.full.total:-1,a=it.filter(f).sort((p,q)=>fr(q)-fr(p)||(q.rs_w??-1e9)-(p.rs_w??-1e9));
   return `<h2>${h} <small>${a.length}</small></h2><div class="list">${a.length?a.map(x=>row(x,nw.get(x.t))).join(""):`<p class="empty">None.</p>`}</div>`}).join("")
   +(D.failed&&D.failed.length?`<p class="muted" style="margin-top:12px">No price data this run: ${D.failed.map(esc).join(", ")}.</p>`:"");
  document.querySelectorAll('#chg a[data-t]').forEach(a=>a.onclick=e=>{e.preventDefault();const r=[...document.querySelectorAll("details.row")].find(d=>d.querySelector(".tk").textContent===a.dataset.t);if(r){r.open=true;r.scrollIntoView({behavior:"smooth",block:"center"})}})}
