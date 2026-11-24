@@ -1,0 +1,69 @@
+name: Daily Minervini check
+
+# Light daily run, Monday to Friday after the US close: one price request per stock, the same Minervini code as the
+# StockGlass card, results in data/daily/<market date>.json (the 5 newest are kept) and a GitHub issue (phone
+# notification) when a stock newly meets or loses the template. Context only, never a score.
+# GitHub often starts scheduled runs late or skips them, so there are backups; a run that finds the market date
+# already saved does nothing. 22:50 UTC = 23:50 Paris in winter (after the market-fear update at 22:35 UTC).
+on:
+  schedule:
+    - cron: "50 22 * * 1-5"
+    - cron: "20 1 * * 2-6"
+    - cron: "50 4 * * 2-6"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Re-run even if today's market date is already saved"
+        type: boolean
+        default: false
+      test_alert:
+        description: "Send a test alert (GitHub issue) even without a change"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: daily-minervini
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Score the watchlist with the Minervini template
+        env:
+          FORCE: ${{ inputs.force && '1' || '' }}
+          TEST_ALERT: ${{ inputs.test_alert }}
+        run: node scripts/daily-minervini.mjs
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data/daily
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git commit -m "Daily Minervini check $(ls data/daily | grep -E '^[0-9-]+\.json$' | sort | tail -1 | cut -c1-10)"
+          for i in 1 2 3; do
+            git pull --rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && break
+            sleep 5
+          done
+
+      - name: Alert (GitHub issue → phone notification), after the data is saved
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for t in alerts/*.title; do
+            [ -f "$t" ] || continue
+            gh issue create --title "$(cat "$t")" --body-file "${t%.title}.md"
+          done
+          rm -rf alerts

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10203a">
+<title>Minervini Today</title>
+<script>try{var _t=JSON.parse(localStorage.getItem("sg_theme")||'"dark"');if(_t==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg1:#10203a;--bg2:#183153;--card:linear-gradient(150deg,rgba(84,120,172,.40),rgba(38,66,110,.32));--ink:#eef5ff;--ink2:#b7c9e2;--ink3:#8199ba;--ln:rgba(150,190,240,.2);--btn:rgba(150,190,240,.12);--good:#3ddc97;--warn:#ffb84a;--bad:#ff6b81;--acc:#8fc4ff}
+:root[data-theme="light"]{color-scheme:light;--bg1:#e8f1fc;--bg2:#d6e6f8;--card:rgba(255,255,255,.8);--ink:#0f2440;--ink2:#3d5878;--ink3:#6a83a3;--ln:rgba(30,70,130,.14);--btn:rgba(30,90,170,.06);--good:#0e8a57;--warn:#9a6508;--bad:#c4314b;--acc:#1f6fd1}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.wrap{max-width:980px;margin:0 auto;padding-block:max(14px,env(safe-area-inset-top)) 40px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+h1{font-size:18px;margin:0;letter-spacing:-.01em}
+h2{font-size:14px;margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+h2 small{color:var(--ink3);font-weight:500;font-size:12px}
+.sub{color:var(--ink3);font-size:12px}
+.sp{flex:1}
+.btn{display:inline-flex;align-items:center;height:32px;padding:0 11px;border-radius:10px;background:var(--btn);border:1px solid var(--ln);color:inherit;font:600 12px Inter,system-ui,sans-serif;text-decoration:none;cursor:pointer}
+select.btn{appearance:none}
+input.btn{font-weight:500;flex:1 1 140px;min-width:0}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.tile{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:10px 12px;min-width:0}
+.tile b{display:block;font-size:11px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.tile span{font-size:15px;font-weight:700}
+.tile small{display:block;color:var(--ink3);font-size:11.5px}
+.chg{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:10px 12px;font-size:13px}
+.chg p{margin:3px 0}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:10px 12px}
+.row summary{list-style:none;cursor:pointer;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row summary::-webkit-details-marker{display:none}
+.tk{font-weight:800;min-width:72px}
+.nm{color:var(--ink2);font-size:12.5px;flex:1 1 140px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.px{font-size:12.5px;color:var(--ink2);white-space:nowrap}
+.bk{font-weight:700;font-size:12.5px;padding:2px 9px;border-radius:99px;border:1px solid var(--ln);white-space:nowrap}
+.new{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:99px;background:color-mix(in srgb,var(--acc) 22%,transparent);color:var(--acc)}
+.more{margin-top:8px;font-size:12.5px;color:var(--ink2)}
+.more ul{margin:4px 0 6px;padding-left:16px}
+.more li{margin:2px 0}
+.ff{color:var(--bad)}
+.ok{color:var(--good)}
+.tag{font-weight:700}
+.muted{color:var(--ink3);font-size:11.5px}
+a{color:var(--acc)}
+footer{color:var(--ink3);font-size:11.5px;margin-top:18px}
+.empty{color:var(--ink3);font-size:12.5px;padding:6px 2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <h1>Minervini today</h1><span class="sub" id="dt"></span><span class="sp"></span>
+ <a class="btn" href="index.html">StockGlass</a><a class="btn" href="history.html">Weekly history</a>
+</header>
+<div class="bar"><select class="btn" id="day" aria-label="Market date"></select><input class="btn" id="q" placeholder="Filter ticker or name" aria-label="Filter"></div>
+<div class="sum" id="sum"></div>
+<h2>Changes since the previous run <small id="vs"></small></h2>
+<div class="chg" id="chg"></div>
+<div id="groups"></div>
+<footer>Daily check, Monday to Friday after the US close: one price request per stock and the same Minervini Trend Template code as the StockGlass card (version 2: moving-average stack, rising 200-day, at least 25% above the 52-week low, within 25% of the 52-week high, relative strength vs the broad index). The last 5 runs are kept. 🟢 = meets his template, a setup filter, not a buy signal: he also requires a proper base with a breakout on volume and strong earnings. ETFs, indices and crypto are not checked. Rule-based screen on public data, not investment advice.</footer>
+</div>
+<script>
+const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const sg=v=>v==null?"∅":(v>=0?"+":"")+v.toFixed(1),RDT={pos:["Positive","var(--good)"],neg:["Negative","var(--bad)"],neu:["Neutral","var(--ink2)"],mix:["Mixed","var(--warn)"]};
+const RD=(k,w)=>` → <span class="tag" style="color:${RDT[k][1]}">${RDT[k][0]}</span><span class="muted">: ${w}.</span>`;
+let IDX=null,CUR=null,PREV=null;
+async function getJ(u){const r=await fetch(u+"?v="+Date.now());if(!r.ok)throw new Error(u);return r.json()}
+function ctxLines(x){const c=x.ctx||{},L=[];
+ if(c.rs_line_high!=null)L.push(c.rs_line_high?(c.rs_line_leads?"RS line at a 52-week high before the price"+RD("pos","the leadership signal he looks for"):"RS line at a 52-week high"+RD("pos","a sign of leadership")):"RS line not at a 52-week high"+RD("neu","he prefers new highs"));
+ if(c.ext_atr!=null)L.push(`${sg(c.ext_pct)}% from the 50-day average (${c.ext_atr.toFixed(1)} × the daily range)`+(c.ext_pct<0?RD("neg","he wants the price above the 50-day"):c.ext_atr>4?RD("neg","extended, a chase risk"):RD("pos","above the 50-day without being extended")));
+ if(c.max_1d!=null)L.push(`Largest one-day gain in the last month: ${sg(c.max_1d)}%`+(c.max_1d>=10?RD("mix","powerful, but such spikes have tended to lag"):RD("neu","no unusual spike")));
+ if(c.up_vol!=null||c.vol_dry!=null){const g=(c.up_vol??0)>=1.4||(c.vol_dry??9)<.75;L.push([c.up_vol!=null?`last up day on ${c.up_vol.toFixed(1)} × the 50-day volume`:null,c.vol_dry!=null?`10-day volume ${c.vol_dry.toFixed(2)} × the 50-day`:null].filter(Boolean).join("; ").replace(/^./,m=>m.toUpperCase())+(g?RD("pos",(c.up_vol??0)>=1.4?"strong-volume buying":"volume drying up"):RD("neu","no volume signal")))}
+ if(c.turnover_eur!=null)L.push(`Median daily turnover ≈ €${(c.turnover_eur/1e6).toFixed(c.turnover_eur<1e7?1:0)}M`+(c.turnover_eur<1e6?RD("neg","thin trading"):RD("neu","enough liquidity")));
+ return L}
+function row(x,isNew){const col=x.icon==="🟢"?"var(--good)":x.icon==="🔴"?"var(--bad)":"var(--warn)";
+ return `<details class="row" data-k="${esc((x.t+" "+(x.name||"")).toLowerCase())}"><summary><span class="tk">${esc(x.t)}</span><span class="nm">${esc(x.name||"")}</span>${isNew?`<span class="new">${esc(isNew)}</span>`:""}<span class="px">${x.price!=null?x.price.toFixed(2)+" "+esc(x.cur||""):""}${x.chg_1d!=null?` · ${sg(x.chg_1d)}%`:""}</span><span class="bk" style="color:${col};border-color:color-mix(in srgb,${col} 45%,transparent)">${x.icon} ${x.passed}/${x.total}</span></summary>
+ <div class="more"><p style="color:${col};font-weight:700;margin:4px 0">${x.icon} ${esc(x.verdict)}</p>
+ <ul>${(x.rules||[]).map(([t,ok])=>`<li class="${ok===false?"ff":ok?"ok":""}">${ok==null?"–":ok?"✓":"✗"} <span style="color:var(--ink2)">${esc(t)}</span></li>`).join("")}</ul>
+ ${x.stop?`<p>Stop-loss guide: ${x.stop.over_10?`2 × the 20-day range is −${x.stop.pct}%, above his 10% maximum: too volatile for his rules.`:`−${x.stop.pct}% (2 × the 20-day range); his 1.25% risk rule caps the position at ${x.stop.max_position_pct}% of the portfolio.`}</p>`:""}
+ <p class="muted" style="margin:6px 0 2px">Context (not counted)</p><ul>${ctxLines(x).map(l=>`<li>${l}</li>`).join("")}</ul>
+ <p><a href="index.html?s=${encodeURIComponent(x.t)}">Open the full StockGlass report →</a> <span class="muted">(prices of ${esc(x.last_bar||"")}, ${esc(x.via||"")})</span></p></div></details>`}
+function render(){if(!CUR)return;const D=CUR,q=$("q").value.trim().toLowerCase(),ch=D.changes||{};
+ $("dt").textContent=`market date ${D.date}`;$("vs").textContent=D.previous?`(${D.date} vs ${D.previous})`:"(first run)";
+ const F=D.market_fear,M=D.markets||{},mk=Object.values(M).filter(Boolean);
+ $("sum").innerHTML=[["🟢 Meets template",D.counts.green,"a setup filter, not a buy signal"],["🟡 Partial or stress",D.counts.yellow,"1–2 blocks missing, or market stress"],["🔴 Not stage 2",D.counts.red,"several blocks missing or 200-day falling"],
+  ["Market fear",F?F.phase_label:"∅",F?`${F.score}/10 ${F.label} · VIX ${F.vix} (${F.date})`:"reading too old"],["Market regimes",mk.length?"":"∅",mk.map(m=>m.name.replace(/ \(.*\)/,"").replace("S&P/TSX Composite","S&P/TSX").replace("STOXX Europe 600","STOXX 600")+": "+m.label).join(" · ")]]
+  .map(([b,s,sm])=>`<div class="tile"><b>${esc(b)}</b><span>${esc(s)}</span><small>${esc(sm)}</small></div>`).join("");
+ const L=(lab,arr)=>arr&&arr.length?`<p><b>${lab}</b>: ${arr.map(t=>`<a href="#" data-t="${esc(t)}">${esc(t)}</a>`).join(", ")}</p>`:"";
+ $("chg").innerHTML=(L("🟢 Newly meet the template",ch.new_green)+L("No longer meet it",ch.lost_green)+L("🟡 Met, but under market stress",ch.new_met)+L("No longer met (was under stress)",ch.lost_met)+L("200-day average turned down",ch.new_falling_200))||(D.previous?`<p class="empty">No stock newly met or lost the template.</p>`:`<p class="empty">Changes appear from the second run.</p>`);
+ const nw=new Map();(ch.new_green||[]).forEach(t=>nw.set(t,"new"));(ch.new_met||[]).forEach(t=>nw.set(t,"new"));
+ const it=(D.items||[]).filter(x=>!q||(x.t+" "+(x.name||"")).toLowerCase().includes(q));
+ const G=[["🟢 Meets Minervini's Trend Template",x=>x.icon==="🟢",true],["🟡 Template met, market under stress",x=>x.icon==="🟡"&&x.met,true],["🟡 Partial: 1–2 blocks missing",x=>x.icon==="🟡"&&!x.met,false],["🔴 Not a stage-2 uptrend",x=>x.icon==="🔴",false]];
+ $("groups").innerHTML=G.map(([h,f,open])=>{const a=it.filter(f).sort((p,q)=>(q.rs_w??-1e9)-(p.rs_w??-1e9));
+  return `<h2>${h} <small>${a.length}</small></h2><div class="list">${a.length?a.map(x=>row(x,nw.get(x.t))).join(""):`<p class="empty">None.</p>`}</div>`}).join("")
+  +(D.failed&&D.failed.length?`<p class="muted" style="margin-top:12px">No price data this run: ${D.failed.map(esc).join(", ")}.</p>`:"");
+ document.querySelectorAll('#chg a[data-t]').forEach(a=>a.onclick=e=>{e.preventDefault();const r=[...document.querySelectorAll("details.row")].find(d=>d.querySelector(".tk").textContent===a.dataset.t);if(r){r.open=true;r.scrollIntoView({behavior:"smooth",block:"center"})}})}
+async function load(day){try{CUR=await getJ(`data/daily/${day}.json`)}catch(e){$("groups").innerHTML=`<p class="empty">Could not load the run of ${esc(day)}.</p>`;return}render()}
+(async()=>{try{IDX=await getJ("data/daily/index.json")}catch(e){$("groups").innerHTML='<p class="empty">No daily run yet: the first one happens Monday to Friday after the US close (about 23:50 Paris).</p>';return}
+ $("day").innerHTML=(IDX.files||[]).map(f=>`<option>${esc(f)}</option>`).join("");$("day").onchange=e=>load(e.target.value);$("q").oninput=render;load(IDX.latest||IDX.files[0])})();
+</script>
+</body>
+</html>
