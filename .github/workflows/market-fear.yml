@@ -3,8 +3,12 @@ name: Market fear (VIX)
 # Every weekday after the US close: VIX, VIX3M, S&P 500, HYG/IEF → fear score v3 (HAR premium + fear phase) in data/market.json.
 # Used by the StockGlass page (entry timing) and by the stock-verdict skill. Also run inside "Weekly watchlist".
 on:
+  # GitHub often starts scheduled runs hours late or skips them when it is busy, so two backup times
+  # (03:10 and 06:40 Paris) re-run it; a run that finds the same close commits nothing.
   schedule:
     - cron: "35 22 * * 1-5"
+    - cron: "10 2 * * 2-6"
+    - cron: "40 5 * * 2-6"
   workflow_dispatch:
     inputs:
       test_alert:
