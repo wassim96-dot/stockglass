@@ -889,7 +889,19 @@ function lvHTML(){if(!LV)return "Live quote unavailable right now.";const F=MF,t
 function fillLV(){const el=document.getElementById("lvix");if(el)el.innerHTML=lvHTML()}
 async function liveVix(){try{const {j}=await race(yCh("^VIX","1d","5m"),j=>isN(j?.chart?.result?.[0]?.meta?.regularMarketPrice));
  const m=j.chart.result[0].meta;LV={v:m.regularMarketPrice,t:(m.regularMarketTime||Date.now()/1000)*1000};fillLV()}catch(e){fillLV()}}
-liveVix();setInterval(()=>{if(!document.hidden)liveVix()},5*60e3);
+/* Live credit line (context only, never scored): today's change of the high-yield (HYG) and investment-grade (LQD) bond funds
+   vs Treasuries (IEF) and of the S&P 500 (SPY), against the previous close. The card's 1- and 4-week readings stay on closes. */
+let LC=null;
+function lcHTML(){if(!LC)return "Live quotes unavailable right now.";const pc=v=>(v>=0?"+":"")+v.toFixed(2)+"%",tm=new Date(LC.t).toLocaleString(undefined,{weekday:"short",hour:"2-digit",minute:"2-digit"});
+ const parts=[LC.hy!=null?`high-yield ratio <b>${pc(LC.hy)}</b>`:null,LC.ig!=null?`investment-grade ratio <b>${pc(LC.ig)}</b>`:null,LC.sp!=null?`S&amp;P 500 ${pc(LC.sp)}`:null].filter(Boolean);
+ const neg=(LC.hy!=null&&LC.hy<=-.3)||(LC.ig!=null&&LC.ig<=-.15),pos=(LC.hy==null||LC.hy>=.3)&&(LC.ig==null||LC.ig>=.15)&&(LC.hy!=null||LC.ig!=null),div=LC.sp!=null&&LC.hy!=null&&LC.sp>=.8&&LC.hy<=-.2;
+ return `Today vs the last close: ${parts.join(" · ")} (at ${esc(tm)}${LC.stale?", market closed: last session":""}).`+(div?RD("neg","stocks up while credit weakens today"):neg?RD("neg","credit weakening today"):pos?RD("pos","credit firming today"):RD("neu","little change in credit today"))}
+function fillLC(){const el=document.getElementById("lcred");if(el)el.innerHTML=lcHTML()}
+async function liveCredit(){try{const q=async s=>{const {j}=await race(yCh(s,"1d","5m"),j=>isN(j?.chart?.result?.[0]?.meta?.regularMarketPrice));const m=j.chart.result[0].meta;return{p:m.regularMarketPrice,c:m.chartPreviousClose??m.previousClose,t:(m.regularMarketTime||0)*1e3}};
+ const [h,l,i,sp]=await Promise.allSettled(["HYG","LQD","IEF","SPY"].map(q)).then(r=>r.map(x=>x.status==="fulfilled"?x.value:null));
+ const rt=(a,b)=>a&&b&&a.c&&b.c?((a.p/a.c)/(b.p/b.c)-1)*100:null,t=Math.max(...[h,l,i,sp].filter(Boolean).map(x=>x.t),0);
+ LC=i?{hy:rt(h,i),ig:rt(l,i),sp:sp&&sp.c?(sp.p/sp.c-1)*100:null,t:t||Date.now(),stale:t&&Date.now()-t>6*3600e3}:null}catch(e){LC=null}fillLC()}
+liveVix();liveCredit();setInterval(()=>{if(!document.hidden){liveVix();liveCredit()}},5*60e3);
 /* Long / short setup note under the timing score (not a score; version 2, 21 Nov 2026). A trend counts only when the
    12-1 momentum is large relative to volatility (|12-1 return| > 0.5 × annual σ; mom is already risk-adjusted), as in the
    revised time-series momentum of Lim, Wang & Yao (2018) and volatility-scaled momentum (Barroso & Santa-Clara 2015).
@@ -1048,6 +1060,7 @@ function render(){
     ["Effect on this asset",P(S.fear?`${S.fearAdj.toFixed(1)}/10 after beta scaling (beta ${S.fearBeta.toFixed(2)}, clipped 0.5–1.5); counts for ${Math.round(FEAR_W*100)}% of entry timing${isN(S.tbase)?` (timing before fear: ${S.tbase.toFixed(1)})`:""}.`+(S.fearAdj>=5.5?RD("pos","lifts the entry-timing score a little"):S.fearAdj<=4.5?RD("neg","pulls the entry-timing score down a little"):RD("neu","almost no effect on entry timing")):S.kind==="crypto"?"Not applied to crypto: the evidence is for equities.":"Not applied.")+mu(`Score = 0.3 × premium + 0.7 × phase · reading of the ${fdClose(F.date)} close`)]],"","S",S.fear?`scored: ${Math.round(FEAR_W*100)}% of entry timing`:"not scored")}
   {const CR=creditRead((S.fear||MF||{}).credit_check);if(CR&&CR.lines.length)add("Credit markets",CR.status,CR.col,[
     ...CR.lines.map(([h,t,k,w])=>[h,P(esc(t)+RD(k,w))]),
+    ["Live · today vs the last close (context only)",`<p id="lcred">${LC?lcHTML():"Loading live quotes…"}</p>`],
     ["What it means",P(esc(CR.meaning))+mu(`Context, not scored. Bond-fund ratios with dividends, close of ${esc(CR.date||"?")}; the high-yield ratio already feeds the fading-fear check. Prices of individual companies' credit insurance (CDS) are not available from free sources.`)]],"","B")}
   if(S.dir){const D_=S.dir;add("Direction",D_.label,null,[["Setup",P(esc(D_.note)+(/^Long/.test(D_.label)?RD("pos","trend and timing line up for long positions"):/^Short setups/.test(D_.label)?RD("neg","for a long position: the trend points down"):/risky/.test(D_.label)?RD("neg","for a long position: no long setup"):RD("neu","no clear edge either way")))],["How it is read",mu("A trend counts when 12-1 momentum exceeds half its volatility; shorts only in a calm, rising market because of momentum-crash risk (Daniel &amp; Moskowitz 2016).")]],"","S")}
   const T=S.tt=trendTemplate();
