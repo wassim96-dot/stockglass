@@ -303,7 +303,7 @@ def tcard(t):
         cy = t["crypto"]; notes.append(mw("Crypto cycle", e(cy["phase_label"]) + (f", day {cy['phase_days']}" if cy.get("phase_days") else ""), "var(--ink)", f"MVRV {cy['mvrv']:.2f}" if cy.get("mvrv") is not None else "Bitcoin's cycle", "scored · long and short term"))
     if t.get("direction"): notes.append(mw("Direction", e(t["direction"]), tone(t["direction"]), "not scored", "short term · 2–12 wk"))
     TT = t.get("trend_template")
-    if TT: notes.append(mw("Minervini template", f'{e(TT.get("verdict") or "")} {TT["passed"]}/{TT["total"]}', "var(--good)" if TT.get("verdict") == "🟢" else "var(--bad)" if TT.get("verdict") == "🔴" else "var(--warn)",
+    if TT: notes.append(mw("Minervini template", f'{e(TT.get("verdict") or "")} {TT["passed"]}/{TT["total"]}' + (f' · full {TT["full_passed"]}/{TT["full_total"]}' if TT.get("full_total") else ""), "var(--good)" if TT.get("verdict") == "🟢" else "var(--bad)" if TT.get("verdict") == "🔴" else "var(--warn)",
                            (f'RS rank {TT["rs_rank"]} in watchlist · ' if TT.get("rs_rank") is not None else "")
                            + (("stop > 10%: too volatile" if TT.get("stop_over_10") else "stop guide −" + f'{TT["stop_pct"]:.1f}%') + " · " if TT.get("stop_pct") is not None else "")
                            + ("200-day falling · " if TT.get("falling_200") else "") + "not scored", "short term · 2–12 wk"))

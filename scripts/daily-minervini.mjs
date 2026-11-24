@@ -119,6 +119,7 @@ for (const sym of tickers) {
     via: y.via, last_bar: new Date(d[d.length - 1].t).toISOString().slice(0, 10),
     icon: T.verdict[0].slice(0, 2).trim(), verdict: T.verdict[0].replace(/^\S+\s/, ""), passed: T.passed, total: T.total, met: T.met,
     falling_200: T.fall, missing: T.missing, rs_w: r1(T.rsW), stress: T.why,
+    full: T.full ? { passed: T.full.passed, total: T.full.total, entry: T.full.entry.map(([n, ok]) => [n, ok]), entry_missing: T.full.entryMissing, read: T.full.read } : null,
     stop: T.stop ? { pct: r1(T.stop.pct), over_10: T.stop.over, max_position_pct: Math.round(T.stop.size) } : null,
     rules: T.rules.map(([txt, ok]) => [txt, ok]),
     ctx: { rs_line_high: T.X.rsHigh ?? null, rs_line_leads: T.X.rsLead ?? null, ext_atr: r1(T.X.ext), ext_pct: r1(T.X.extPct), max_1d: r1(T.X.max1d),
@@ -140,7 +141,7 @@ for (const x of items) {
   if (x.falling_200 && !o.falling_200) ch.new_falling_200.push(x.t);
 }
 const cnt = k => items.filter(x => x.icon === k).length;
-const out = { date: day, generated: new Date().toISOString(), previous: prevDay || null, version: 1,
+const out = { date: day, generated: new Date().toISOString(), previous: prevDay || null, version: 2,
   market_fear: MF ? { date: MF.date, phase: MF.phase, phase_label: MF.phase_label, score: MF.score, label: MF.label, vix: MF.vix } : null,
   markets: Object.fromEntries(Object.entries(MK).map(([k, v]) => [k, v?.mkt ? { name: v.name, label: v.mkt.lab, vs_200d: Math.round(v.mkt.iv * 10) / 10, last: v.last } : null])),
   counts: { green: cnt("🟢"), yellow: cnt("🟡"), red: cnt("🔴"), stocks: items.length, skipped: skipped.length, failed: failed.length },
