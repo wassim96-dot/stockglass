@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-25T06:33:41.025Z",
+ "updated": "2026-11-25T09:55:27.219Z",
  "method": "Crypto cycle phase: accumulation (MVRV ≤ 1), distribution (MVRV in the top 10% of its last 4 years), else bull (price above its 200-day average) or bear. Coins without on-chain data use Bitcoin's phase. Long-term phase scores: accumulation 8.5, bull 6, bear 3.5, distribution 3.5; timing: 6.5, 6, 4, 5.",
  "phases": {
   "accumulation": {
@@ -89,7 +89,7 @@
     "min_days": 7,
     "max_days": 310
    },
-   "funding_annual": 0.8
+   "funding_annual": 1
   },
   "eth": {
    "date": "2026-11-24",
@@ -182,7 +182,7 @@
     "min_days": 6,
     "max_days": 314
    },
-   "funding_annual": -1.8
+   "funding_annual": -1.6
   },
   "near": {
    "date": "2026-11-24",
@@ -192,7 +192,7 @@
    "ret_1y": 50.5,
    "phase": "bear",
    "phase_source": "Bitcoin's cycle (no on-chain data for this coin)",
-   "funding_annual": 3.5,
+   "funding_annual": 3.3,
    "phase_age": {
     "since": "2026-11-12",
     "days": 13,
