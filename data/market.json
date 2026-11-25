@@ -59,7 +59,8 @@
     "date": "2026-11-23",
     "chg_1w": 0.07,
     "chg_4w": 0.07,
-    "pct_3y": 87
+    "pct_3y": 87,
+    "stale": true
    }
   },
   "hy_adj": {
@@ -93,11 +94,11 @@
   }
  },
  "cnn_fear_greed": {
-  "score": 17,
+  "score": 15,
   "rating": "extreme fear",
   "date": "2026-11-25"
  },
- "updated": "2026-11-25T06:39:45.681Z",
+ "updated": "2026-11-25T11:19:58.665Z",
  "method": "Fear score = 0.3 × (3 + 4 × HAR variance-risk-premium percentile over 10 years) + 0.7 × fear-phase score (calm 5, early fear 5 + risk flag, peak stress 5.5, fading fear 7.5 if confirmed by credit, no new low and no bear state, else 5.5, after fear 4.5). Per stock: 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing. Holdout-tested on 2007–2016.",
  "history": "data/market-history.json"
 }
