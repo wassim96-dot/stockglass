@@ -1,13 +1,13 @@
 {
  "date": "2026-11-24",
- "vix": 26.71,
- "vix3m": 25.7,
- "vix_vix3m": 1.039,
+ "vix": 26.36,
+ "vix3m": 25.47,
+ "vix_vix3m": 1.035,
  "rv22": 910.6,
  "rv_expected": 955.5,
- "vrp": -242,
+ "vrp": -260.6,
  "vrp_pct": 2,
- "vix_pct": 89,
+ "vix_pct": 88,
  "window_years": 10,
  "phase": "fading_unconfirmed",
  "phase_label": "Fading fear (unconfirmed)",
@@ -51,31 +51,31 @@
     "date": "2026-11-23",
     "chg_1w": 0.29,
     "chg_4w": 0.33,
-    "pct_3y": 96,
-    "stale": true
+    "pct_3y": 96
    },
    "ig": {
     "value": 0.97,
     "date": "2026-11-23",
     "chg_1w": 0.07,
     "chg_4w": 0.07,
-    "pct_3y": 87
+    "pct_3y": 87,
+    "stale": true
    }
   },
   "hy_adj": {
    "series": "HYG vs IEF, rate-adjusted",
-   "chg_1w": -0.85,
-   "chg_4w": -1.39
+   "chg_1w": -0.86,
+   "chg_4w": -1.4
   },
   "ig_adj": {
    "series": "LQD vs IEF, rate-adjusted",
-   "chg_1w": -0.5,
-   "chg_4w": -1.14
+   "chg_1w": -0.53,
+   "chg_4w": -1.17
   },
   "hy": {
    "series": "HYG/IEF",
-   "chg_1w": -1.59,
-   "chg_4w": -1.9
+   "chg_1w": -1.6,
+   "chg_4w": -1.91
   },
   "ust10": {
    "value": 4.9,
@@ -97,7 +97,7 @@
   "rating": "extreme fear",
   "date": "2026-11-24"
  },
- "updated": "2026-11-24T21:09:28.981Z",
+ "updated": "2026-11-25T05:05:41.964Z",
  "method": "Fear score = 0.3 × (3 + 4 × HAR variance-risk-premium percentile over 10 years) + 0.7 × fear-phase score (calm 5, early fear 5 + risk flag, peak stress 5.5, fading fear 7.5 if confirmed by credit, no new low and no bear state, else 5.5, after fear 4.5). Per stock: 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing. Holdout-tested on 2007–2016.",
  "history": "data/market-history.json"
 }
