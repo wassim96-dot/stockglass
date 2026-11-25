@@ -62,8 +62,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          for t in alerts/*.title; do
-            [ -f "$t" ] || continue
-            gh issue create --title "$(cat "$t")" --body-file "${t%.title}.md"
-          done
-          rm -rf alerts
+          bash scripts/send-alerts.sh
