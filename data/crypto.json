@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-24T11:06:16.983Z",
+ "updated": "2026-11-25T06:33:41.025Z",
  "method": "Crypto cycle phase: accumulation (MVRV ≤ 1), distribution (MVRV in the top 10% of its last 4 years), else bull (price above its 200-day average) or bear. Coins without on-chain data use Bitcoin's phase. Long-term phase scores: accumulation 8.5, bull 6, bear 3.5, distribution 3.5; timing: 6.5, 6, 4, 5.",
  "phases": {
   "accumulation": {
@@ -29,23 +29,23 @@
  },
  "assets": {
   "btc": {
-   "date": "2026-11-23",
-   "price": 61253.217,
-   "ma200": 72225.4,
+   "date": "2026-11-24",
+   "price": 59790.656,
+   "ma200": 72123.5,
    "above_200d": false,
-   "ret_1y": -29.5,
-   "mvrv": 1.152,
-   "mvrv_pct_4y": 7,
-   "realized_price": 53152.1,
+   "ret_1y": -32.3,
+   "mvrv": 1.126,
+   "mvrv_pct_4y": 5,
+   "realized_price": 53099.3,
    "phase": "bear",
    "phase_source": "own on-chain data",
    "phase_age": {
     "since": "2026-11-12",
-    "days": 12,
+    "days": 13,
     "price_at_start": 71280.4,
-    "change_since_start": -14.1
+    "change_since_start": -16.1
    },
-   "adr_growth_1y": -5.7,
+   "adr_growth_1y": -5.4,
    "past_accumulation": {
     "episodes": [
      {
@@ -89,26 +89,26 @@
     "min_days": 7,
     "max_days": 310
    },
-   "funding_annual": 0.3
+   "funding_annual": 0.8
   },
   "eth": {
-   "date": "2026-11-23",
-   "price": 1709.8969,
-   "ma200": 2119.07,
+   "date": "2026-11-24",
+   "price": 1677.9682,
+   "ma200": 2115.93,
    "above_200d": false,
-   "ret_1y": -39,
-   "mvrv": 0.851,
-   "mvrv_pct_4y": 5,
-   "realized_price": 2009.52,
+   "ret_1y": -43.3,
+   "mvrv": 0.838,
+   "mvrv_pct_4y": 4,
+   "realized_price": 2002.32,
    "phase": "accumulation",
    "phase_source": "own on-chain data",
    "phase_age": {
     "since": "2026-11-08",
-    "days": 16,
+    "days": 17,
     "price_at_start": 2136.78,
-    "change_since_start": -20
+    "change_since_start": -21.5
    },
-   "adr_growth_1y": 26.5,
+   "adr_growth_1y": 28,
    "past_accumulation": {
     "episodes": [
      {
@@ -182,22 +182,22 @@
     "min_days": 6,
     "max_days": 314
    },
-   "funding_annual": -2.5
+   "funding_annual": -1.8
   },
   "near": {
-   "date": "2026-11-23",
-   "price": 2.9719118,
-   "ma200": 2.75828,
+   "date": "2026-11-24",
+   "price": 2.8836043,
+   "ma200": 2.76474,
    "above_200d": true,
-   "ret_1y": 62.9,
+   "ret_1y": 50.5,
    "phase": "bear",
    "phase_source": "Bitcoin's cycle (no on-chain data for this coin)",
    "funding_annual": 3.5,
    "phase_age": {
     "since": "2026-11-12",
-    "days": 12,
+    "days": 13,
     "price_at_start": 3.4120815,
-    "change_since_start": -12.9
+    "change_since_start": -15.5
    },
    "past_accumulation": {
     "episodes": [
@@ -245,7 +245,7 @@
   }
  },
  "fng": {
-  "date": "2026-11-24",
-  "value": 11
+  "date": "2026-11-25",
+  "value": 13
  }
 }
