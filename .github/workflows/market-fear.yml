@@ -27,7 +27,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,11 +43,7 @@ jobs:
           TEST_ALERT: ${{ inputs.test_alert }}
         run: |
           node scripts/phase-alert.mjs fear
-          for t in alerts/*.title; do
-            [ -e "$t" ] || continue
-            gh issue create --title "$(cat "$t")" --body-file "${t%.title}.md"
-          done
-          rm -rf alerts
+          bash scripts/send-alerts.sh
       - name: Commit
         run: |
           git config user.name "stockglass-bot"
@@ -56,5 +52,7 @@ jobs:
           git add data/alert-state.json
           git diff --cached --quiet && { echo "No changes"; exit 0; }
           git commit -m "Market fear $(date -u +%F)"
-          git pull --rebase origin "$GITHUB_REF_NAME"
-          git push origin "HEAD:$GITHUB_REF_NAME"
+          for i in 1 2 3; do
+            git pull --rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && break
+            sleep 10
+          done
