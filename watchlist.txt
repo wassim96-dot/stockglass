@@ -50,6 +50,7 @@ SIVE.ST   # Sivers Semiconductors (2DG.F is its Frankfurt listing: same company)
 SOI.PA    # Soitec
 SU.PA     # Schneider Electric
 TTE.PA    # TotalEnergies (US listing TTE is the same company)
+GTT.PA    # Gaztransport & Technigaz SA
 OR.PA     # L'Oréal · top 5 FR
 MC.PA     # LVMH · top 5 FR
 RMS.PA    # Hermès · top 5 FR
