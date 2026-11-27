@@ -1,13 +1,13 @@
 {
  "date": "2026-11-27",
- "vix": 27.19,
- "vix3m": 25.81,
- "vix_vix3m": 1.053,
- "rv22": 905.3,
- "rv_expected": 898.4,
- "vrp": -159.1,
+ "vix": 27.46,
+ "vix3m": 26,
+ "vix_vix3m": 1.056,
+ "rv22": 908.5,
+ "rv_expected": 906.6,
+ "vrp": -152.6,
  "vrp_pct": 3,
- "vix_pct": 89,
+ "vix_pct": 90,
  "window_years": 10,
  "phase": "fading_unconfirmed",
  "phase_label": "Fading fear (unconfirmed)",
@@ -27,7 +27,7 @@
  "market": {
   "index": "S&P 500",
   "above_200d": false,
-  "ret_24m": 21.4,
+  "ret_24m": 21.7,
   "bear_state": false
  },
  "weights": {
@@ -75,40 +75,117 @@
   },
   "hy_adj": {
    "series": "HYG vs IEF, rate-adjusted",
-   "chg_1w": -0.45,
-   "chg_4w": -1.23
+   "chg_1w": -0.4,
+   "chg_4w": -1.2
   },
   "ig_adj": {
    "series": "LQD vs IEF, rate-adjusted",
-   "chg_1w": -0.31,
-   "chg_4w": -0.87
+   "chg_1w": -0.29,
+   "chg_4w": -0.86
   },
   "hy": {
    "series": "HYG/IEF",
-   "chg_1w": -1.12,
-   "chg_4w": -1.82
+   "chg_1w": -1.01,
+   "chg_4w": -1.71
   },
   "ust10": {
-   "value": 4.89,
-   "chg_1w": -0.17,
-   "chg_4w": -0.1
+   "value": 4.9,
+   "chg_1w": -0.15,
+   "chg_4w": -0.09
   },
   "spx": {
-   "chg_1w": 0.65,
-   "chg_4w": -6.45
+   "chg_1w": 0.87,
+   "chg_4w": -6.25
   },
   "durations": {
    "HYG": 3.2,
    "LQD": 8.3,
    "IEF": 7.3
-  }
+  },
+  "fund_closes": {
+   "dates": [
+    "2026-11-06",
+    "2026-11-09",
+    "2026-11-10",
+    "2026-11-11",
+    "2026-11-12",
+    "2026-11-13",
+    "2026-11-16",
+    "2026-11-17",
+    "2026-11-18",
+    "2026-11-19",
+    "2026-11-20",
+    "2026-11-23",
+    "2026-11-24",
+    "2026-11-25",
+    "2026-11-27"
+   ],
+   "HYG": [
+    77.23,
+    77.51,
+    77.18,
+    77.35,
+    76.98,
+    76.94,
+    76.73,
+    76.63,
+    76.65,
+    76.53,
+    76.33,
+    76.52,
+    76.43,
+    76.52,
+    76.58
+   ],
+   "LQD": [
+    104.53,
+    104.67,
+    103.88,
+    103.96,
+    103.05,
+    102.81,
+    102.8,
+    102.74,
+    103.15,
+    103.08,
+    103.69,
+    103.93,
+    103.79,
+    104.29,
+    104.05
+   ],
+   "IEF": [
+    91.86,
+    91.8,
+    91.01,
+    90.94,
+    90.21,
+    90.04,
+    90.24,
+    90.41,
+    90.67,
+    90.82,
+    91.65,
+    91.64,
+    91.64,
+    92.06,
+    91.8037
+   ],
+   "raw_last": {
+    "HYG": 76.58,
+    "LQD": 104.05,
+    "IEF": 91.8037
+   }
+  },
+  "intraday": "2026-11-27T15:17:02.169Z"
  },
  "cnn_fear_greed": {
-  "score": 21,
+  "score": 22,
   "rating": "extreme fear",
   "date": "2026-11-27"
  },
- "updated": "2026-11-27T15:03:35.559Z",
+ "intraday": "2026-11-27T15:17:02.169Z",
+ "updated": "2026-11-27T15:17:02.169Z",
  "method": "Fear score = 0.3 × (3 + 4 × HAR variance-risk-premium percentile over 10 years) + 0.7 × fear-phase score (calm 5, early fear 5 + risk flag, peak stress 5.5, fading fear 7.5 if confirmed by credit, no new low and no bear state, else 5.5, after fear 4.5). Per stock: 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing. Holdout-tested on 2007–2016.",
  "history": "data/market-history.json"
 }
