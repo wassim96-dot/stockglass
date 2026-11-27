@@ -3,13 +3,15 @@ name: Daily Minervini check
 # Light daily run, Monday to Friday after the US close: one price request per stock, the same Minervini code as the
 # StockGlass card, results in data/daily/<market date>.json (the 5 newest are kept) and a GitHub issue (phone
 # notification) when a stock newly meets or loses the template. Context only, never a score.
-# GitHub often starts scheduled runs late or skips them, so there are backups; a run that finds the market date
-# already saved does nothing. 22:50 UTC = 23:50 Paris in winter (after the market-fear update at 22:35 UTC).
+# It starts when the "Market fear (VIX)" job finishes (so it reads the fresh fear reading), plus one backup time of its own
+# in case that job did not run. GitHub often starts scheduled runs hours late; a run that finds the market date already
+# saved stops before any network call.
 on:
+  workflow_run:
+    workflows: ["Market fear (VIX)"]
+    types: [completed]
   schedule:
-    - cron: "50 22 * * 1-5"
     - cron: "20 1 * * 2-6"
-    - cron: "50 4 * * 2-6"
   workflow_dispatch:
     inputs:
       force:
@@ -34,13 +36,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: "22"
 
       - name: Score the watchlist with the Minervini template
+        timeout-minutes: 25
         env:
           FORCE: ${{ inputs.force && '1' || '' }}
           TEST_ALERT: ${{ inputs.test_alert }}
@@ -57,9 +60,16 @@ jobs:
             git pull --rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && break
             sleep 5
           done
+          git fetch -q origin "$GITHUB_REF_NAME" && [ -z "$(git log --oneline "origin/$GITHUB_REF_NAME..HEAD")" ] || { echo "::error::the data commit could not be pushed after 3 tries"; exit 1; }
 
       - name: Alert (GitHub issue → phone notification), after the data is saved
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           bash scripts/send-alerts.sh
+
+      - name: Phone alert if the job failed
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/job-failed.sh "Daily Minervini check"

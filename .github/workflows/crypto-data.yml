@@ -11,15 +11,21 @@ permissions:
   contents: write
   issues: write
 
+concurrency:
+  group: crypto-data
+  cancel-in-progress: false
+
 jobs:
   crypto:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with: { fetch-depth: 0 }
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
+      - uses: actions/setup-node@v5
+        with: { node-version: "22" }
       - name: Fetch crypto data
+        timeout-minutes: 12
         run: node scripts/crypto-data.mjs
       - name: Phase-change alert (GitHub issue → phone notification)
         env:
@@ -39,3 +45,9 @@ jobs:
             git pull --rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && break
             sleep 10
           done
+          git fetch -q origin "$GITHUB_REF_NAME" && [ -z "$(git log --oneline "origin/$GITHUB_REF_NAME..HEAD")" ] || { echo "::error::the data commit could not be pushed after 3 tries"; exit 1; }
+      - name: Phone alert if the job failed
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/job-failed.sh "Crypto data"

@@ -19,9 +19,9 @@
 // Usage: node scripts/market-fear.mjs   (Node 18+, no dependencies)
 import fs from "node:fs";
 import path from "node:path";
+import { yahooChart, yahooStats, fred, getJSON } from "./lib/net.mjs";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
-const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36";
 const WIN10 = 2520, WIN5 = 1260, RVN = 22, HAR_MIN = 500;
 export const PHASE = {
   calm: [5, "Calm", "No market stress: no signal from the fear cycle."],
@@ -32,36 +32,19 @@ export const PHASE = {
   after: [4.5, "After fear", "Stress ended within the last month: returns have been below average in both 2007–2016 and 2016–2026."]
 };
 
-async function chart(sym, range = "20y") {
-  for (const host of ["query1", "query2"]) {
-    try {
-      const r = await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=${range}&interval=1d`, { headers: { "user-agent": UA } });
-      if (!r.ok) throw Error("HTTP " + r.status);
-      const res = (await r.json()).chart.result[0], q = res.indicators.quote[0], adj = res.indicators.adjclose?.[0]?.adjclose, m = new Map();
-      res.timestamp.forEach((t, i) => { const v = adj?.[i] ?? q.close[i]; if (v != null) m.set(new Date((t + (res.meta.gmtoffset || 0)) * 1000).toISOString().slice(0, 10), v); });
-      if (m.size > 500) return m;
-    } catch (e) { console.log(sym, host, e.message); }
-  }
-  throw Error("no data for " + sym);
+async function chart(sym, range = "20y") {   // Yahoo daily closes (adjusted when available) → Map(date → value); direct, then the relays
+  const res = await yahooChart(sym, range, { timeout: 40000 });
+  if (res) { const q = res.indicators.quote[0], adj = res.indicators.adjclose?.[0]?.adjclose, m = new Map();
+    res.timestamp.forEach((t, i) => { const v = adj?.[i] ?? q.close[i]; if (v != null) m.set(new Date((t + (res.meta.gmtoffset || 0)) * 1000).toISOString().slice(0, 10), v); });
+    if (m.size > 500) return m; }
+  throw Error("no data for " + sym + " " + JSON.stringify(yahooStats()));
 }
-export async function fredSeries(id, cosd = "2006-01-01") {
-  // FRED often answers slowly to GitHub's servers: a long direct try, then the public relays the StockGlass page uses
-  const base = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}&cosd=${cosd}`;
-  for (const [u, to] of [[base, 45000], ["https://r.jina.ai/" + base, 45000], ["https://api.allorigins.win/raw?url=" + encodeURIComponent(base), 30000], ["https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(base), 30000]]) {
-    try {
-      const r = await fetch(u, { headers: { "user-agent": UA, accept: "text/csv" }, signal: AbortSignal.timeout(to) });
-      if (!r.ok) throw Error("HTTP " + r.status);
-      const m = new Map((await r.text()).trim().split("\n").map(l => l.trim().split(",")).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x[0]) && x[1] && !isNaN(+x[1])).map(x => [x[0], +x[1]]));
-      if (m.size > 100) return m;
-    } catch (e) { console.log("FRED", id, e.cause?.code || e.message); }
-  }
-  return null;
-}
+// FRED series (kept as an export: market-regime.mjs and older callers use it). Routes, timeouts and the once-per-run stop
+// after FRED fails on every route are in lib/net.mjs.
+export const fredSeries = (id, cosd = "2006-01-01") => fred(id, cosd);
 async function cnnFearGreed() {
   try {
-    const r = await fetch("https://production.dataviz.cnn.io/index/fearandgreed/graphdata", { headers: { "user-agent": UA, accept: "application/json", referer: "https://edition.cnn.com/" } });
-    if (!r.ok) throw Error("HTTP " + r.status);
-    const fg = (await r.json()).fear_and_greed;
+    const fg = (await getJSON("https://production.dataviz.cnn.io/index/fearandgreed/graphdata", { timeout: 20000, headers: { referer: "https://edition.cnn.com/" } })).fear_and_greed;
     return { score: Math.round(fg.score), rating: fg.rating, date: String(fg.timestamp).slice(0, 10) };
   } catch (e) { console.log("CNN Fear & Greed", e.message); return null; }
 }
@@ -156,13 +139,13 @@ if (process.argv[1] && process.argv[1].endsWith("market-fear.mjs")) {
     const chg = (m, n) => { const k = keys(m); if (k.length <= n) return null; const a = m.get(k[k.length - 1 - n]), b = m.get(k[k.length - 1]); return +((b / a - 1) * 100).toFixed(2); };
     const dif = (m, n, dp = 2) => { const k = keys(m); if (k.length <= n) return null; return +(m.get(k[k.length - 1]) - m.get(k[k.length - 1 - n])).toFixed(dp); };
     const adj = (f, n) => { const a = chg(f === "HYG" ? hyg : lqd, n), b = chg(ief2, n); return a == null || b == null ? null : +(a - D[f] / D.IEF * b).toFixed(2); };
-    const sp = async id => { const m = await fredSeries(id, "2019-01-01"); if (!m || m.size < 30) return null;
+    const sp = async (id, have) => { const m = have || await fredSeries(id, "2019-01-01"); if (!m || m.size < 30) return null;
       const k = keys(m), v = k.map(x => m.get(x)), lv = v[v.length - 1], w = v.slice(-756);
       return { value: lv, date: k[k.length - 1], chg_1w: dif(m, 5), chg_4w: dif(m, 20), pct_3y: Math.round(100 * w.filter(x => x < lv).length / w.length) }; };
-    // one FRED call at a time (parallel calls get refused by the relays), a second round for what failed, else the last good value (≤ 5 days)
+    // one FRED call at a time (parallel calls get refused by the relays); once FRED fails on every route the remaining series are
+    // skipped for this run (lib/net.mjs) and the last good value is kept (≤ 5 days). The backup runs try again later.
     // CCC and lower (BAMLH0A3HYC, added 27 Nov 2026): the riskiest junk bonds, where credit stress shows first (context only)
-    let hyS = await sp("BAMLH0A0HYM2"), igS = await sp("BAMLC0A0CM"), cccS = await sp("BAMLH0A3HYC");
-    if (!hyS || !igS || !cccS) { await new Promise(r => setTimeout(r, 20000)); if (!hyS) hyS = await sp("BAMLH0A0HYM2"); if (!igS) igS = await sp("BAMLC0A0CM"); if (!cccS) cccS = await sp("BAMLH0A3HYC"); }
+    let hyS = await sp("BAMLH0A0HYM2", oas), igS = await sp("BAMLC0A0CM"), cccS = await sp("BAMLH0A3HYC");
     let prev = null; try { prev = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "market.json"), "utf8")).credit_check?.spreads; } catch {}
     const keep = (n, o) => n || (o && o.date && Date.now() - Date.parse(o.date) < 5 * 864e5 ? { ...o, stale: true } : null);
     hyS = keep(hyS, prev?.hy); igS = keep(igS, prev?.ig); cccS = keep(cccS, prev?.ccc);

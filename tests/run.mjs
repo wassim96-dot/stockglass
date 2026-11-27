@@ -6,7 +6,8 @@
 //     states on every day since 2009 (2020 and 2022 included)
 //  4. replay of the live page: liveFear() on each of the last 60 saved days, given that day's quotes, gives the saved phase
 //  5. Minervini block of index.html (also used by daily-minervini.mjs) runs on a rising and a falling series
-//  6. copies of shared rules agree (tests/check-copies.mjs; skill copies too with --skill)
+//  6. network helper: an answer that stalls after its headers is cut at the timeout; dead routes are dropped
+//  7. copies of shared rules agree (tests/check-copies.mjs; skill copies too with --skill)
 // Exit code 1 on any failure.
 import fs from "node:fs";
 import path from "node:path";
@@ -24,7 +25,7 @@ const section = t => console.log(`\n[${t}]`);
 
 // 1. syntax
 section("syntax");
-for (const f of [...fs.readdirSync(P("scripts")).filter(f => f.endsWith(".mjs")).map(f => "scripts/" + f), ...fs.readdirSync(P("tests")).filter(f => f.endsWith(".mjs")).map(f => "tests/" + f), "regime.js"]) {
+for (const f of [...fs.readdirSync(P("scripts")).filter(f => f.endsWith(".mjs")).map(f => "scripts/" + f), ...fs.readdirSync(P("scripts/lib")).filter(f => f.endsWith(".mjs")).map(f => "scripts/lib/" + f), ...fs.readdirSync(P("tests")).filter(f => f.endsWith(".mjs")).map(f => "tests/" + f), "regime.js"]) {
   const e = run("node", ["--check", P(f)]); ok(!e, `${f} compiles${e ? ": " + e : ""}`);
 }
 for (const f of fs.readdirSync(ROOT).filter(f => f.endsWith(".html"))) {
@@ -92,7 +93,23 @@ section("Minervini trend template");
   }
 }
 
-// 6. copies of shared rules
+// 6. network helper (local server only): a stalled answer times out, dead routes are dropped
+section("network helper (scripts/lib/net.mjs)");
+{
+  const http = await import("node:http"), { fetchText, Routes } = await import(P("scripts/lib/net.mjs"));
+  const srv = http.createServer((q, r) => { r.writeHead(200, { "content-type": "application/json" }); r.write("{"); }).listen(0);   // headers, then nothing
+  await new Promise(r => srv.once("listening", r));
+  const t0 = Date.now(); let e = null;
+  try { await fetchText(`http://127.0.0.1:${srv.address().port}/`, { timeout: 1500 }); } catch (x) { e = x; }
+  const s = (Date.now() - t0) / 1000;
+  ok(e && s < 4, `a server that sends headers then stalls is cut at the timeout (${s.toFixed(1)} s)`);
+  const R = new Routes(["a", "b"], { maxStrikes: 2, timeout: 500 }); let calls = 0;
+  for (let i = 0; i < 5; i++) await R.get("u", () => undefined, { wrap: () => { calls++; return "http://127.0.0.1:1/"; } });
+  ok(calls === 4, `two dead routes are dropped after 2 failures each (${calls} calls for 5 requests)`);
+  srv.close(); srv.closeAllConnections?.();
+}
+
+// 7. copies of shared rules
 section("copies of shared rules");
 {
   const i = process.argv.indexOf("--skill"), skill = i > 0 ? path.resolve(process.argv[i + 1]) : null;

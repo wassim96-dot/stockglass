@@ -28,9 +28,9 @@ page.on("pageerror", e => console.log("page error:", e.message));
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36";
 let yCookie = null, yCrumb = null;
 async function yahooAuth() {
-  const a = await fetch("https://fc.yahoo.com/", { headers: { "user-agent": UA }, redirect: "manual" }).catch(() => null);
+  const a = await fetch("https://fc.yahoo.com/", { headers: { "user-agent": UA }, redirect: "manual", signal: AbortSignal.timeout(20000) }).catch(() => null);
   yCookie = a ? (a.headers.get("set-cookie") || "").split(";")[0] : "";
-  const b = await fetch("https://query2.finance.yahoo.com/v1/test/getcrumb", { headers: { "user-agent": UA, cookie: yCookie } });
+  const b = await fetch("https://query2.finance.yahoo.com/v1/test/getcrumb", { headers: { "user-agent": UA, cookie: yCookie }, signal: AbortSignal.timeout(20000) });
   yCrumb = b.ok ? (await b.text()).trim() : null;
   console.log("Yahoo crumb:", yCrumb ? "ok" : "unavailable (" + b.status + ")");
 }
@@ -39,8 +39,8 @@ await page.route(/^https:\/\/query[12]\.finance\.yahoo\.com\/v10\/finance\/quote
     if (yCrumb === null) await yahooAuth();
     const u = new URL(route.request().url());
     if (yCrumb) u.searchParams.set("crumb", yCrumb);
-    let r = await fetch(u, { headers: { "user-agent": UA, cookie: yCookie || "" } });
-    if (r.status === 401) { await yahooAuth(); if (yCrumb) u.searchParams.set("crumb", yCrumb); r = await fetch(u, { headers: { "user-agent": UA, cookie: yCookie || "" } }); }
+    let r = await fetch(u, { headers: { "user-agent": UA, cookie: yCookie || "" }, signal: AbortSignal.timeout(25000) });
+    if (r.status === 401) { await yahooAuth(); if (yCrumb) u.searchParams.set("crumb", yCrumb); r = await fetch(u, { headers: { "user-agent": UA, cookie: yCookie || "" }, signal: AbortSignal.timeout(25000) }); }
     await route.fulfill({ status: r.status, body: await r.text(), headers: { "content-type": "application/json", "access-control-allow-origin": "*" } });
   } catch (e) { await route.fulfill({ status: 502, body: "{}", headers: { "access-control-allow-origin": "*" } }); }
 });
