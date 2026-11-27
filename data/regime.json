@@ -1,0 +1,39 @@
+{
+ "updated": "2026-11-27T08:14:42.534Z",
+ "rates": {
+  "source": "US Treasury daily par and real yield curves (fallback FRED)",
+  "y2": {
+   "value": 4.61,
+   "date": "2026-11-25",
+   "chg_1w": -0.19,
+   "chg_4w": -0.09,
+   "pct_3y": 81,
+   "source": "US Treasury"
+  },
+  "y10": {
+   "value": 4.85,
+   "date": "2026-11-25",
+   "chg_1w": -0.22,
+   "chg_4w": -0.14,
+   "pct_3y": 93,
+   "source": "US Treasury"
+  },
+  "real10": {
+   "value": 2.73,
+   "date": "2026-11-25",
+   "chg_1w": -0.15,
+   "chg_4w": 0.09,
+   "pct_3y": 96,
+   "source": "US Treasury"
+  }
+ },
+ "inflation": {
+  "source": "FRED (BLS CPI and PPI, BEA PCE), seasonally adjusted monthly index",
+  "cpi": null,
+  "ccpi": null,
+  "pce": null,
+  "cpce": null,
+  "ppi": null
+ },
+ "previous": null
+}
