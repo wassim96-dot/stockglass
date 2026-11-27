@@ -933,7 +933,10 @@ function renderRegime(){const el=$("mrp");if(!el||!window.SGRegime)return;const 
  const fz=G.fearZone(F),cz=G.creditZone(cc),live=F&&F.live,tm=live&&F.t?new Date(F.t).toLocaleString(undefined,{weekday:"short",hour:"2-digit",minute:"2-digit"}):null;
  const R=RG?G.ratesRead(RG,{y10:LFT&&LFT.tnx}):[],I=RG?G.inflationRead(RG):[];
  const y10=RG&&RG.rates&&RG.rates.y10,tnx=LFT&&LFT.tnx;
- const regimeLine=F&&F.market?[["S&P 500 trend",`${F.market.above_200d?"above":"below"} its 200-day average${isN(F.market.ret_24m)?` · ${F.market.ret_24m>=0?"+":""}${F.market.ret_24m}% over 2 years`:""}${F.market.bear_state?" · bear state":""}`,F.market.above_200d?"pos":"neg",F.market.above_200d?"uptrend: a supportive backdrop":"downtrend: a tougher backdrop"]]:[];
+ const M_=S&&S.mkt,fm=F&&F.market,r24=fm&&isN(fm.ret_24m)?` · S&P 500 ${fm.ret_24m>=0?"+":""}${fm.ret_24m}% over 2 years`:"",bs=fm&&fm.bear_state?" · bear state":"";
+ const regimeLine=M_?[[`Market trend · ${M_.n}`,`${M_.lab}: ${M_.iv>=0?"+":""}${M_.iv.toFixed(1)}% vs its 200-day average; 50-day ${M_.up?"above":"below"} the 200-day${r24}${bs}`,M_.lab==="Supportive"?"pos":M_.lab==="Hostile"?"neg":"neu",
+   M_.lab==="Supportive"?"the index is in an uptrend: new positions tend to work better":M_.lab==="Hostile"?"the index is in a downtrend: breakouts fail more often and losses come faster":"index signals disagree: no tailwind or headwind (most stocks move with their market)"]]
+  :fm?[["Market trend · S&P 500",`${fm.above_200d?"above":"below"} its 200-day average${r24.replace(" S&P 500","")}${bs}`,fm.above_200d?"pos":"neg",fm.above_200d?"uptrend: a supportive backdrop":"downtrend: a tougher backdrop"]]:[];
  el.innerHTML=`<h3 data-g="p_regime">Market Regime <span class="chip">context · never scored</span>${live?`<span class="chip" style="color:var(--good)">live ${esc(tm)}</span>`:F?`<span class="chip">close ${esc(fdClose(F.date))}</span>`:""}</h3><div class="fw">
   <div><h4>Where we are (history)</h4>${zoneHTML(fz,"Fear")}${zoneHTML(cz,"Credit")}${!fz&&!cz?'<p class="muted">Readings unavailable.</p>':""}</div>
   ${F?`<div><h4>Fear now${live?" (live)":""}</h4><p><b>${esc(F.phase_label)}</b> · ${F.score.toFixed(1)}/10 ${esc(F.label)} · VIX ${F.vix.toFixed(1)}${F.vix_vix3m?` (VIX/VIX3M ${F.vix_vix3m.toFixed(2)})`:""}</p>${fearCompareHTML(F)}</div>`:""}
@@ -1089,7 +1092,7 @@ const logoG=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;const l=is
 function perf(){const c=S.closes;if(S.price==null||c.length<2)return null;let b=null;
  if(S.per==="1D")b=c[c.length-2];else{const tg=last(c).t-PER[S.per]*864e5;for(const x of c){if(x.t<=tg)b=x;else break}}
  const short=!b;if(!b)b=c[0];return{pct:(S.price/b.c-1)*100,from:b.t,short}}
-function render(){
+function render(){try{renderRegime()}catch(e){}
  $("cname").textContent=S.name||S.sym;$("ctk").textContent=S.sym;$("lg").style.background=logoG(S.sym);$("lg").textContent=S.sym.replace(/[^A-Z0-9]/g,"").slice(0,4);
  $("csec").textContent=S.sector||"sector ∅";$("cex").textContent=S.ex||"listed";{const ci=$("cind"),ind=S.industry&&S.industry!==S.sector?S.industry:"";ci.textContent=ind;ci.hidden=!ind}
  $("price").textContent=S.price!=null?money(S.price,S.cur):"∅";
@@ -1118,8 +1121,7 @@ function render(){
    if(days>=0&&days<=EVENT_DAYS){const vs=S.groups.value.sT!=null&&S.groups.value.sT<VAL_T;add("Next earnings","inside the window","var(--warn)",[["Date",P(`⚠ ${ds} (${cf}), in ${days} days`)],["What it means",P("The report can move the price sharply and override the entry-timing score."+(vs?" With valuation this stretched, a disappointment usually costs more than a beat gains."+RD("neg","event risk with a rich price"):RD("mix","a big move either way is possible")))]],"in","S")}
    else if(days>EVENT_DAYS)add("Next earnings","after the window","var(--ink2)",[["Date",P(`${ds} (${cf}), after the 12-week window`+RD("neu","no report inside the timing window"))]],"","S")}
   const M_=S.mkt;
-  if(M_)add("Market regime",M_.lab,null,[["Index",P(`${esc(M_.n)} ${M_.iv>=0?"+":""}${M_.iv.toFixed(1)}% vs its 200-day average; 50-day ${M_.up?"above":"below"} the 200-day.`)],
-   ["What it means",P(M_.lab==="Supportive"?"The broad market is in an uptrend: new positions tend to work better."+RD("pos","a tailwind for new positions"):M_.lab==="Hostile"?"The broad market is in a downtrend: breakouts fail more often and losses come faster."+RD("neg","a headwind for new positions"):"Market signals disagree: no tailwind or headwind from the index."+RD("neu","no help or harm from the index"))]],"","S");
+  /* the index trend (Supportive / Mixed / Hostile) now lives in the Market Regime card */
   if(MF){const F=MF,fc=F.score>=6.5?"var(--good)":F.score<=4.5?"var(--bad)":"var(--warn)",k=F.fading_checks;
    add("Market fear",`${F.label} · ${F.score.toFixed(1)}/10`,fc,[
     [F.live?"Fear phase · live":"Fear phase",P(`<b>${esc(F.phase_label||"?")}</b> (${F.phase_score}/10${F.risk_flag?", high-risk entry":""})`+({calm:RD("neu","no market stress"),early:RD("neg","fear has just begun; historically not the bottom"),peak:RD("mix","painful now, but stress peaks have preceded rebounds"),fading:RD("pos","fear fading with confirmation; historically good entry conditions"),fading_unconfirmed:RD("mix","fear easing, not confirmed yet"),after:RD("neu","after a stress episode; returns near normal")}[F.phase]||""))+(F.note?P(esc(F.note)):"")],
