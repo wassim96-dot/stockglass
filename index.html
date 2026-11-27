@@ -897,8 +897,9 @@ const tWhen=t=>new Date(t).toLocaleString(undefined,Math.abs(Date.now()-new Date
  tDay=(d,src)=>d?fdClose(d)+(src?" · "+src:""):null,
  tsTag=(...p)=>{const s=p.filter(Boolean).join(" · ");return s?`<span class="ts">🕒 ${esc(s)}</span>`:""};
 /* when the fear reading was measured: live quote time, or the saved close + when the job computed it */
-const fearWhen=F=>!F?"":F.live?tsTag(tLive(F.t)):tsTag(tClose(F.date),tComp(F.updated||(MFS&&MFS.updated)));
-const credWhen=(cc,key)=>{const s=cc&&cc.spreads&&cc.spreads[key];return s?tsTag(tDay(s.date,"FRED")+(s.stale?" (last value)":"")):cc&&cc.date?tsTag(tClose(cc.date)):""};
+const fearWhen=F=>!F?"":F.live?tsTag(tLive(F.t)):F.intraday?tsTag("intraday "+tWhen(F.intraday)+" (manual run)"):tsTag(tClose(F.date),tComp(F.updated||(MFS&&MFS.updated)));
+const ccClose=cc=>cc&&cc.intraday?"intraday "+tWhen(cc.intraday):tClose(cc&&cc.date);   // fund lines: the close, or a manual run's intraday save
+const credWhen=(cc,key)=>{const s=cc&&cc.spreads&&cc.spreads[key];return s?tsTag(tDay(s.date,"FRED")+(s.stale?" (last value)":"")):cc&&cc.date?tsTag(ccClose(cc)):""};
 /* plain reading after a line: Positive / Neutral / Negative / Mixed / Not rated, with a short reason. Context only, never a score. */
 const RDT={pos:["Positive","var(--good)"],neg:["Negative","var(--bad)"],neu:["Neutral","var(--ink2)"],mix:["Mixed","var(--warn)"],na:["Not rated","var(--ink3)"]};
 const RD=(k,w)=>` → <b style="color:${RDT[k][1]}">${RDT[k][0]}</b>${w?`<span style="color:var(--ink3)">: ${w}.</span>`:""}`;
@@ -919,7 +920,14 @@ function fillLC(){const el=document.getElementById("lcred");if(el)el.innerHTML=l
 async function liveCredit(){try{const q=async s=>{const {j}=await race(yCh(s,"1d","5m"),j=>isN(j?.chart?.result?.[0]?.meta?.regularMarketPrice));const m=j.chart.result[0].meta;return{p:m.regularMarketPrice,c:m.chartPreviousClose??m.previousClose,t:(m.regularMarketTime||0)*1e3}};
  const [h,l,i,sp]=await Promise.allSettled(["HYG","LQD","IEF","SPY"].map(q)).then(r=>r.map(x=>x.status==="fulfilled"?x.value:null));
  const D={h:3.2/7.3,l:8.3/7.3},rt=(a,b,k)=>a&&b&&a.c&&b.c?((a.p/a.c-1)-D[k]*(b.p/b.c-1))*100:null,t=Math.max(...[h,l,i,sp].filter(Boolean).map(x=>x.t),0);
- LC=i?{hy:rt(h,i,"h"),ig:rt(l,i,"l"),sp:sp&&sp.c?(sp.p/sp.c-1)*100:null,t:t||Date.now(),stale:t&&Date.now()-t>6*3600e3}:null}catch(e){LC=null}fillLC()}
+ LC=i?{hy:rt(h,i,"h"),ig:rt(l,i,"l"),sp:sp&&sp.c?(sp.p/sp.c-1)*100:null,t:t||Date.now(),stale:t&&Date.now()-t>6*3600e3}:null;
+ LCP=i?{HYG:h&&h.p,LQD:l&&l.p,IEF:i.p,t:t||Date.now()}:null}catch(e){LC=null;LCP=null}fillLC();if(S.sym)soon();renderRegime()}
+/* live credit estimate: FRED's last spreads moved by the bond funds since that date (regime.js creditLive); null if unavailable */
+let LCP=null;const ccLive=()=>{const cc=(MFS||MF||{}).credit_check;return LCP&&window.SGRegime&&cc?SGRegime.creditLive(cc,LCP):null};
+const liveCredTag=L=>{const b=L&&L.spreads&&L.spreads.hy&&L.spreads.hy.base;return tsTag(LCP?"live estimate "+tClock(LCP.t):null,b?"FRED "+fdClose(b.date)+" + bond funds since":null)};
+function liveCredHTML(L){if(!L)return "";const P=t=>`<p>${t}</p>`,mu=t=>`<p class="muted">${t}</p>`,s=L.spreads,pt=v=>(v>=0?"+":"")+v.toFixed(2)+" pt",one=(k,nm,f)=>{const x=s[k];return x&&x.est?`${nm} ≈ <b>${x.value.toFixed(2)}%</b> (FRED ${x.base.value.toFixed(2)}% on ${esc(fdClose(x.base.date))}, ${pt(x.delta)} since, from ${f} vs Treasuries)`:null};
+ const parts=[one("hy","high-yield","HYG"),one("ig","investment-grade","LQD")].filter(Boolean),d=s.hy&&s.hy.est?s.hy.delta:s.ig&&s.ig.est?s.ig.delta*3:0;
+ return P(parts.join(" · ")+(d>=.1?RD("neg","spreads wider than at FRED's last value"):d<=-.1?RD("pos","spreads narrower than at FRED's last value"):RD("neu","little change since FRED's last value")))+mu("Estimate, not a published spread: the fund's move against Treasuries, rate effect removed, divided by its duration (HYG ≈ 3.2 years, LQD ≈ 8.3). CCC has no fund and keeps FRED's value. The reading above uses this estimate; FRED's values below are kept for comparison.")}
 /* ---------- live market fear (27 Nov 2026) ----------
    The fear score is now computed LIVE: today's VIX, VIX3M, S&P 500 and HYG/IEF quotes are appended to the saved daily history
    (data/market-history.json) and run through the same rules as the nightly job (regime.js liveFear = scripts/market-fear.mjs),
@@ -942,15 +950,15 @@ function fearCompareHTML(F){if(!F||!F.saved)return "";const a=F.saved,w=F.week,d
 const zoneHTML=(z,lab,ts)=>z?`<div class="zl" style="--zc:${z.col}"><b>${esc(lab?lab+": ":"")}${esc(z.tag)}</b>${ts||""}<p>${esc(z.txt)}</p></div>`:"";
 function lineHTML([h,t,k,w,ts]){return`<div><h4>${esc(h)}${ts||""}</h4><p>${esc(t)}${RD(k,w)}</p></div>`}
 function renderRegime(){const el=$("mrp");if(!el||!window.SGRegime)return;const F=MF,cc=(MFS||MF||{}).credit_check,G=SGRegime;
- const fz=G.fearZone(F),cz=G.creditZone(cc),live=F&&F.live,tm=live&&F.t?new Date(F.t).toLocaleString(undefined,{weekday:"short",hour:"2-digit",minute:"2-digit"}):null;
+ const ccL=ccLive(),fz=G.fearZone(F),cz=G.creditZone(ccL||cc),live=F&&F.live,tm=live&&F.t?new Date(F.t).toLocaleString(undefined,{weekday:"short",hour:"2-digit",minute:"2-digit"}):null;
  const R=RG?G.ratesRead(RG,{y10:LFT&&LFT.tnx}):[],I=RG?G.inflationRead(RG):[];
  const y10=RG&&RG.rates&&RG.rates.y10,tnx=LFT&&LFT.tnx;
  const M_=S&&S.mkt,fm=F&&F.market,r24=fm&&isN(fm.ret_24m)?` · S&P 500 ${fm.ret_24m>=0?"+":""}${fm.ret_24m}% over 2 years`:"",bs=fm&&fm.bear_state?" · bear state":"";
  const regimeLine=M_?[[`Market trend · ${M_.n}`,`${M_.lab}: ${M_.iv>=0?"+":""}${M_.iv.toFixed(1)}% vs its 200-day average; 50-day ${M_.up?"above":"below"} the 200-day${r24}${bs}`,M_.lab==="Supportive"?"pos":M_.lab==="Hostile"?"neg":"neu",
    M_.lab==="Supportive"?"the index is in an uptrend: new positions tend to work better":M_.lab==="Hostile"?"the index is in a downtrend: breakouts fail more often and losses come faster":"index signals disagree: no tailwind or headwind (most stocks move with their market)"]]
   :fm?[["Market trend · S&P 500",`${fm.above_200d?"above":"below"} its 200-day average${r24.replace(" S&P 500","")}${bs}`,fm.above_200d?"pos":"neg",fm.above_200d?"uptrend: a supportive backdrop":"downtrend: a tougher backdrop"]]:[];
- el.innerHTML=`<h3 data-g="p_regime">Market Regime <span class="chip">context · never scored</span>${live?`<span class="chip" style="color:var(--good)">live ${esc(tm)}</span>`:F?`<span class="chip">close ${esc(fdClose(F.date))}</span>`:""}</h3><div class="fw">
-  <div><h4>Where we are (history)</h4>${zoneHTML(fz,"Fear",fearWhen(F))}${zoneHTML(cz,"Credit",credWhen(cc,"hy"))}${!fz&&!cz?'<p class="muted">Readings unavailable.</p>':""}</div>
+ el.innerHTML=`<h3 data-g="p_regime">Market Regime <span class="chip">context · never scored</span>${live?`<span class="chip" style="color:var(--good)">live ${esc(tm)}</span>`:F&&F.intraday?`<span class="chip">intraday ${esc(tWhen(F.intraday))}</span>`:F?`<span class="chip">close ${esc(fdClose(F.date))}</span>`:""}</h3><div class="fw">
+  <div><h4>Where we are (history)</h4>${zoneHTML(fz,"Fear",fearWhen(F))}${zoneHTML(cz,"Credit"+(ccL?" (live estimate)":""),ccL?liveCredTag(ccL):credWhen(cc,"hy"))}${!fz&&!cz?'<p class="muted">Readings unavailable.</p>':""}</div>
   ${F?`<div><h4>Fear now${live?" (live)":""}${fearWhen(F)}</h4><p><b>${esc(F.phase_label)}</b> · ${F.score.toFixed(1)}/10 ${esc(F.label)} · VIX ${F.vix.toFixed(1)}${F.vix_vix3m?` (VIX/VIX3M ${F.vix_vix3m.toFixed(2)})`:""}</p>${fearCompareHTML(F)}</div>`:""}
   ${regimeLine.map(l=>lineHTML([...l,M_?tsTag(S.mktC&&S.mktC.size?"to "+fdClose([...S.mktC.keys()].pop()):null,M_.n):tsTag(tClose(fm&&F.date))])).join("")}
   ${R.length?R.map(l=>{const x=RG.rates[/^2-year/.test(l[0])?"y2":/real/.test(l[0])?"real10":"y10"];return lineHTML([...l,x?tsTag(tDay(x.date,/^FRED/.test(x.source||"")?"FRED":"Treasury")+(x.stale?" (last value)":""),tComp(RG.updated)):""])}).join("")+(isN(tnx)&&y10?`<p class="muted">Live 10-year yield ${tnx.toFixed(2)}% vs ${y10.value.toFixed(2)}% at the saved close (${esc(y10.date)}).</p>`:""):'<div><h4>Rates</h4><p class="muted">Waiting for the first nightly run with rates (data/regime.json).</p></div>'}
@@ -1149,7 +1157,8 @@ function render(){try{renderRegime()}catch(e){}
     k?["Fading checks",P(`Credit ${k.credit_easing===false?"still widening":k.credit_easing?"easing":"n/a"} · new 20-day low in 5 days: ${k.new_low_5d?"yes":"no"} · bear state: ${k.bear_state?"yes":"no"}${F.credit_spread?` · high-yield spread ${F.credit_spread.value.toFixed(2)}%`:""}${F.cnn_fear_greed?` · CNN Fear &amp; Greed ${F.cnn_fear_greed.score} (${esc(F.cnn_fear_greed.rating)}, context)`:""}`+(k.bear_state?RD("neg","bear state"):k.credit_easing&&!k.new_low_5d?RD("pos","all checks confirm fading fear"):RD("mix","checks not all confirmed yet")))]:null,
     ["Effect on this asset",P(S.fear?`${S.fearAdj.toFixed(1)}/10 after beta scaling (beta ${S.fearBeta.toFixed(2)}, clipped 0.5–1.5); counts for ${Math.round(FEAR_W*100)}% of entry timing${isN(S.tbase)?` (timing before fear: ${S.tbase.toFixed(1)})`:""}.`+(S.fearAdj>=5.5?RD("pos","lifts the entry-timing score a little"):S.fearAdj<=4.5?RD("neg","pulls the entry-timing score down a little"):RD("neu","almost no effect on entry timing")):S.kind==="crypto"?"Not applied to crypto: the evidence is for equities.":"Not applied.")+mu(`Score = 0.3 × premium + 0.7 × phase · ${F.live?"live reading (today's quotes on the saved history)":`reading of the ${fdClose(F.date)} close`}`)]],"","S",S.fear?`scored: ${Math.round(FEAR_W*100)}% of entry timing`:"not scored")}
   {const CR=creditRead((S.fear||MF||{}).credit_check);if(CR&&CR.lines.length)add("Credit markets",CR.status,CR.col,[
-    ["Where we are (history)",window.SGRegime?zoneHTML(SGRegime.creditZone((S.fear||MF||{}).credit_check)):""],
+    ...(()=>{const L=ccLive();return[[L?"Where we are (history) · live estimate":"Where we are (history)",window.SGRegime?zoneHTML(SGRegime.creditZone(L||(S.fear||MF||{}).credit_check)):"",L?liveCredTag(L):null],
+      L?["Live spread estimate (context only)",liveCredHTML(L),liveCredTag(L)]:null]})(),
     ...CR.lines.map(([h,t,k,w])=>[h,P(esc(t)+RD(k,w))]),
     ["Live · today vs the last close (context only)",`<p id="lcred">${LC?lcHTML():"Loading live quotes…"}</p>`],
     ["What it means",P(esc(CR.meaning))+mu(CR.v2?`Context, not scored. Spreads: ICE BofA option-adjusted spreads (FRED). Fund prices also move with interest rates (high-yield fund ≈ 3 years of duration, investment-grade ≈ 8, Treasuries ≈ 7), so the fund line removes that effect; spreads measure credit risk directly. Close of ${esc(CR.date||"?")}. The fading-fear check still uses the plain high-yield/Treasury fund ratio. Company CDS prices are not available from free sources.`:`Context, not scored. Bond-fund ratios with dividends, close of ${esc(CR.date||"?")}; part of their moves can come from interest rates. Company CDS prices are not available from free sources.`)]],"","B")}
@@ -1186,7 +1195,7 @@ function render(){try{renderRegime()}catch(e){}
    if(c.t==="Market fear"&&MF)c.secs.forEach(x=>{if(!x[2]&&/^(Fear phase|Where we are|Variance risk premium|Fading checks)/.test(x[0]))x[2]=fearWhen(MF)});
    if(c.t==="Credit markets"){const cc=(S.fear||MF||{}).credit_check;c.secs.forEach(x=>{if(x[2])return;const h=x[0];
     x[2]=/^High-yield credit spread|^Where we are/.test(h)?credWhen(cc,"hy"):/^Investment-grade credit spread/.test(h)?credWhen(cc,"ig"):/^CCC/.test(h)?credWhen(cc,"ccc")
-     :/^(Live|What it means)/.test(h)?"":tsTag(tClose(cc&&cc.date))})}}   // fund ratios, 10-year yield, stocks vs credit: the saved close
+     :/^(Live|What it means)/.test(h)?"":tsTag(ccClose(cc))})}}   // fund ratios, 10-year yield, stocks vs credit: the saved close
   $("ctxc").innerHTML=CW.map(c=>`<div class="card glass cw${c.cls?" "+c.cls:""}"><h3>${esc(c.t)}${c.st?` <span class="chip" style="color:${c.sc};border-color:color-mix(in srgb,${c.sc} 45%,transparent)">${esc(c.st)}</span>`:""}<span class="chip">${esc(c.ns||"not scored")}</span>${c.hz?`<span class="chip hzc">${HZ[c.hz]}</span>`:""}</h3><div class="fw">${c.secs.map(([h,b,ts])=>`<div><h4>${esc(h)}${ts||""}</h4>${b}</div>`).join("")}</div></div>`).join("")+`<p style="margin:0 6px 12px;font-size:11px;color:var(--ink3)">Positive / negative after a line = a plain reading of that line, not a score.</p>`}
  {const den=100-TIMING.value+TIMING.value*S.vmT,sh=k=>Math.round(100*TIMING[k]*(k==="value"?S.vmT:1)/den);
   const tv=TIMING.value||0,den2=100-tv+tv*S.vmT,sh2=k=>Math.round(100*TIMING[k]*(k==="value"?S.vmT:1)/den2),nm=k=>(GR.find(x=>x[0]===k)||[,k])[1];

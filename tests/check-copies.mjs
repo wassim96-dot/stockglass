@@ -59,7 +59,7 @@ function python(calls, extra = []) {
 // ---------- inputs: saved data + variants that reach every branch ----------
 export function fixtures() {
   const MK = J("data/market.json"), RG = J("data/regime.json"), MH = J("data/market-history.json"), CH = J("data/crypto-history.json");
-  const F = [], CC = [], RGs = [], BTC = [], LIVE = [];
+  const F = [], CC = [], RGs = [], BTC = [], LIVE = [], CL = [];
   const cyc = (arr, k) => arr[k % arr.length];      // walk a list of values alongside a larger grid
   // values on both sides of every threshold used by the rules (VIX 40, VIX rank 10%, spreads 3 / 4.5 / 5 / 6 / 12 %, ranks 20 / 80 %,
   // 1- and 4-week change thresholds, real yield 2%, rate moves ±0.25 pt, inflation 2.5 / 3.5 % and ±0.3 pt)
@@ -100,7 +100,16 @@ export function fixtures() {
   const R = MH.rows, c = Object.fromEntries(MH.columns.map((k, i) => [k, i]));
   for (let i = R.length - 60; i < R.length; i++) LIVE.push([{ columns: MH.columns, rows: R.slice(0, i) },
     { date: R[i][c.date], vix: R[i][c.vix], vix3m: R[i][c.vix3m], spx: R[i][c.spx], credit: R[i][c.credit] }, R[i][c.phase]]);
-  return { F, CC, RGs, BTC, LIVE, MH };
+  // live credit estimate: saved fund closes (synthetic) and live prices up, down, missing; spread dates inside, before and
+  // after the saved window
+  const dates = Array.from({ length: 15 }, (_, i) => new Date(Date.UTC(2026, 10, 6 + i)).toISOString().slice(0, 10));
+  const fc = { dates, HYG: dates.map((_, i) => 79 + i * 0.03), LQD: dates.map((_, i) => 108 - i * 0.02), IEF: dates.map((_, i) => 95 + i * 0.01), raw_last: { HYG: 78.6, LQD: 107.4, IEF: 94.9 } };
+  for (const sd of ["2026-11-18", "2026-11-20", "2026-11-01", "2026-12-01"]) for (const [h, l, i] of [[78.9, 107.9, 95.3], [77.8, 106.2, 94.1], [null, 107.5, 95], [78.6, 107.4, null]])
+    CL.push([{ ...base, durations: { HYG: 3.2, LQD: 8.3, IEF: 7.3 }, fund_closes: fc, spreads: { ...(base.spreads || {}),
+      hy: { value: 3.72, date: sd, chg_1w: 0.29, chg_4w: 0.54, pct_3y: 97 }, ig: { value: 0.98, date: sd, chg_1w: 0.06, chg_4w: null, pct_3y: 88 }, ccc: { value: 14.05, date: sd, chg_4w: 0.84 } } },
+      { HYG: h, LQD: l, IEF: i, t: 1795793000000 }]);
+  CL.push([base, { HYG: 78, LQD: 107, IEF: 95 }], [null, null]);
+  return { F, CC, RGs, BTC, LIVE, CL, MH };
 }
 
 export function checkCopies({ skill = null, log = console.log } = {}) {
@@ -113,6 +122,9 @@ export function checkCopies({ skill = null, log = console.log } = {}) {
     cases.push([`inflationRead #${i}`, G.inflationRead(rg), { fn: "regime.inflation_read", args: [rg] }]); });
   X.BTC.forEach((a, i) => cases.push([`btcCycle #${i}`, G.btcCycle(...a), { fn: "regime.btc_cycle", args: a }]));
   X.LIVE.forEach(([h, live], i) => cases.push([`liveFear ${live.date}`, G.liveFear(h, live), { fn: "regime.live_fear", args: [h, live] }]));
+  X.CL.forEach(([cc, live], i) => { const L = G.creditLive(cc, live);
+    cases.push([`creditLive #${i}`, L, { fn: "regime.credit_live", args: [cc, live] }]);
+    if (L) cases.push([`creditZone(live) #${i}`, G.creditZone(L), { fn: "regime.credit_zone", args: [L] }]); });
   for (const b of [0, 5]) cases.push([`fearAt back=${b}`, G.fearAt(X.MH, b), { fn: "regime.fear_at", args: [X.MH, b] }]);
 
   const compare = (label, cs, res) => {       // one line per function, with the first differing input

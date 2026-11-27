@@ -119,6 +119,33 @@ def credit_zone(cc):
     return {"tag": z[0], "col": z[1], "txt": z[2] + " Based on history (ICE BofA since 1996), not a forecast."}
 
 
+# ---------- live credit estimate (same rule as creditLive in regime.js) ----------
+def credit_live(cc, live):
+    """FRED's last spread moved by the bond fund's rate-adjusted return since that date (HYG high yield, LQD investment grade,
+    IEF Treasuries): Δ ≈ −return / duration. live = {HYG, LQD, IEF (unadjusted prices), t}. A copy of cc, or None."""
+    F = (cc or {}).get("fund_closes"); sp = (cc or {}).get("spreads")
+    if not F or not sp or not live or not isn(live.get("IEF")): return None
+    D = cc.get("durations") or {"HYG": 3.2, "LQD": 8.3, "IEF": 7.3}; n = len(F["dates"]) - 1
+    def r2js(v): return math.floor(v * 100 + 0.5) / 100   # = JS Math.round(v * 100) / 100 (halves round up, negatives too)
+    def adj_now(k):
+        return live[k] * F[k][n] / F["raw_last"][k] if isn(live.get(k)) and (F.get("raw_last") or {}).get(k) else None
+    out = dict(cc, spreads=dict(sp), live={"t": live.get("t")}); anyv = False
+    for key, fund in (("hy", "HYG"), ("ig", "LQD")):
+        s = sp.get(key)
+        if not s or not isn(s.get("value")): continue
+        i = -1
+        for j in range(n + 1):
+            if F["dates"][j] <= s["date"]: i = j
+        p1, i1 = adj_now(fund), adj_now("IEF")
+        if i < 0 or p1 is None or i1 is None: continue
+        ret = (p1 / F[fund][i] - 1) - D[fund] / D["IEF"] * (i1 / F["IEF"][i] - 1); d = -ret * 100 / D[fund]
+        out["spreads"][key] = dict(s, value=r2js(s["value"] + d), chg_1w=r2js(s["chg_1w"] + d) if isn(s.get("chg_1w")) else s.get("chg_1w"),
+                                   chg_4w=r2js(s["chg_4w"] + d) if isn(s.get("chg_4w")) else s.get("chg_4w"), est=True, delta=r2js(d),
+                                   base={"value": s["value"], "date": s["date"]}, stale=False)
+        anyv = True
+    return out if anyv else None
+
+
 # ---------- rates and inflation ----------
 _pt = lambda v: "∅" if not isn(v) else f"{v:+.2f} pt"
 _pc = lambda v: "∅" if not isn(v) else f"{v:+.1f}%"

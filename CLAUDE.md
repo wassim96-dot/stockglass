@@ -34,7 +34,7 @@ so that step still runs). A push that fails 3 times fails the step. Optional sec
 - `index.html`: the whole app (single file): fetch quotes, compute indicators and the three scores, context windows,
   Market Regime and BTC Cycle cards. `today.html`: daily Minervini page. `history.html`: watchlist history.
 - `regime.js`: shared module for both pages: `liveFear` (today's quotes on the saved history, same rules as
-  market-fear.mjs), `fearAt`, `fearZone`/`creditZone` (history phrases), `ratesRead`, `inflationRead`, `btcCycle`, `glossInit`.
+  market-fear.mjs), `fearAt`, `fearZone`/`creditZone` (history phrases), `creditLive`, `ratesRead`, `inflationRead`, `btcCycle`, `glossInit`.
 - `scripts/lib/net.mjs`: all job network code: `fetchText` (timeout covers the body), `Routes` (direct + relays, a route
   failing 4× is dropped for the run, the working one moves first), `yahooChart`, `fred` (API key or CSV via relays; after
   one series fails on every route the rest are skipped for the run). New fetches in scripts go through it.
@@ -69,8 +69,11 @@ names the 200-day indicator `e200`, the skill `s200`. A new rule copy → add it
 - Jobs commit `data/*`: before a PR, merge `origin/main` into the branch to avoid data conflicts. Each job commits only
   its own files (weekly: `data/runs`, `data/latest.json`). A source that fails keeps its previous data (crypto history,
   funding, fear & greed; spreads ≤ 5 days): never write a file that lost data the page needs.
-- Jobs never save an unfinished US session: `lastUsClose()` (lib/net.mjs; 16:15 New York) cuts later bars in market-fear
-  and daily-minervini, so a run during trading hours (late GitHub start or manual run) computes the last close.
+- Scheduled jobs never save an unfinished US session: `lastUsClose()` (lib/net.mjs; 16:15 New York) cuts later bars in
+  market-fear and daily-minervini. A manual market-fear run (`MANUAL_RUN=1` from workflow_dispatch) keeps the live session
+  on purpose and marks it `intraday` (the pages say "intraday hh:mm (manual run)", never "close").
+- Credit spreads (FRED, end of day, 1–2 days late) are estimated live: `creditLive` (regime.js) = `credit_live` (regime.py)
+  moves FRED's last value by HYG / LQD vs IEF since that date (needs `credit_check.fund_closes`, saved by market-fear).
 - Never clear a fetch timeout before reading the body (`clearTimeout` then `await r.text()` hung the daily job for 30 min).
 - The page only uses the CDN/relay hosts it already uses; no new external hosts without checking CSP/CORS.
 - JS `toFixed` and Python `format` round an exact half differently (-0.125 → -0.13 vs -0.12); real data almost never
