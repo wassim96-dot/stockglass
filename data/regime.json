@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T15:17:14.550Z",
+ "updated": "2026-11-27T15:32:17.617Z",
  "rates": {
   "source": "US Treasury daily par and real yield curves (fallback FRED)",
   "y2": {
@@ -81,7 +81,7 @@
   }
  },
  "previous": {
-  "updated": "2026-11-27T15:03:46.599Z",
+  "updated": "2026-11-27T15:17:14.550Z",
   "rates": {
    "y2": {
     "value": 4.61,

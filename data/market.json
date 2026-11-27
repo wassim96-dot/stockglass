@@ -1,21 +1,21 @@
 {
- "date": "2026-11-27",
- "vix": 27.46,
- "vix3m": 26,
- "vix_vix3m": 1.056,
- "rv22": 908.5,
- "rv_expected": 906.6,
- "vrp": -152.6,
+ "date": "2026-11-25",
+ "vix": 28.29,
+ "vix3m": 26.29,
+ "vix_vix3m": 1.076,
+ "rv22": 905.8,
+ "rv_expected": 952.5,
+ "vrp": -152.2,
  "vrp_pct": 3,
- "vix_pct": 90,
+ "vix_pct": 92,
  "window_years": 10,
  "phase": "fading_unconfirmed",
  "phase_label": "Fading fear (unconfirmed)",
- "stress_days": 8,
+ "stress_days": 7,
  "vix_peak": 35.88999938964844,
  "risk_flag": false,
  "fading_checks": {
-  "credit_easing": true,
+  "credit_easing": false,
   "new_low_5d": true,
   "bear_state": false
  },
@@ -23,11 +23,11 @@
  "phase_score": 5.5,
  "score": 4.8,
  "label": "Neutral",
- "note": "Fading fear (unconfirmed) (day 8 of stress, VIX high 35.9): The VIX is 15%+ below its high, but credit is still widening, the market made a new low or it is in a bear market: in 2008 and 2022 such pauses came before further falls. Variance risk premium (HAR) higher than 3% of the last 10 years. VIX above VIX3M: the term structure is inverted, a sign of near-term stress.",
+ "note": "Fading fear (unconfirmed) (day 7 of stress, VIX high 35.9): The VIX is 15%+ below its high, but credit is still widening, the market made a new low or it is in a bear market: in 2008 and 2022 such pauses came before further falls. Variance risk premium (HAR) higher than 3% of the last 10 years. VIX above VIX3M: the term structure is inverted, a sign of near-term stress.",
  "market": {
   "index": "S&P 500",
   "above_200d": false,
-  "ret_24m": 21.7,
+  "ret_24m": 21.4,
   "bear_state": false
  },
  "weights": {
@@ -44,11 +44,11 @@
  },
  "credit_proxy": {
   "series": "HYG/IEF total-return ratio",
-  "easing": true
+  "easing": false
  },
  "credit_check": {
   "version": 2,
-  "date": "2026-11-27",
+  "date": "2026-11-25",
   "spreads": {
    "source": "ICE BofA option-adjusted spreads (FRED), percentage points",
    "hy": {
@@ -75,27 +75,27 @@
   },
   "hy_adj": {
    "series": "HYG vs IEF, rate-adjusted",
-   "chg_1w": -0.4,
-   "chg_4w": -1.2
+   "chg_1w": -0.84,
+   "chg_4w": -1.61
   },
   "ig_adj": {
    "series": "LQD vs IEF, rate-adjusted",
-   "chg_1w": -0.29,
-   "chg_4w": -0.86
+   "chg_1w": -0.63,
+   "chg_4w": -1.31
   },
   "hy": {
    "series": "HYG/IEF",
-   "chg_1w": -1.01,
-   "chg_4w": -1.71
+   "chg_1w": -1.68,
+   "chg_4w": -2.5
   },
   "ust10": {
-   "value": 4.9,
-   "chg_1w": -0.15,
-   "chg_4w": -0.09
+   "value": 4.85,
+   "chg_1w": -0.22,
+   "chg_4w": -0.2
   },
   "spx": {
-   "chg_1w": 0.87,
-   "chg_4w": -6.25
+   "chg_1w": -1.92,
+   "chg_4w": -7.25
   },
   "durations": {
    "HYG": 3.2,
@@ -104,6 +104,7 @@
   },
   "fund_closes": {
    "dates": [
+    "2026-11-05",
     "2026-11-06",
     "2026-11-09",
     "2026-11-10",
@@ -117,10 +118,10 @@
     "2026-11-20",
     "2026-11-23",
     "2026-11-24",
-    "2026-11-25",
-    "2026-11-27"
+    "2026-11-25"
    ],
    "HYG": [
+    77.28,
     77.23,
     77.51,
     77.18,
@@ -134,10 +135,10 @@
     76.33,
     76.52,
     76.43,
-    76.52,
-    76.58
+    76.52
    ],
    "LQD": [
+    104.66,
     104.53,
     104.67,
     103.88,
@@ -151,10 +152,10 @@
     103.69,
     103.93,
     103.79,
-    104.29,
-    104.05
+    104.29
    ],
    "IEF": [
+    91.97,
     91.86,
     91.8,
     91.01,
@@ -168,24 +169,21 @@
     91.65,
     91.64,
     91.64,
-    92.06,
-    91.8037
+    92.06
    ],
    "raw_last": {
-    "HYG": 76.58,
-    "LQD": 104.05,
-    "IEF": 91.8037
+    "HYG": 76.52,
+    "LQD": 104.29,
+    "IEF": 92.06
    }
-  },
-  "intraday": "2026-11-27T15:17:02.169Z"
+  }
  },
  "cnn_fear_greed": {
   "score": 22,
   "rating": "extreme fear",
   "date": "2026-11-27"
  },
- "intraday": "2026-11-27T15:17:02.169Z",
- "updated": "2026-11-27T15:17:02.169Z",
+ "updated": "2026-11-27T15:32:04.653Z",
  "method": "Fear score = 0.3 × (3 + 4 × HAR variance-risk-premium percentile over 10 years) + 0.7 × fear-phase score (calm 5, early fear 5 + risk flag, peak stress 5.5, fading fear 7.5 if confirmed by credit, no new low and no bear state, else 5.5, after fear 4.5). Per stock: 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing. Holdout-tested on 2007–2016.",
  "history": "data/market-history.json"
 }
