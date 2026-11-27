@@ -7,7 +7,8 @@ jobs:
     steps:
       - name: Try each source from GitHub's servers
         run: |
-          t(){ code=$(curl -s -o /tmp/b -w "%{http_code} %{time_total}s" -m 25 -A "Mozilla/5.0" "$2"); echo "== $1: $code · $(head -c 220 /tmp/b | tr '\n' ' ')"; }
+          set +e
+          t(){ code=$(curl -s -o /tmp/b -w "%{http_code} %{time_total}s" -m 25 -A "Mozilla/5.0" "$2" || true); : > /dev/null; echo "== $1: $code · $(head -c 220 /tmp/b | tr '\n' ' ')"; }
           t "FRED API (no key: 400 api_key = reachable)" "https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&file_type=json"
           t "FRED graph CSV" "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2&cosd=2026-11-01"
           t "ALFRED CSV" "https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=BAMLH0A0HYM2&cosd=2026-11-01"
