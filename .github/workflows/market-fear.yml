@@ -39,7 +39,7 @@ jobs:
         run: node scripts/market-fear.mjs
       - name: Market regime (rates and inflation, context only)
         continue-on-error: true
-        timeout-minutes: 8
+        timeout-minutes: 12
         run: node scripts/market-regime.mjs
       - name: Phase-change alert (GitHub issue → phone notification)
         env:

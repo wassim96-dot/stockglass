@@ -69,9 +69,10 @@ const inflation = { source: "FRED (BLS CPI and PPI, BEA PCE), seasonally adjuste
 for (const [key, id, bls, dbn] of [["cpi", "CPIAUCSL", "CUSR0000SA0", "BLS/cu/CUSR0000SA0"], ["ccpi", "CPILFESL", "CUSR0000SA0L1E", "BLS/cu/CUSR0000SA0L1E"],
     ["pce", "PCEPI", null, "BEA/NIPA-T20804/DPCERG-M"], ["cpce", "PCEPILFE", null, "BEA/NIPA-T20804/DPCCRG-M"], ["ppi", "PPIFIS", "WPSFD4", "BLS/wp/WPSFD4"]]) {
   let x = null;
-  let m = await fredSeries(id, "2023-01-01"), via = "FRED " + id;
-  if (!m && bls) { m = await blsSeries(bls); via = "BLS " + bls; }
+  // official BLS first (fast, no key), then DBnomics (BLS and BEA mirrors), FRED last (slow from GitHub's servers)
+  let m = bls ? await blsSeries(bls) : null, via = "BLS " + bls;
   if (!m && dbn) { m = await dbnomics(dbn); via = "DBnomics " + dbn; }
+  if (!m) { m = await fredSeries(id, "2023-01-01"); via = "FRED " + id; }
   if (m) {
     const k = [...m.keys()].sort(), last = k[k.length - 1], at = (d, mo) => { const t = new Date(d + "T00:00:00Z"); t.setUTCMonth(t.getUTCMonth() - mo); return m.get(t.toISOString().slice(0, 10)); };
     const v = m.get(last), p1 = at(last, 1), p2 = at(last, 2), p3 = at(last, 3), p12 = at(last, 12);
