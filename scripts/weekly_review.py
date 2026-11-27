@@ -232,10 +232,11 @@ def credit_read(cc):
         return s if w == "neu" else ("mix" if s != "neu" and s != w else w)
     W = {"pos": "lenders are calmer", "neg": "lenders are more worried", "neu": "little change", "mix": "the last week goes against the 4-week trend"}
     lvl = lambda x: "" if x.get("pct_3y") is None else "; already high versus the last 3 years" if x["pct_3y"] >= 80 else "; low versus the last 3 years" if x["pct_3y"] <= 20 else ""
-    sp = cc.get("spreads") or {}; HY, IG, A, B = sp.get("hy"), sp.get("ig"), cc.get("hy_adj"), cc.get("ig_adj")
+    sp = cc.get("spreads") or {}; HY, IG, A, B = sp.get("hy"), sp.get("ig"), cc.get("hy_adj"), cc.get("ig_adj"); CQ = sp.get("ccc")
     L, C = [], []
-    for X, nm, t1, t4, extra in ((HY, "High-yield credit spread", .2, .4, ""), (IG, "Investment-grade credit spread", .05, .1, " (the bonds of large, solid companies such as the AI hyperscalers sit here)")):
-        if not X: continue
+    for X, nm, t1, t4, extra in ((HY, "High-yield credit spread", .2, .4, ""), (IG, "Investment-grade credit spread", .05, .1, " (the bonds of large, solid companies such as the AI hyperscalers sit here)"),
+                                 (CQ, "CCC credit spread", .5, 1, " (the riskiest borrowers: stress shows here first)")):
+        if not X or X.get("value") is None: continue
         k = tone(X.get("chg_1w"), X.get("chg_4w"), t1, t4, True)
         L.append((nm, f'{X["value"]:.2f}% · {pt(X.get("chg_1w"))} over 1 week, {pt(X.get("chg_4w"))} over 4 weeks · higher than {X.get("pct_3y")}% of the last 3 years' + (f' (last value, {X.get("date")})' if X.get("stale") else ""),
                   k, ("spread widening: " + W["neg"] + extra if k == "neg" else "spread narrowing: " + W["pos"] if k == "pos" else W[k]) + lvl(X)))
@@ -410,7 +411,14 @@ if FN:
     for hk, nm in (("week", "1 week"), ("start", "since start")):
         fb = fear_at(H[hk]["from"]) if H[hk]["available"] else None
         if fb: chg.append(f'VIX {nm} {FN["vix"] - fb["vix"]:+.1f}')
-    fear_card = card("Market fear (VIX)", f'<p><b style="color:{fc}">{e(FN["label"])}</b> · score <b style="color:{fc}">{FN["score"]:.1f}</b>/10</p>'
+    try:
+        from regime import fear_zone as _fz
+        _mkt = json.load(open(os.path.join(ROOT, "data", "market.json"))).get("market")
+        _z = _fz(dict(FN, market=FN.get("market") or _mkt))
+    except Exception:
+        _z = None
+    _zl = f'<p style="border-left:3px solid {_z["col"]};padding-left:8px"><b style="color:{_z["col"]}">Vs history: {e(_z["tag"])}</b>. {e(_z["txt"])}</p>' if _z else ""
+    fear_card = card("Market fear (VIX)", f'<p><b style="color:{fc}">{e(FN["label"])}</b> · score <b style="color:{fc}">{FN["score"]:.1f}</b>/10</p>' + _zl
         + (f'<p>Fear phase: <b>{e(FN["phase_label"])}</b>' + (f' ({FN["phase_score"]}/10)' if FN.get("phase_score") is not None else "") + (" · high-risk entry" if FN.get("risk_flag") else "") + (f' · premium {FN["premium_score"]}/10' if FN.get("premium_score") is not None else "") + '</p>' if FN.get("phase_label") else "")
         + f'<p>VIX {FN["vix"]:.1f}, higher than {FN["vix_pct"]}% of the last {round(FN.get("window_years") or 5)} years' + (f' · VIX/VIX3M {FN["vix_vix3m"]:.2f}' if FN.get("vix_vix3m") else "") + f'. Variance risk premium higher than {FN["vrp_pct"]}% of the last {round(FN.get("window_years") or 5)} years.'
         + (f' {" · ".join(chg)}.' if chg else "") + "</p>" + (f'<p class="sub">{e(FN["note"])}</p>' if FN.get("note") else ""),
@@ -423,7 +431,8 @@ except Exception:
 CRD = credit_read(_mk.get("credit_check"))
 if CRD and CRD["lines"]:
     credit_card = card(f'Credit markets <span style="color:{CRD["col"]};font-size:12px">· {CRD["status"]}</span>',
-        "".join(f'<p><b>{e(h)}</b>: {e(t)}{rd(k, e(w))}</p>' for h, t, k, w in CRD["lines"]) + f'<p>{e(CRD["meaning"])}</p>',
+        (lambda z: f'<p style="border-left:3px solid {z["col"]};padding-left:8px"><b style="color:{z["col"]}">Vs history: {e(z["tag"])}</b>. {e(z["txt"])}</p>' if z else "")(__import__("regime").credit_zone(_mk.get("credit_check")))
+        + "".join(f'<p><b>{e(h)}</b>: {e(t)}{rd(k, e(w))}</p>' for h, t, k, w in CRD["lines"]) + f'<p>{e(CRD["meaning"])}</p>',
         f'Context, not scored · short and long term · close of {e(CRD["date"] or "?")}. {e(CRD["note"])} The fading-fear check still uses the plain high-yield/Treasury fund ratio.')
 crypto_card = ""
 if CRY and CRY.get("assets"):

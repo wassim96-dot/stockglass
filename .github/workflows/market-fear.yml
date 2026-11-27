@@ -27,7 +27,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,6 +37,10 @@ jobs:
           node-version: "20"
       - name: Compute VIX and variance risk premium
         run: node scripts/market-fear.mjs
+      - name: Market regime (rates and inflation, context only)
+        continue-on-error: true
+        timeout-minutes: 12
+        run: node scripts/market-regime.mjs
       - name: Phase-change alert (GitHub issue → phone notification)
         env:
           GH_TOKEN: ${{ github.token }}
@@ -49,6 +53,7 @@ jobs:
           git config user.name "stockglass-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/market.json data/market-history.json
+          git add data/regime.json 2>/dev/null || true
           git add data/alert-state.json
           git diff --cached --quiet && { echo "No changes"; exit 0; }
           git commit -m "Market fear $(date -u +%F)"
