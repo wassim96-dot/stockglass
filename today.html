@@ -66,6 +66,7 @@ footer{color:var(--ink3);font-size:11.5px;margin-top:18px}
 <div id="groups"></div>
 <footer>Daily check, Monday to Friday after the US close: one price request per stock and the same Minervini Trend Template code as the StockGlass card (version 2: moving-average stack, rising 200-day, at least 25% above the 52-week low, within 25% of the 52-week high, relative strength vs the broad index). The last 5 runs are kept. 🟢 = meets his template, a setup filter, not a buy signal: he also requires a proper base with a breakout on volume and strong earnings. "Full" adds the entry points (RS line at a new high, not extended, no lottery-like spike, volume support, liquidity): weaker evidence and rule-of-thumb thresholds, so the template count stays the main reading. Each list is sorted by the full check, then by relative strength. ETFs, indices and crypto are not checked. Rule-based screen on public data, not investment advice.</footer>
 </div>
+<script src="regime.js"></script>
 <script>
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
 const sg=v=>v==null?"∅":(v>=0?"+":"")+v.toFixed(1),RDT={pos:["Positive","var(--good)"],neg:["Negative","var(--bad)"],neu:["Neutral","var(--ink2)"],mix:["Mixed","var(--warn)"]};
@@ -83,7 +84,9 @@ function creditRead(cc){if(!cc)return null;
  const L=[],C=[],sp=cc.spreads||{},HY=sp.hy,IG=sp.ig,A=cc.hy_adj,B=cc.ig_adj;
  const lvl=x=>x.pct_3y==null?"":x.pct_3y>=80?"; already high versus the last 3 years":x.pct_3y<=20?"; low versus the last 3 years":"";
  if(HY){const k=tone(HY.chg_1w,HY.chg_4w,.2,.4,1);L.push(["High-yield credit spread",`${HY.value.toFixed(2)}% · ${pt(HY.chg_1w)} over 1 week, ${pt(HY.chg_4w)} over 4 weeks · higher than ${HY.pct_3y}% of the last 3 years${HY.stale?` (last value, ${HY.date})`:""}`,k,(k==="neg"?"spread widening: "+W.neg:k==="pos"?"spread narrowing: "+W.pos:W[k])+lvl(HY)]);C.push(k)}
+ const CQ=sp.ccc;
  if(IG){const k=tone(IG.chg_1w,IG.chg_4w,.05,.1,1);L.push(["Investment-grade credit spread",`${IG.value.toFixed(2)}% · ${pt(IG.chg_1w)} over 1 week, ${pt(IG.chg_4w)} over 4 weeks · higher than ${IG.pct_3y}% of the last 3 years${IG.stale?` (last value, ${IG.date})`:""}`,k,(k==="neg"?"spread widening: "+W.neg+" (the bonds of large, solid companies such as the AI hyperscalers sit here)":k==="pos"?"spread narrowing: "+W.pos:W[k])+lvl(IG)]);C.push(k)}
+ if(CQ&&typeof CQ.value==="number"){const k=tone(CQ.chg_1w,CQ.chg_4w,.5,1,1);L.push(["CCC credit spread",`${CQ.value.toFixed(2)}% · ${pt(CQ.chg_1w)} over 1 week, ${pt(CQ.chg_4w)} over 4 weeks · higher than ${CQ.pct_3y}% of the last 3 years${CQ.stale?` (last value, ${CQ.date})`:""}`,k,(k==="neg"?"the riskiest borrowers pay sharply more: stress shows here first":k==="pos"?"spread narrowing: weak borrowers find money more easily":W[k])+(CQ.value>=12?"; above 12% = serious stress":"")]);C.push(k)}
  if(A||B){const ka=A?tone(A.chg_1w,A.chg_4w,.5,1,0):null,kb=B?tone(B.chg_1w,B.chg_4w,.25,.5,0):null,ks=[ka,kb].filter(Boolean),k=ks.includes("neg")?"neg":ks.length&&ks.every(x=>x==="pos")?"pos":ks.includes("mix")?"mix":"neu";
   L.push(["Bond funds vs Treasuries (rate-adjusted)",[A?`high-yield ${pc(A.chg_1w)} / ${pc(A.chg_4w)}`:null,B?`investment-grade ${pc(B.chg_1w)} / ${pc(B.chg_4w)}`:null].filter(Boolean).join(" · ")+" (1 / 4 weeks)",k,k==="neg"?"corporate bonds lag Treasuries even after removing the rate effect":k==="pos"?"corporate bonds beat Treasuries after removing the rate effect":W[k]]);if(!HY&&!IG)C.push(k)}
  if(!cc.version&&cc.hy){const k=tone(cc.hy.chg_1w,cc.hy.chg_4w,.5,1,0);L.push(["High-yield bonds vs Treasuries (HYG/IEF, not rate-adjusted)",`${pc(cc.hy.chg_1w)} over 1 week, ${pc(cc.hy.chg_4w)} over 4 weeks`,k,W[k]+"; part of a move can come from interest rates"]);C.push(k)}
@@ -118,7 +121,9 @@ function render(){if(!CUR)return;const D=CUR,q=$("q").value.trim().toLowerCase()
  $("dt").textContent=`market date ${D.date}`;$("vs").textContent=D.previous?`(${D.date} vs ${D.previous})`:"(first run)";
  const F=D.market_fear,M=D.markets||{},mk=Object.values(M).filter(Boolean);
  $("sum").innerHTML=[["🟢 Meets template",D.counts.green,"a setup filter, not a buy signal"],["🟡 Partial or stress",D.counts.yellow,"1–2 blocks missing, or market stress"],["🔴 Not stage 2",D.counts.red,"several blocks missing or 200-day falling"],
-  ["Market fear",F?F.phase_label:"∅",F?`${F.score}/10 ${F.label} · VIX ${F.vix} (${F.date})`:"reading too old"],...(()=>{const CR=creditRead(F&&F.credit_check);return CR?[["Credit markets",CR.status,(CR.lines.find(l=>l[2]==="neg")||CR.lines[0]||[,""])[1]+" · not scored, short and long term",CR.col]]:[]})(),["Market regimes",mk.length?"":"∅",mk.map(m=>m.name.replace(/ \(.*\)/,"").replace("S&P/TSX Composite","S&P/TSX").replace("STOXX Europe 600","STOXX 600")+": "+m.label).join(" · ")]]
+  ["Market fear",F?F.phase_label:"∅",F?`${F.score}/10 ${F.label} · VIX ${F.vix} (${F.date})`:"reading too old"],...(()=>{const CR=creditRead(F&&F.credit_check);return CR?[["Credit markets",CR.status,(CR.lines.find(l=>l[2]==="neg")||CR.lines[0]||[,""])[1]+" · not scored, short and long term",CR.col]]:[]})(),...(()=>{if(!window.SGRegime)return[];const z=[],fz=F?SGRegime.fearZone(F):null,cz=SGRegime.creditZone(F&&F.credit_check);
+   if(fz)z.push(["Fear vs history",fz.tag,fz.txt,fz.col]);if(cz)z.push(["Credit vs history",cz.tag,cz.txt,cz.col]);return z})(),
+  ["Market regimes",mk.length?"":"∅",mk.map(m=>m.name.replace(/ \(.*\)/,"").replace("S&P/TSX Composite","S&P/TSX").replace("STOXX Europe 600","STOXX 600")+": "+m.label).join(" · ")]]
   .map(([b,s,sm,c])=>`<div class="tile"><b>${esc(b)}</b><span${c?` style="color:${c}"`:""}>${esc(s)}</span><small>${esc(sm)}</small></div>`).join("");
  const L=(lab,arr)=>arr&&arr.length?`<p><b>${lab}</b>: ${arr.map(t=>`<a href="#" data-t="${esc(t)}">${esc(t)}</a>`).join(", ")}</p>`:"";
  $("chg").innerHTML=(L("🟢 Newly meet the template",ch.new_green)+L("No longer meet it",ch.lost_green)+L("🟡 Met, but under market stress",ch.new_met)+L("No longer met (was under stress)",ch.lost_met)+L("200-day average turned down",ch.new_falling_200))||(D.previous?`<p class="empty">No stock newly met or lost the template.</p>`:`<p class="empty">Changes appear from the second run.</p>`);
@@ -132,6 +137,7 @@ function render(){if(!CUR)return;const D=CUR,q=$("q").value.trim().toLowerCase()
 async function load(day){try{CUR=await getJ(`data/daily/${day}.json`)}catch(e){$("groups").innerHTML=`<p class="empty">Could not load the run of ${esc(day)}.</p>`;return}render()}
 (async()=>{try{IDX=await getJ("data/daily/index.json")}catch(e){$("groups").innerHTML='<p class="empty">No daily run yet: the first one happens Monday to Friday after the US close (about 23:50 Paris).</p>';return}
  $("day").innerHTML=(IDX.files||[]).map(f=>`<option>${esc(f)}</option>`).join("");$("day").onchange=e=>load(e.target.value);$("q").oninput=render;load(IDX.latest||IDX.files[0])})();
+(async()=>{try{const r=await fetch("data/glossary.json",{cache:"no-cache"});if(r.ok&&window.SGRegime)SGRegime.glossInit(await r.json())}catch(e){}})();
 </script>
 </body>
 </html>

@@ -44,7 +44,7 @@ async function chart(sym, range = "20y") {
   }
   throw Error("no data for " + sym);
 }
-async function fredSeries(id, cosd = "2006-01-01") {
+export async function fredSeries(id, cosd = "2006-01-01") {
   // FRED often answers slowly to GitHub's servers: a long direct try, then the public relays the StockGlass page uses
   const base = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}&cosd=${cosd}`;
   for (const [u, to] of [[base, 45000], ["https://r.jina.ai/" + base, 45000], ["https://api.allorigins.win/raw?url=" + encodeURIComponent(base), 30000], ["https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(base), 30000]]) {
@@ -160,13 +160,14 @@ if (process.argv[1] && process.argv[1].endsWith("market-fear.mjs")) {
       const k = keys(m), v = k.map(x => m.get(x)), lv = v[v.length - 1], w = v.slice(-756);
       return { value: lv, date: k[k.length - 1], chg_1w: dif(m, 5), chg_4w: dif(m, 20), pct_3y: Math.round(100 * w.filter(x => x < lv).length / w.length) }; };
     // one FRED call at a time (parallel calls get refused by the relays), a second round for what failed, else the last good value (≤ 5 days)
-    let hyS = await sp("BAMLH0A0HYM2"), igS = await sp("BAMLC0A0CM");
-    if (!hyS || !igS) { await new Promise(r => setTimeout(r, 20000)); if (!hyS) hyS = await sp("BAMLH0A0HYM2"); if (!igS) igS = await sp("BAMLC0A0CM"); }
+    // CCC and lower (BAMLH0A3HYC, added 27 Nov 2026): the riskiest junk bonds, where credit stress shows first (context only)
+    let hyS = await sp("BAMLH0A0HYM2"), igS = await sp("BAMLC0A0CM"), cccS = await sp("BAMLH0A3HYC");
+    if (!hyS || !igS || !cccS) { await new Promise(r => setTimeout(r, 20000)); if (!hyS) hyS = await sp("BAMLH0A0HYM2"); if (!igS) igS = await sp("BAMLC0A0CM"); if (!cccS) cccS = await sp("BAMLH0A3HYC"); }
     let prev = null; try { prev = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "market.json"), "utf8")).credit_check?.spreads; } catch {}
     const keep = (n, o) => n || (o && o.date && Date.now() - Date.parse(o.date) < 5 * 864e5 ? { ...o, stale: true } : null);
-    hyS = keep(hyS, prev?.hy); igS = keep(igS, prev?.ig);
+    hyS = keep(hyS, prev?.hy); igS = keep(igS, prev?.ig); cccS = keep(cccS, prev?.ccc);
     out.credit_check = { version: 2, date: keys(hyg).pop(),
-      spreads: hyS || igS ? { source: "ICE BofA option-adjusted spreads (FRED), percentage points", hy: hyS, ig: igS } : null,
+      spreads: hyS || igS ? { source: "ICE BofA option-adjusted spreads (FRED), percentage points", hy: hyS, ig: igS, ccc: cccS } : null,
       hy_adj: { series: "HYG vs IEF, rate-adjusted", chg_1w: adj("HYG", 5), chg_4w: adj("HYG", 20) },
       ig_adj: { series: "LQD vs IEF, rate-adjusted", chg_1w: adj("LQD", 5), chg_4w: adj("LQD", 20) },
       hy: credit ? { series: "HYG/IEF", chg_1w: chg(credit, 5), chg_4w: chg(credit, 20) } : null,
