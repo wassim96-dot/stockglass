@@ -21,3 +21,16 @@ jobs:
           t "Treasury par curve CSV" "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2026/all?type=daily_treasury_yield_curve&field_tdr_date_value=2026&page&_format=csv"
           t "ECB data portal (EUR HY not available, test reachability)" "https://data-api.ecb.europa.eu/service/data/FM/B.U2.EUR.4F.BB.U_A10Y.HSTA?lastNObservations=1&format=csvdata"
           t "Nasdaq Data Link (Quandl) ML HY OAS" "https://data.nasdaq.com/api/v3/datasets/ML/HYOAS.json?rows=2"
+      - name: What the iShares pages show
+        run: |
+          set +e
+          for u in "https://www.ishares.com/us/products/239565/ishares-iboxx-high-yield-corporate-bond-etf" "https://www.ishares.com/us/products/239566/ishares-iboxx-investment-grade-corporate-bond-etf"; do
+            curl -s -m 25 -A "Mozilla/5.0" "$u" > /tmp/p.html; echo "== $(basename $u)"
+            python3 - <<'P'
+          import re,html
+          t=re.sub(r"<[^>]+>"," ",open("/tmp/p.html",errors="ignore").read()); t=html.unescape(re.sub(r"\s+"," ",t))
+          for k in ["Option Adjusted Spread","30 Day SEC Yield","Average Yield to Maturity","Yield to Worst","Effective Duration","as of"]:
+              m=re.search(re.escape(k)+r".{0,90}",t)
+              print("   ",k,"→",m.group(0)[:110] if m else "not found")
+          P
+          done
