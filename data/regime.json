@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T10:57:45.638Z",
+ "updated": "2026-11-27T15:03:46.599Z",
  "rates": {
   "source": "US Treasury daily par and real yield curves (fallback FRED)",
   "y2": {
@@ -81,7 +81,7 @@
   }
  },
  "previous": {
-  "updated": "2026-11-27T08:26:11.680Z",
+  "updated": "2026-11-27T10:57:45.638Z",
   "rates": {
    "y2": {
     "value": 4.61,
@@ -109,7 +109,7 @@
    }
   },
   "inflation": {
-   "source": "FRED (BLS CPI and PPI, BEA PCE), seasonally adjusted monthly index",
+   "source": "BLS CPI and PPI, BEA PCE (BLS API, DBnomics mirror or FRED), seasonally adjusted monthly index",
    "cpi": {
     "id": "CPIAUCSL",
     "via": "BLS CUSR0000SA0",
