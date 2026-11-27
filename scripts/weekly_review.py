@@ -235,11 +235,16 @@ def credit_read(cc):
     sp = cc.get("spreads") or {}; HY, IG, A, B = sp.get("hy"), sp.get("ig"), cc.get("hy_adj"), cc.get("ig_adj"); CQ = sp.get("ccc")
     L, C = [], []
     for X, nm, t1, t4, extra in ((HY, "High-yield credit spread", .2, .4, ""), (IG, "Investment-grade credit spread", .05, .1, " (the bonds of large, solid companies such as the AI hyperscalers sit here)"),
-                                 (CQ, "CCC credit spread", .5, 1, " (the riskiest borrowers: stress shows here first)")):
+                                 (CQ, "CCC credit spread", .5, 1, None)):
         if not X or X.get("value") is None: continue
         k = tone(X.get("chg_1w"), X.get("chg_4w"), t1, t4, True)
+        if extra is None:   # CCC: its own wording, no 3-year level note (same as creditRead in StockGlass)
+            why = ("the riskiest borrowers pay sharply more: stress shows here first" if k == "neg" else "spread narrowing: weak borrowers find money more easily" if k == "pos"
+                   else W[k]) + ("; above 12% = serious stress" if X["value"] >= 12 else "")
+        else:
+            why = ("spread widening: " + W["neg"] + extra if k == "neg" else "spread narrowing: " + W["pos"] if k == "pos" else W[k]) + lvl(X)
         L.append((nm, f'{X["value"]:.2f}% · {pt(X.get("chg_1w"))} over 1 week, {pt(X.get("chg_4w"))} over 4 weeks · higher than {X.get("pct_3y")}% of the last 3 years' + (f' (last value, {X.get("date")})' if X.get("stale") else ""),
-                  k, ("spread widening: " + W["neg"] + extra if k == "neg" else "spread narrowing: " + W["pos"] if k == "pos" else W[k]) + lvl(X)))
+                  k, why))
         C.append(k)
     if A or B:
         ka = tone(A.get("chg_1w"), A.get("chg_4w"), .5, 1, False) if A else None
