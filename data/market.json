@@ -98,7 +98,7 @@
   "rating": "extreme fear",
   "date": "2026-11-26"
  },
- "updated": "2026-11-26T15:49:51.776Z",
+ "updated": "2026-11-27T04:33:20.974Z",
  "method": "Fear score = 0.3 × (3 + 4 × HAR variance-risk-premium percentile over 10 years) + 0.7 × fear-phase score (calm 5, early fear 5 + risk flag, peak stress 5.5, fading fear 7.5 if confirmed by credit, no new low and no bear state, else 5.5, after fear 4.5). Per stock: 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing. Holdout-tested on 2007–2016.",
  "history": "data/market-history.json"
 }
