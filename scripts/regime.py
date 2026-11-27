@@ -152,8 +152,9 @@ def inflation_read(rg):
         a3, yy = x.get("ann3m"), x.get("yoy")
         k = "neu" if not isn(a3) else "neg" if a3 >= hot else "pos" if a3 <= cool else "neu"
         acc = None if not (isn(a3) and isn(yy)) else "accelerating" if a3 > yy + .3 else "decelerating" if a3 < yy - .3 else "steady"
-        t = f'{x["month"]}: {_pc(x.get("mom"))} on the month' + (f', {_pc(yy)} on the year' if isn(yy) else ", yearly change not published") + \
-            (f', 3-month pace {_pc(a3)}/yr' if isn(a3) else "") + (f' (previous month {_pc(x.get("prev_mom"))})' if isn(x.get("prev_mom")) else "")
+        p2 = lambda v: "∅" if not isn(v) else f"{v:+.2f}%"
+        t = f'{x["month"]}: {p2(x.get("mom"))} on the month' + (f', {_pc(yy)} on the year' if isn(yy) else ", yearly change not published") + \
+            (f', 3-month pace {_pc(a3)}/yr' if isn(a3) else "") + (f' (previous month {p2(x.get("prev_mom"))})' if isn(x.get("prev_mom")) else "")
         L.append((nm, t, k, ("running hot: keeps pressure on rates" if k == "neg" else "cooling: room for lower rates" if k == "pos" else "near the upper end of normal") + (f"; {acc}" if acc else "")))
     return L
 

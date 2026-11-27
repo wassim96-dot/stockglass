@@ -940,7 +940,7 @@ function renderRegime(){const el=$("mrp");if(!el||!window.SGRegime)return;const 
   ${regimeLine.map(lineHTML).join("")}
   ${R.length?R.map(lineHTML).join("")+(isN(tnx)&&y10?`<p class="muted">Live 10-year yield ${tnx.toFixed(2)}% vs ${y10.value.toFixed(2)}% at the saved close (${esc(y10.date)}).</p>`:""):'<div><h4>Rates</h4><p class="muted">Waiting for the first nightly run with rates (data/regime.json).</p></div>'}
   ${I.length?I.map(lineHTML).join(""):'<div><h4>Inflation</h4><p class="muted">Waiting for the first nightly run with inflation data.</p></div>'}
-  <p class="muted">Context for the whole market: it never changes a score (market fear alone counts 10% of entry timing, in its own window). Rates: US Treasury; inflation: BLS and BEA via FRED${RG&&RG.updated?`, saved ${esc(new Date(RG.updated).toLocaleDateString())}`:""}. Tap any line for a plain explanation.</p></div>`}
+  <p class="muted">Context for the whole market: it never changes a score (market fear alone counts 10% of entry timing, in its own window). Rates: US Treasury; inflation: official BLS and BEA data (BLS API, DBnomics or FRED; monthly changes from the index, so they can differ by 0.05 pt from the rounded headline)${RG&&RG.updated?`, saved ${esc(new Date(RG.updated).toLocaleDateString())}`:""}. Tap any line for a plain explanation.</p></div>`}
 /* ---------- BTC Cycle panel (unscored) ---------- */
 let CH=null,BL=null;
 async function btcTask(){try{if(!CH){const r=await fetch("data/crypto-history.json",{cache:"no-cache"});if(r.ok)CH=await r.json()}

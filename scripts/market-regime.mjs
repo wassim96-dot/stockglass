@@ -65,7 +65,7 @@ async function dbnomics(code) {
   } catch (e) { console.log("DBnomics", code, e.message); return null; }
 }
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const inflation = { source: "FRED (BLS CPI and PPI, BEA PCE), seasonally adjusted monthly index" };
+const inflation = { source: "BLS CPI and PPI, BEA PCE (BLS API, DBnomics mirror or FRED), seasonally adjusted monthly index" };
 for (const [key, id, bls, dbn] of [["cpi", "CPIAUCSL", "CUSR0000SA0", "BLS/cu/CUSR0000SA0"], ["ccpi", "CPILFESL", "CUSR0000SA0L1E", "BLS/cu/CUSR0000SA0L1E"],
     ["pce", "PCEPI", null, "BEA/NIPA-T20804/DPCERG-M"], ["cpce", "PCEPILFE", null, "BEA/NIPA-T20804/DPCCRG-M"], ["ppi", "PPIFIS", "WPSFD4", "BLS/wp/WPSFD4"]]) {
   let x = null;

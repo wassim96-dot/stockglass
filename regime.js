@@ -114,7 +114,7 @@
     const I = rg && rg.inflation; if (!I) return [];
     const L = [], line = (key, nm, hot, cool) => { const x = I[key]; if (!x) return;
       const k = isN(x.ann3m) ? (x.ann3m >= hot ? "neg" : x.ann3m <= cool ? "pos" : "neu") : "neu", acc = isN(x.ann3m) && isN(x.yoy) ? (x.ann3m > x.yoy + .3 ? "accelerating" : x.ann3m < x.yoy - .3 ? "decelerating" : "steady") : null;
-      L.push([nm, `${x.month}: ${pc(x.mom, 1)} on the month${isN(x.yoy) ? `, ${pc(x.yoy, 1)} on the year` : ", yearly change not published"}${isN(x.ann3m) ? `, 3-month pace ${pc(x.ann3m, 1)}/yr` : ""}${isN(x.prev_mom) ? ` (previous month ${pc(x.prev_mom, 1)})` : ""}`, k,
+      L.push([nm, `${x.month}: ${pc(x.mom, 2)} on the month${isN(x.yoy) ? `, ${pc(x.yoy, 1)} on the year` : ", yearly change not published"}${isN(x.ann3m) ? `, 3-month pace ${pc(x.ann3m, 1)}/yr` : ""}${isN(x.prev_mom) ? ` (previous month ${pc(x.prev_mom, 2)})` : ""}`, k,
         (k === "neg" ? "running hot: keeps pressure on rates" : k === "pos" ? "cooling: room for lower rates" : "near the upper end of normal") + (acc ? `; ${acc}` : "")]); };
     line("cpce", "Core PCE inflation", 3.5, 2.5); line("pce", "PCE inflation", 3.5, 2.5); line("ccpi", "Core CPI", 3.5, 2.5); line("cpi", "CPI inflation", 3.5, 2.5); line("ppi", "PPI (producer prices)", 4, 2);
     return L;
