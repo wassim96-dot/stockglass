@@ -45,17 +45,39 @@ for (const [key, type, col, fred] of [["y2", "daily_treasury_yield_curve", "2 Yr
   rates[key] = keep(m ? stats(m, src) : null, prev.rates && prev.rates[key]);
 }
 
+// fallbacks when FRED refuses GitHub's servers: BLS public API v1 (no key; CPI, core CPI, PPI) and DBnomics (mirrors BLS and BEA)
+async function blsSeries(id) {
+  try {
+    const r = await fetch(`https://api.bls.gov/publicAPI/v1/timeseries/data/${id}`, { headers: { "user-agent": UA }, signal: AbortSignal.timeout(30000) });
+    if (!r.ok) throw Error("HTTP " + r.status);
+    const j = await r.json(), d = j?.Results?.series?.[0]?.data || [], m = new Map();
+    for (const x of d) if (/^M(0[1-9]|1[0-2])$/.test(x.period) && !isNaN(+x.value)) m.set(`${x.year}-${x.period.slice(1)}-01`, +x.value);
+    if (m.size > 12) return m; throw Error("too few rows " + m.size);
+  } catch (e) { console.log("BLS", id, e.message); return null; }
+}
+async function dbnomics(code) {
+  try {
+    const r = await fetch(`https://api.db.nomics.world/v22/series/${code}?observations=1&format=json`, { headers: { "user-agent": UA }, signal: AbortSignal.timeout(30000) });
+    if (!r.ok) throw Error("HTTP " + r.status);
+    const doc = (await r.json())?.series?.docs?.[0], m = new Map();
+    (doc?.period || []).forEach((p, i) => { const v = doc.value[i]; if (/^\d{4}-\d{2}$/.test(p) && typeof v === "number") m.set(p + "-01", v); });
+    if (m.size > 12) return m; throw Error("too few rows " + m.size);
+  } catch (e) { console.log("DBnomics", code, e.message); return null; }
+}
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const inflation = { source: "FRED (BLS CPI and PPI, BEA PCE), seasonally adjusted monthly index" };
-for (const [key, id] of [["cpi", "CPIAUCSL"], ["ccpi", "CPILFESL"], ["pce", "PCEPI"], ["cpce", "PCEPILFE"], ["ppi", "PPIFIS"]]) {
+for (const [key, id, bls, dbn] of [["cpi", "CPIAUCSL", "CUSR0000SA0", "BLS/cu/CUSR0000SA0"], ["ccpi", "CPILFESL", "CUSR0000SA0L1E", "BLS/cu/CUSR0000SA0L1E"],
+    ["pce", "PCEPI", null, "BEA/NIPA-T20804/DPCERG-M"], ["cpce", "PCEPILFE", null, "BEA/NIPA-T20804/DPCCRG-M"], ["ppi", "PPIFIS", "WPSFD4", "BLS/wp/WPSFD4"]]) {
   let x = null;
-  const m = await fredSeries(id, "2023-01-01");
+  let m = await fredSeries(id, "2023-01-01"), via = "FRED " + id;
+  if (!m && bls) { m = await blsSeries(bls); via = "BLS " + bls; }
+  if (!m && dbn) { m = await dbnomics(dbn); via = "DBnomics " + dbn; }
   if (m) {
     const k = [...m.keys()].sort(), last = k[k.length - 1], at = (d, mo) => { const t = new Date(d + "T00:00:00Z"); t.setUTCMonth(t.getUTCMonth() - mo); return m.get(t.toISOString().slice(0, 10)); };
     const v = m.get(last), p1 = at(last, 1), p2 = at(last, 2), p3 = at(last, 3), p12 = at(last, 12);
     const r = (a, b, pw = 1) => a != null && b != null ? +((Math.pow(a / b, pw) - 1) * 100).toFixed(2) : null;
     const t = new Date(last + "T00:00:00Z");
-    x = { id, date: last, month: `${MON[t.getUTCMonth()]} ${t.getUTCFullYear()}`, mom: r(v, p1), prev_mom: r(p1, p2), yoy: r(v, p12), ann3m: r(v, p3, 4) };
+    x = { id, via, date: last, month: `${MON[t.getUTCMonth()]} ${t.getUTCFullYear()}`, mom: r(v, p1), prev_mom: r(p1, p2), yoy: r(v, p12), ann3m: r(v, p3, 4) };
   }
   inflation[key] = keep(x, prev.inflation && prev.inflation[key]);
   await new Promise(res => setTimeout(res, 1500));   // the relays refuse parallel calls
