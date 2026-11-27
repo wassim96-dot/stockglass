@@ -5,6 +5,7 @@
    - liveFear(hist, live): fear phase and score for a live row appended to data/market-history.json
    - fearAt(hist, i): score of a saved row (for "vs last close" and "vs a week ago")
    - fearZone(F), creditZone(cc): plain, colour-coded readings vs history (near a bottom, bull run, bearish risk); not forecasts
+   - creditLive(cc, live): today's high-yield and investment-grade spreads estimated from FRED's last value and the bond funds' move
    - ratesRead(rg), inflationRead(rg): Market Regime panel lines from data/regime.json
    - btcCycle(asset, funding, fng): BTC Cycle panel (unscored), from data/crypto-history.json (Coin Metrics Community)
    - glossInit(G): tap any indicator or line to open a short beginner explanation (data/glossary.json, same file as the skill) */
@@ -95,6 +96,31 @@
     if (Q && isN(Q.chg_4w) && isN(c4) && Q.chg_4w >= 1 && Q.chg_4w > 2 * c4) z[2] += ` The riskiest bonds (CCC, ${Q.value.toFixed(2)}%) widen fastest (+${Q.chg_4w.toFixed(2)} pt in 4 weeks): stress is concentrated in weak borrowers.`;
     else if (Q && isN(Q.value) && Q.value >= 12) z[2] += ` CCC spreads at ${Q.value.toFixed(2)}% signal serious stress among weak borrowers.`;
     return { tag: z[0], col: z[1], txt: z[2] + " Based on history (ICE BofA since 1996), not a forecast." };
+  }
+
+  /* ---------- live credit estimate (27 Nov 2026) ----------
+     FRED publishes the ICE BofA spreads once a day, a day or two late; no free source has them live. Estimate: FRED's last value
+     moved by the bond fund's rate-adjusted return since that date (HYG for high yield, LQD for investment grade, IEF for
+     Treasuries): return = fund − (fund duration / IEF duration) × IEF, and a spread change of Δ points moves the fund by about
+     −duration × Δ, so Δ ≈ −return / duration. Live prices are unadjusted; they are put on the dividend-adjusted basis of the saved
+     closes with the last close's ratio (off by the dividend on an ex-dividend day). CCC has no fund: it keeps FRED's value.
+     cc = credit_check with fund_closes; live = {HYG, LQD, IEF (prices), t}. Returns a copy of cc with estimated hy / ig, or null. */
+  function creditLive(cc, live) {
+    const F = cc && cc.fund_closes, sp = cc && cc.spreads; if (!F || !sp || !live || !isN(live.IEF)) return null;
+    const D = cc.durations || { HYG: 3.2, LQD: 8.3, IEF: 7.3 }, n = F.dates.length - 1, r2 = v => Math.round(v * 100) / 100;
+    const adjNow = k => isN(live[k]) && F.raw_last && F.raw_last[k] ? live[k] * F[k][n] / F.raw_last[k] : null;
+    const out = { ...cc, spreads: { ...sp }, live: { t: live.t || null } };
+    let any = false;
+    for (const [key, fund] of [["hy", "HYG"], ["ig", "LQD"]]) {
+      const s = sp[key]; if (!s || !isN(s.value)) continue;
+      let i = -1; for (let j = 0; j <= n; j++) if (F.dates[j] <= s.date) i = j;
+      const p1 = adjNow(fund), i1 = adjNow("IEF"); if (i < 0 || p1 == null || i1 == null) continue;
+      const ret = (p1 / F[fund][i] - 1) - D[fund] / D.IEF * (i1 / F.IEF[i] - 1), d = -ret * 100 / D[fund];
+      out.spreads[key] = { ...s, value: r2(s.value + d), chg_1w: isN(s.chg_1w) ? r2(s.chg_1w + d) : s.chg_1w, chg_4w: isN(s.chg_4w) ? r2(s.chg_4w + d) : s.chg_4w,
+        est: true, delta: r2(d), base: { value: s.value, date: s.date }, stale: false };
+      any = true;
+    }
+    return any ? out : null;
   }
 
   /* ---------- rates and inflation (data/regime.json) ---------- */
@@ -193,6 +219,6 @@
     mark(); new MutationObserver(() => { clearTimeout(W.__gm); W.__gm = setTimeout(mark, 120); }).observe(document.body, { childList: true, subtree: true });
   }
 
-  W.SGRegime = { liveFear, fearAt, fearZone, creditZone, ratesRead, inflationRead, btcCycle, glossInit, PH };
+  W.SGRegime = { liveFear, fearAt, fearZone, creditZone, creditLive, ratesRead, inflationRead, btcCycle, glossInit, PH };
   if (typeof module !== "undefined") module.exports = W.SGRegime;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -19,7 +19,7 @@
 // Usage: node scripts/market-fear.mjs   (Node 18+, no dependencies)
 import fs from "node:fs";
 import path from "node:path";
-import { yahooChart, yahooStats, fred, getJSON } from "./lib/net.mjs";
+import { yahooChart, yahooStats, fred, getJSON, lastUsClose } from "./lib/net.mjs";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const WIN10 = 2520, WIN5 = 1260, RVN = 22, HAR_MIN = 500;
@@ -32,10 +32,14 @@ export const PHASE = {
   after: [4.5, "After fear", "Stress ended within the last month: returns have been below average in both 2007–2016 and 2016–2026."]
 };
 
+// Scheduled runs keep completed sessions only: bars after the last US close (16:15 New York) are an unfinished session.
+// A manual run (workflow_dispatch → MANUAL_RUN=1) keeps today's live session on purpose and marks the reading `intraday`.
+const MANUAL = process.env.MANUAL_RUN === "1", CUT = MANUAL ? "9999-12-31" : lastUsClose();
 async function chart(sym, range = "20y") {   // Yahoo daily closes (adjusted when available) → Map(date → value); direct, then the relays
   const res = await yahooChart(sym, range, { timeout: 40000 });
   if (res) { const q = res.indicators.quote[0], adj = res.indicators.adjclose?.[0]?.adjclose, m = new Map();
-    res.timestamp.forEach((t, i) => { const v = adj?.[i] ?? q.close[i]; if (v != null) m.set(new Date((t + (res.meta.gmtoffset || 0)) * 1000).toISOString().slice(0, 10), v); });
+    res.timestamp.forEach((t, i) => { const v = adj?.[i] ?? q.close[i], d = new Date((t + (res.meta.gmtoffset || 0)) * 1000).toISOString().slice(0, 10);
+      if (v != null && d <= CUT) { m.set(d, v); m.rawLast = q.close[i] ?? v; } });   // rawLast: unadjusted last close (live prices are unadjusted)
     if (m.size > 500) return m; }
   throw Error("no data for " + sym + " " + JSON.stringify(yahooStats()));
 }
@@ -156,8 +160,17 @@ if (process.argv[1] && process.argv[1].endsWith("market-fear.mjs")) {
       hy: credit ? { series: "HYG/IEF", chg_1w: chg(credit, 5), chg_4w: chg(credit, 20) } : null,
       ust10: tnx ? { value: +tnx.get(keys(tnx).pop()).toFixed(2), chg_1w: dif(tnx, 5), chg_4w: dif(tnx, 20) } : null,
       spx: { chg_1w: chg(spx, 5), chg_4w: chg(spx, 20) }, durations: D };
+    // last 15 closes of the bond funds (dividend-adjusted) + the unadjusted last close: lets the page and the skill estimate
+    // today's spreads live from FRED's last value and the funds' move since that date (regime.js creditLive)
+    const fd = keys(ief2).filter(d => hyg.has(d) && lqd.has(d)).slice(-15), r4 = x => +x.toFixed(4);
+    out.credit_check.fund_closes = { dates: fd, HYG: fd.map(d => r4(hyg.get(d))), LQD: fd.map(d => r4(lqd.get(d))), IEF: fd.map(d => r4(ief2.get(d))),
+      raw_last: { HYG: r4(hyg.rawLast), LQD: r4(lqd.rawLast), IEF: r4(ief2.rawLast) } };
   } catch (e) { out.credit_check = null; console.log("credit check unavailable", e.message); }
   out.cnn_fear_greed = fg;
+  if (MANUAL && out.date > lastUsClose()) {   // a manual run during the US session: today's live reading, not a close
+    out.intraday = new Date().toISOString(); if (out.credit_check) out.credit_check.intraday = out.intraday;
+    console.log(`manual run during the session: reading of ${out.date} saved as intraday (${out.intraday})`);
+  }
   out.updated = new Date().toISOString();
   out.method = "Fear score = 0.3 × (3 + 4 × HAR variance-risk-premium percentile over 10 years) + 0.7 × fear-phase score (calm 5, early fear 5 + risk flag, peak stress 5.5, fading fear 7.5 if confirmed by credit, no new low and no bear state, else 5.5, after fear 4.5). Per stock: 5 + (score − 5) × clip(beta, 0.5, 1.5), 10% of entry timing. Holdout-tested on 2007–2016.";
   out.history = "data/market-history.json";

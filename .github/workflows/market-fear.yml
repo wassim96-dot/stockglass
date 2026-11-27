@@ -39,6 +39,7 @@ jobs:
         timeout-minutes: 15
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}   # optional (free key): FRED's API instead of the often-refused graph page
+          MANUAL_RUN: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}   # manual run: keep today's live session (marked intraday)
         run: node scripts/market-fear.mjs
       - name: Market regime (rates and inflation, context only)
         continue-on-error: true

@@ -125,7 +125,7 @@ function render(){if(!CUR)return;const D=CUR,q=$("q").value.trim().toLowerCase()
  const F=D.market_fear,M=D.markets||{},mk=Object.values(M).filter(Boolean);
  $("sum").innerHTML=[["🟢 Meets template",D.counts.green,"a setup filter, not a buy signal"],["🟡 Partial or stress",D.counts.yellow,"1–2 blocks missing, or market stress"],["🔴 Not stage 2",D.counts.red,"several blocks missing or 200-day falling"],
   /* 5th item: when the reading was measured (27 Nov 2026) */
-  ...(()=>{const cc=F&&F.credit_check,hy=cc&&cc.spreads&&cc.spreads.hy,fT=F?`close ${dW(F.date)}`:"",cT=hy?`spreads ${dW(hy.date)} (FRED)${hy.stale?", last value":""}`:cc&&cc.date?`close ${dW(cc.date)}`:"";
+  ...(()=>{const cc=F&&F.credit_check,hy=cc&&cc.spreads&&cc.spreads.hy,fT=F?(F.intraday?`intraday ${tW(F.intraday)} (manual run)`:`close ${dW(F.date)}`):"",cT=hy?`spreads ${dW(hy.date)} (FRED)${hy.stale?", last value":""}`:cc&&cc.date?`close ${dW(cc.date)}`:"";
    const T=[["Market fear",F?F.phase_label:"∅",F?`${F.score}/10 ${F.label} · VIX ${F.vix}`:"reading too old",null,fT]];
    const CR=creditRead(cc);if(CR)T.push(["Credit markets",CR.status,(CR.lines.find(l=>l[2]==="neg")||CR.lines[0]||[,""])[1]+" · not scored, short and long term",CR.col,cT]);
    if(window.SGRegime){const fz=F?SGRegime.fearZone(F):null,cz=SGRegime.creditZone(cc);if(fz)T.push(["Fear vs history",fz.tag,fz.txt,fz.col,fT]);if(cz)T.push(["Credit vs history",cz.tag,cz.txt,cz.col,cT])}
