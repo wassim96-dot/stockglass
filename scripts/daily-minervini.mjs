@@ -30,9 +30,20 @@ vm.runInContext(html.slice(a, b), ctx);
 // Yahoo often refuses direct requests from GitHub's servers, so the request goes through the shared routes in lib/net.mjs:
 // direct (query1, query2), then the public relays the StockGlass page uses; every request has a timeout that covers the
 // whole answer, a route that keeps failing is dropped for the run, and the one that works moves to the front.
+// Bars dated after the last completed US close are dropped: a run during trading hours (GitHub starts jobs hours late)
+// used to save that day's half-finished prices under its date (25 Nov 2026: saved 30 minutes after the open).
+let CUT = null;   // set below to the last US market day
+function trim(res) {
+  if (!CUT || !res?.timestamp?.length) return res;
+  const keep = res.timestamp.map(t => new Date(t * 1e3).toISOString().slice(0, 10) <= CUT), q = res.indicators?.quote?.[0] || {};
+  if (keep.every(Boolean)) return res;
+  const f = a => Array.isArray(a) ? a.filter((_, i) => keep[i]) : a;
+  return { ...res, timestamp: f(res.timestamp), meta: { ...res.meta, regularMarketPrice: undefined },   // the live price is intraday too
+    indicators: { ...res.indicators, quote: [Object.fromEntries(Object.entries(q).map(([k, v]) => [k, f(v)]))] } };
+}
 async function yahoo(sym) {
   for (let k = 0; k < 2; k++) {                    // one retry after a pause (throttling)
-    const res = await yahooChart(sym, "2y");
+    const res = trim(await yahooChart(sym, "2y"));
     if (res === null) return null;
     if (res) return { res, via: "Yahoo" };
     if (k === 0) await sleep(3000);
@@ -51,8 +62,8 @@ async function stooq(sym) {
     if (!/^Date,Open,High,Low,Close/i.test(t)) return null;
     const rows = t.trim().split("\n").slice(1).map(l => l.split(",")).filter(x => x.length >= 5 && +x[4] > 0).slice(-520);
     if (rows.length < 200) return null;
-    return { res: { meta: { currency: null, instrumentType: "EQUITY" }, timestamp: rows.map(x => Date.parse(x[0] + "T21:00:00Z") / 1e3),
-      indicators: { quote: [{ open: rows.map(x => +x[1]), high: rows.map(x => +x[2]), low: rows.map(x => +x[3]), close: rows.map(x => +x[4]), volume: rows.map(x => x[5] ? +x[5] : null) }] } }, via: "Stooq" };
+    return { res: trim({ meta: { currency: null, instrumentType: "EQUITY" }, timestamp: rows.map(x => Date.parse(x[0] + "T21:00:00Z") / 1e3),
+      indicators: { quote: [{ open: rows.map(x => +x[1]), high: rows.map(x => +x[2]), low: rows.map(x => +x[3]), close: rows.map(x => +x[4]), volume: rows.map(x => x[5] ? +x[5] : null) }] } }), via: "Stooq" };
   } catch { return null; }
 }
 const bars = res => { const q = (res.indicators.quote || [{}])[0], out = [];
@@ -73,7 +84,8 @@ function lastMarketDay(now = new Date()) {
   return `${ny.getFullYear()}-${String(ny.getMonth() + 1).padStart(2, "0")}-${String(ny.getDate()).padStart(2, "0")}`;
 }
 // a file counts as done when it has stocks and none were left out by the time budget (a later backup run completes it)
-const expected = lastMarketDay(), done = d => { const f = read(`data/daily/${d}.json`); return (f?.counts?.stocks || 0) > 0 && !(f?.counts?.not_reached > 0); };
+const expected = lastMarketDay(); CUT = expected;
+const done = d => { const f = read(`data/daily/${d}.json`); return (f?.counts?.stocks || 0) > 0 && !(f?.counts?.not_reached > 0); };
 if (process.env.FORCE !== "1" && done(expected)) { console.log(`data/daily/${expected}.json already exists: nothing to do`); process.exit(0); }
 
 // ---- market indexes (same choice as the page: S&P 500 via SPY, S&P/TSX, STOXX Europe 600) ----
