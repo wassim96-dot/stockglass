@@ -23,6 +23,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: weekly-watchlist
@@ -33,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Keep the first trigger from Friday 22:30 Paris, once per week
         id: guard
@@ -48,10 +49,10 @@ jobs:
           fi
           echo "go=$go" >> "$GITHUB_OUTPUT"; echo "day=$day" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         if: steps.guard.outputs.go == 'true'
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install headless Chromium
         if: steps.guard.outputs.go == 'true'
@@ -62,10 +63,14 @@ jobs:
 
       - name: Market fear (VIX, variance risk premium)
         if: steps.guard.outputs.go == 'true'
+        timeout-minutes: 15
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: node scripts/market-fear.mjs || echo "market fear unavailable, continuing"
 
       - name: Crypto cycle (on-chain, funding, fear & greed)
         if: steps.guard.outputs.go == 'true'
+        timeout-minutes: 12
         run: node scripts/crypto-data.mjs || echo "crypto data unavailable, continuing"
 
       - name: Run every watchlist ticker through StockGlass
@@ -80,9 +85,20 @@ jobs:
         run: |
           git config user.name "stockglass-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data
+          # only this job's files: market and crypto data are committed by their own jobs (avoids rebase conflicts on them)
+          git add data/runs data/latest.json
           git diff --cached --quiet && { echo "No changes"; exit 0; }
           D="${{ steps.guard.outputs.day }}"; [ -n "$D" ] || D=$(TZ=Europe/Paris date +%F)
           git commit -m "Weekly watchlist run $D"
-          git pull --rebase origin main
-          git push
+          git checkout -- data 2>/dev/null || true   # market and crypto files refreshed for the run: not ours to commit
+          for i in 1 2 3; do
+            git pull --rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && break
+            sleep 10
+          done
+          git fetch -q origin "$GITHUB_REF_NAME" && [ -z "$(git log --oneline "origin/$GITHUB_REF_NAME..HEAD")" ] || { echo "::error::the data commit could not be pushed after 3 tries"; exit 1; }
+
+      - name: Phone alert if the job failed
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/job-failed.sh "Weekly watchlist"

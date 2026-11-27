@@ -8,13 +8,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
+import { yahooChart, yahooStats, fetchText, sleep } from "./lib/net.mjs";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const P = f => path.join(ROOT, f);
 const read = f => { try { return JSON.parse(fs.readFileSync(P(f), "utf8")); } catch { return null; } };
 const KEEP = 5, SITE = "https://wassim96-dot.github.io/stockglass/";
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const UA = { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36" };
+const DEADLINE = Date.now() + 20 * 60e3;   // stop pricing new tickers after 20 minutes (the job's limit is 30): save what is done
 
 fs.rmSync(P("alerts"), { recursive: true, force: true });   // never re-send an old alert
 
@@ -27,29 +27,15 @@ const ctx = vm.createContext({ Math, Date, Map, JSON, Number, String, Array, Obj
 vm.runInContext(html.slice(a, b), ctx);
 
 // ---- prices ----
-// Yahoo often refuses direct requests from GitHub's servers, so after one direct try per host the request goes
-// through the same public relays the StockGlass page uses (allorigins, codetabs, corsproxy, jina).
-const RELAYS = [["direct", u => u], ["direct2", u => u.replace("query1", "query2")],
-  ["allorigins", u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u)], ["codetabs", u => "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u)],
-  ["corsproxy", u => "https://corsproxy.io/?url=" + encodeURIComponent(u)], ["jina", u => "https://r.jina.ai/" + u]];
-const parseJ = t => { try { return JSON.parse(t); } catch { const i = t.indexOf("{"), k = t.lastIndexOf("}"); return i >= 0 && k > i ? JSON.parse(t.slice(i, k + 1)) : null; } };
-const STAT = {};   // which route worked / failed, printed at the end
-let order = RELAYS.map(r => r[0]);   // routes that work move to the front
+// Yahoo often refuses direct requests from GitHub's servers, so the request goes through the shared routes in lib/net.mjs:
+// direct (query1, query2), then the public relays the StockGlass page uses; every request has a timeout that covers the
+// whole answer, a route that keeps failing is dropped for the run, and the one that works moves to the front.
 async function yahoo(sym) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=2y&interval=1d`;
-  for (const name of [...order]) for (let k = 0; k < (name === order[0] ? 3 : 1); k++) {   // the working route gets 2 retries after throttling
-    const w = RELAYS.find(r => r[0] === name)[1];
-    try {
-      const ac = new AbortController(), to = setTimeout(() => ac.abort(), 15000);
-      const r = await fetch(w(url), { headers: UA, signal: ac.signal }); clearTimeout(to);
-      const t = r.ok ? await r.text() : "";
-      const j = t ? parseJ(t) : null, res = j?.chart?.result?.[0];
-      if (res?.timestamp?.length) { STAT[name] = (STAT[name] || 0) + 1; order = [name, ...order.filter(x => x !== name)]; return { res, via: "Yahoo" + (name.startsWith("direct") ? "" : " via " + name) }; }
-      if (j?.chart?.error?.code === "Not Found") return null;
-      STAT[name + "_fail"] = (STAT[name + "_fail"] || 0) + 1; STAT[name + "_last"] = r.status;
-      if (r.status === 429 && k < 2 && name === order[0]) { await sleep(5000 * (k + 1)); continue; }
-    } catch (e) { STAT[name + "_fail"] = (STAT[name + "_fail"] || 0) + 1; STAT[name + "_last"] = e.name; }
-    await sleep(300); break;
+  for (let k = 0; k < 2; k++) {                    // one retry after a pause (throttling)
+    const res = await yahooChart(sym, "2y");
+    if (res === null) return null;
+    if (res) return { res, via: "Yahoo" };
+    if (k === 0) await sleep(3000);
   }
   return null;
 }
@@ -60,8 +46,8 @@ const STQ = [[/^[A-Z.\-]+$/, s => s.replace("-", ".").toLowerCase() + ".us"], [/
 async function stooq(sym) {
   const m = STQ.find(([rx]) => rx.test(sym)); if (!m || sym.includes("^")) return null;
   try {
-    const r = await fetch(`https://stooq.com/q/d/l/?s=${encodeURIComponent(m[1](sym))}&i=d`, { headers: UA });
-    const t = r.ok ? await r.text() : "";
+    const r = await fetchText(`https://stooq.com/q/d/l/?s=${encodeURIComponent(m[1](sym))}&i=d`, { timeout: 15000 });
+    const t = r.ok ? r.text : "";
     if (!/^Date,Open,High,Low,Close/i.test(t)) return null;
     const rows = t.trim().split("\n").slice(1).map(l => l.split(",")).filter(x => x.length >= 5 && +x[4] > 0).slice(-520);
     if (rows.length < 200) return null;
@@ -78,12 +64,24 @@ const kindOf = (sym, m) => { const it = String(m?.instrumentType || "").toUpperC
 // ---- watchlist ----
 const tickers = [...new Set(fs.readFileSync(P("watchlist.txt"), "utf8").split("\n").map(l => l.replace(/#.*/, "").trim().split(/\s+/)[0]).filter(Boolean))];
 
+// ---- nothing to do? The backup runs stop here, before any network call, when the last US market day is already saved ----
+// (last weekday whose 16:15 New York close has passed; on a holiday this finds no file and the index check below decides)
+function lastMarketDay(now = new Date()) {
+  const ny = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+  if (ny.getHours() * 60 + ny.getMinutes() < 16 * 60 + 15) ny.setDate(ny.getDate() - 1);
+  while (ny.getDay() === 0 || ny.getDay() === 6) ny.setDate(ny.getDate() - 1);
+  return `${ny.getFullYear()}-${String(ny.getMonth() + 1).padStart(2, "0")}-${String(ny.getDate()).padStart(2, "0")}`;
+}
+// a file counts as done when it has stocks and none were left out by the time budget (a later backup run completes it)
+const expected = lastMarketDay(), done = d => { const f = read(`data/daily/${d}.json`); return (f?.counts?.stocks || 0) > 0 && !(f?.counts?.not_reached > 0); };
+if (process.env.FORCE !== "1" && done(expected)) { console.log(`data/daily/${expected}.json already exists: nothing to do`); process.exit(0); }
+
 // ---- market indexes (same choice as the page: S&P 500 via SPY, S&P/TSX, STOXX Europe 600) ----
 const CA_RX = /\.(TO|V)$/i;
 const IDX = { us: ["SPY", "S&P 500 (SPY)"], ca: ["^GSPTSE", "S&P/TSX Composite"], eu: ["^STOXX", "STOXX Europe 600"] };
 const MK = {};
 for (const [k, [sym, name]] of Object.entries(IDX)) {
-  const y = await yahoo(sym); await sleep(400);
+  let y = await yahoo(sym); if (!y && sym === "SPY") y = await stooq("SPY"); await sleep(400);
   if (!y) { MK[k] = null; console.error(`index ${sym}: no data`); continue; }
   const c0 = y.res.indicators.quote[0].close || [], map = new Map();
   (y.res.timestamp || []).forEach((t, i) => { if (c0[i] != null) map.set(new Date(t * 1e3).toISOString().slice(0, 10), c0[i]); });
@@ -92,10 +90,10 @@ for (const [k, [sym, name]] of Object.entries(IDX)) {
   if (c.length >= 200) { const a2 = sma(200), a5 = sma(50), iv = (c[c.length - 1] / a2 - 1) * 100, up = a5 > a2; mkt = { n: name, iv, up, lab: iv > 0 && up ? "Supportive" : iv < 0 && !up ? "Hostile" : "Mixed" }; }
   MK[k] = { map, name, mkt, last: [...map.keys()].pop() };
 }
-const day = MK.us?.last || new Date().toISOString().slice(0, 10);   // market date of the run (last S&P 500 bar)
+const day = MK.us?.last || expected;   // market date of the run: last S&P 500 bar, else the last US market day (never a weekend date)
 fs.mkdirSync(P("data/daily"), { recursive: true });
 const outF = `data/daily/${day}.json`;
-if (fs.existsSync(P(outF)) && process.env.FORCE !== "1" && (read(outF)?.counts?.stocks || 0) > 0) { console.log(`${outF} already exists: nothing to do`); process.exit(0); }
+if (process.env.FORCE !== "1" && done(day)) { console.log(`${outF} already exists: nothing to do`); process.exit(0); }
 
 const m = read("data/market.json");
 const MF = m && m.date && Math.abs(Date.parse(day) - Date.parse(m.date)) < 8 * 864e5 ? m : null;
@@ -103,7 +101,9 @@ ctx.MF = MF;
 
 // ---- run ----
 const items = [], skipped = [], failed = [];
+const late = [];
 for (const sym of tickers) {
+  if (Date.now() > DEADLINE) { late.push(sym); continue; }
   let y = await yahoo(sym); if (!y) y = await stooq(sym);
   await sleep(350);
   if (!y) { failed.push(sym); continue; }
@@ -144,10 +144,11 @@ const cnt = k => items.filter(x => x.icon === k).length;
 const out = { date: day, generated: new Date().toISOString(), previous: prevDay || null, version: 2,
   market_fear: MF ? { date: MF.date, phase: MF.phase, phase_label: MF.phase_label, score: MF.score, label: MF.label, vix: MF.vix, credit_check: MF.credit_check || null } : null,
   markets: Object.fromEntries(Object.entries(MK).map(([k, v]) => [k, v?.mkt ? { name: v.name, label: v.mkt.lab, vs_200d: Math.round(v.mkt.iv * 10) / 10, last: v.last } : null])),
-  counts: { green: cnt("🟢"), yellow: cnt("🟡"), red: cnt("🔴"), stocks: items.length, skipped: skipped.length, failed: failed.length },
-  changes: ch, items, skipped, failed,
+  counts: { green: cnt("🟢"), yellow: cnt("🟡"), red: cnt("🔴"), stocks: items.length, skipped: skipped.length, failed: failed.length, not_reached: late.length },
+  changes: ch, items, skipped, failed, not_reached: late,
   note: "Minervini Trend Template (version 2), same code as the StockGlass card. Context only, not a score, not investment advice." };
-console.log("routes:", JSON.stringify(STAT));
+console.log("routes:", JSON.stringify(yahooStats()));
+if (late.length) console.log(`::warning::time budget reached: ${late.length} tickers not priced (${late.slice(0, 8).join(" ")}…)`);
 if (!items.length) { console.error(`No stock could be priced (${failed.length} failed): nothing saved, no alert.`); process.exit(1); }
 fs.writeFileSync(P(outF), JSON.stringify(out));
 

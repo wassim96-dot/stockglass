@@ -3,8 +3,8 @@ name: Market fear (VIX)
 # Every weekday after the US close: VIX, VIX3M, S&P 500, HYG/IEF → fear score v3 (HAR premium + fear phase) in data/market.json.
 # Used by the StockGlass page (entry timing) and by the stock-verdict skill. Also run inside "Weekly watchlist".
 on:
-  # GitHub often starts scheduled runs hours late or skips them when it is busy, so two backup times
-  # (03:10 and 06:40 Paris) re-run it; a run that finds the same close commits nothing.
+  # GitHub often starts scheduled runs hours late (6 to 10 hours in Nov 2026) or skips them, so two backup times re-run it;
+  # a run that finds the same close commits nothing. The daily Minervini check starts when this job finishes.
   schedule:
     - cron: "35 22 * * 1-5"
     - cron: "10 2 * * 2-6"
@@ -29,17 +29,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
       - name: Compute VIX and variance risk premium
+        timeout-minutes: 15
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}   # optional (free key): FRED's API instead of the often-refused graph page
         run: node scripts/market-fear.mjs
       - name: Market regime (rates and inflation, context only)
         continue-on-error: true
         timeout-minutes: 12
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: node scripts/market-regime.mjs
       - name: Phase-change alert (GitHub issue → phone notification)
         env:
@@ -61,3 +66,9 @@ jobs:
             git pull --rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && break
             sleep 10
           done
+          git fetch -q origin "$GITHUB_REF_NAME" && [ -z "$(git log --oneline "origin/$GITHUB_REF_NAME..HEAD")" ] || { echo "::error::the data commit could not be pushed after 3 tries"; exit 1; }
+      - name: Phone alert if the job failed
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/job-failed.sh "Market fear"
