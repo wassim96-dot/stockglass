@@ -1,0 +1,24 @@
+name: Tests
+
+# Offline checks on every pull request (no network, about 10 seconds): syntax of every script and page, data files, a replay
+# of the nightly fear job and of the live page against the saved history, the Minervini block, and the copies of shared
+# rules (regime.js ↔ scripts/regime.py, creditRead in index.html ↔ today.html ↔ weekly_review.py). See tests/run.mjs.
+# The stock-verdict skill's copies are checked locally: node tests/run.mjs --skill ../stock-verdict
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - name: Run the offline tests
+        run: node tests/run.mjs

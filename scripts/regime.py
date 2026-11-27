@@ -135,7 +135,7 @@ def rates_read(rg):
         c = r10.get("chg_4w"); hi = r10["value"] >= 2
         k = ("neg" if hi else "neu") if not isn(c) else "neg" if c >= .25 else "pos" if c <= -.25 else "neg" if hi else "neu"
         w = ("rising real rates weigh on valuations, most on growth stocks" if isn(c) and c >= .25 else "falling real rates support valuations" if isn(c) and c <= -.25
-             else "above 2%: restrictive for valuations" if hi else "no strong pressure on valuations")
+             else "above 2%: restrictive for valuations" if hi else "no strong pressure on valuations") + (" (level above 2% = restrictive)" if hi and isn(c) and abs(c) >= .25 else "")
         L.append(("10-year real yield", f'{r10["value"]:.2f}% · {_pt(r10.get("chg_1w"))} over 1 week, {_pt(c)} over 4 weeks', k, w))
     if y10 and y2:
         sl = round(y10["value"] - y2["value"], 2)
@@ -196,7 +196,7 @@ def btc_cycle(A, funding=None, fng=None):
           "neu" if mv is None else "pos" if valZ else "neg" if euph else "neu",
           "no on-chain data" if mv is None else "below 1: holders at a loss on average, the zone of past bottoms" if mv < 1 else "euphoric zone of past tops" if euph else "between bottom and top zones"),
          ("Valuation zone", "yes" if valZ else "no", "pos" if valZ else "neu", "attractive valuation zone, not an entry signal by itself" if valZ else "no deep-value signal"),
-         ("200-day average", f"{m200:,.0f} $ · price {(px / m200 - 1) * 100:+.1f}% {'above' if px >= m200 else 'below'}; 50-day {'above' if m50 >= m200 else 'below'} the 200-day",
+         ("200-day average", f"{m200:,.0f} $ · price {abs(px / m200 - 1) * 100:.1f}% {'above' if px >= m200 else 'below'}; 50-day {'above' if m50 >= m200 else 'below'} the 200-day",
           "pos" if px >= m200 else "neg", "bull trend" if px >= m200 else "bear trend"),
          ("90-day momentum", f"{mom90:+.2f} (volatility-scaled) · 30-day return {_pc(mom30 * 100)}", "pos" if mom90 > 0 else "neg", "momentum up" if mom90 > 0 else "momentum down"),
          ("Drawdown from all-time high", f"{dd:.1f}% (high {ath:,.0f} $)", "neg" if dd <= -40 else "neu", "as deep as past bear-market lows" if dd <= -75 else "stress territory" if dd <= -40 else "moderate"),

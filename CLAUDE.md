@@ -11,6 +11,9 @@ Static GitHub Pages site (no build step) plus GitHub Actions jobs that save mark
 
 ## Commands
 ```bash
+node tests/run.mjs                     # offline tests, ~5 s: syntax, data files, replays, Minervini block, copies (CI runs it on PRs)
+node tests/run.mjs --skill ../stock-verdict   # also the skill's copies (regime.py, glossary, gloss.js, render.py, weights)
+node tests/check-copies.mjs [--skill DIR]     # only the copy check, with the first differing input per function
 # serve and test the pages offline (outside requests aborted; mock Yahoo answers to test the live path)
 python3 -m http.server 8765            # then open http://localhost:8765/index.html (or today.html)
 node scripts/market-fear.mjs           # VIX phase/score + credit check → data/market.json, market-history.json
@@ -39,7 +42,12 @@ Jobs (cron in UTC, GitHub often starts them hours late, so each has backups and 
 | glossary | `data/glossary.json` = skill `assets/glossary.json`; popover code `regime.js glossInit` = skill `assets/gloss.js` |
 | weights (`WI_S`, `LW_S`), scoring bands | `index.html` ↔ skill `scripts/score.py` (`WI`, `LENS`) |
 | Minervini v2 | `index.html` between `/* @tt-begin` and `/* @tt-end */`; reused by `daily-minervini.mjs` |
-Verify a port by replay: feed saved history rows through the live code and compare phases (60/60 must match).
+
+`tests/check-copies.mjs` runs every copy on the same inputs (saved data + values on both sides of each threshold) and must
+show no difference; `tests/run.mjs` also replays the nightly job (`build()` on the saved history: every phase and bear
+state since 2009) and the live page (`liveFear` on the last 60 days). Two differences are by design and documented in the
+checker: StockGlass has two scores, so `WI_S.surprise` keeps a timing weight the skill moves to its third score; the page
+names the 200-day indicator `e200`, the skill `s200`. A new rule copy → add its inputs to `fixtures()`.
 
 ## Gotchas
 - Yahoo refuses GitHub's servers and browsers' CORS: always go through the relays (`race`/`yCh` in index.html; jina,
@@ -51,3 +59,5 @@ Verify a port by replay: feed saved history rows through the live code and compa
 - History rows store the dividend-adjusted HYG/IEF ratio; live code uses the raw price ratio (fine for today's row).
 - Jobs commit `data/*`: before a PR, merge `origin/main` into the branch to avoid data conflicts.
 - The page only uses the CDN/relay hosts it already uses; no new external hosts without checking CSP/CORS.
+- JS `toFixed` and Python `format` round an exact half differently (-0.125 → -0.13 vs -0.12); real data almost never
+  hits it, test inputs must avoid it.
