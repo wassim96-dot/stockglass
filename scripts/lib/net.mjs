@@ -10,6 +10,15 @@
 // Usage: import { fetchText, getJSON, Routes, yahooChart, fred } from "./lib/net.mjs";
 export const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36";
 export const sleep = ms => new Promise(r => setTimeout(r, ms));
+// Last completed US session (YYYY-MM-DD): the last weekday whose 16:15 New York close (VIX settlement) has passed. A US
+// holiday is not detected here; it simply has no bars. Jobs drop bars dated after it, so a run during trading hours (GitHub
+// starts jobs hours late, or a manual run) never saves half a session as a close.
+export function lastUsClose(now = new Date()) {
+  const ny = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+  if (ny.getHours() * 60 + ny.getMinutes() < 16 * 60 + 15) ny.setDate(ny.getDate() - 1);
+  while (ny.getDay() === 0 || ny.getDay() === 6) ny.setDate(ny.getDate() - 1);
+  return `${ny.getFullYear()}-${String(ny.getMonth() + 1).padStart(2, "0")}-${String(ny.getDate()).padStart(2, "0")}`;
+}
 
 export async function fetchText(url, { timeout = 20000, headers = {}, accept } = {}) {
   const ac = new AbortController(), to = setTimeout(() => ac.abort(new Error(`timeout after ${timeout / 1000} s`)), timeout);

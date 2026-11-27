@@ -19,7 +19,7 @@
 // Usage: node scripts/market-fear.mjs   (Node 18+, no dependencies)
 import fs from "node:fs";
 import path from "node:path";
-import { yahooChart, yahooStats, fred, getJSON } from "./lib/net.mjs";
+import { yahooChart, yahooStats, fred, getJSON, lastUsClose } from "./lib/net.mjs";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const WIN10 = 2520, WIN5 = 1260, RVN = 22, HAR_MIN = 500;
@@ -32,10 +32,12 @@ export const PHASE = {
   after: [4.5, "After fear", "Stress ended within the last month: returns have been below average in both 2007–2016 and 2016–2026."]
 };
 
+const CUT = lastUsClose();   // bars after the last completed US close are an unfinished session: not saved as a close
 async function chart(sym, range = "20y") {   // Yahoo daily closes (adjusted when available) → Map(date → value); direct, then the relays
   const res = await yahooChart(sym, range, { timeout: 40000 });
   if (res) { const q = res.indicators.quote[0], adj = res.indicators.adjclose?.[0]?.adjclose, m = new Map();
-    res.timestamp.forEach((t, i) => { const v = adj?.[i] ?? q.close[i]; if (v != null) m.set(new Date((t + (res.meta.gmtoffset || 0)) * 1000).toISOString().slice(0, 10), v); });
+    res.timestamp.forEach((t, i) => { const v = adj?.[i] ?? q.close[i], d = new Date((t + (res.meta.gmtoffset || 0)) * 1000).toISOString().slice(0, 10);
+      if (v != null && d <= CUT) m.set(d, v); });
     if (m.size > 500) return m; }
   throw Error("no data for " + sym + " " + JSON.stringify(yahooStats()));
 }

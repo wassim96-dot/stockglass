@@ -69,6 +69,8 @@ names the 200-day indicator `e200`, the skill `s200`. A new rule copy → add it
 - Jobs commit `data/*`: before a PR, merge `origin/main` into the branch to avoid data conflicts. Each job commits only
   its own files (weekly: `data/runs`, `data/latest.json`). A source that fails keeps its previous data (crypto history,
   funding, fear & greed; spreads ≤ 5 days): never write a file that lost data the page needs.
+- Jobs never save an unfinished US session: `lastUsClose()` (lib/net.mjs; 16:15 New York) cuts later bars in market-fear
+  and daily-minervini, so a run during trading hours (late GitHub start or manual run) computes the last close.
 - Never clear a fetch timeout before reading the body (`clearTimeout` then `await r.text()` hung the daily job for 30 min).
 - The page only uses the CDN/relay hosts it already uses; no new external hosts without checking CSP/CORS.
 - JS `toFixed` and Python `format` round an exact half differently (-0.125 → -0.13 vs -0.12); real data almost never
