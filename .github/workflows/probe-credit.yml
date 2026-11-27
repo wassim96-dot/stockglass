@@ -1,0 +1,22 @@
+name: Probe credit sources (temporary)
+on: pull_request
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Try each source from GitHub's servers
+        run: |
+          t(){ code=$(curl -s -o /tmp/b -w "%{http_code} %{time_total}s" -m 25 -A "Mozilla/5.0" "$2"); echo "== $1: $code · $(head -c 220 /tmp/b | tr '\n' ' ')"; }
+          t "FRED API (no key: 400 api_key = reachable)" "https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&file_type=json"
+          t "FRED graph CSV" "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2&cosd=2026-11-01"
+          t "ALFRED CSV" "https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=BAMLH0A0HYM2&cosd=2026-11-01"
+          t "DBnomics search ICE" "https://api.db.nomics.world/v22/search?q=BAMLH0A0HYM2"
+          t "DBnomics search high yield spread" "https://api.db.nomics.world/v22/search?q=high%20yield%20option%20adjusted%20spread"
+          t "iShares HYG product page" "https://www.ishares.com/us/products/239565/ishares-iboxx-high-yield-corporate-bond-etf"
+          t "iShares HYG holdings/fund data ajax" "https://www.ishares.com/us/products/239565/ishares-iboxx-high-yield-corporate-bond-etf/1467271812596.ajax?fileType=json"
+          t "SPDR JNK page" "https://www.ssga.com/us/en/intermediary/etfs/spdr-bloomberg-high-yield-bond-etf-jnk"
+          t "Yahoo HYG quote (yield field)" "https://query1.finance.yahoo.com/v7/finance/quote?symbols=HYG,JNK"
+          t "Treasury par curve CSV" "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2026/all?type=daily_treasury_yield_curve&field_tdr_date_value=2026&page&_format=csv"
+          t "ECB data portal (EUR HY not available, test reachability)" "https://data-api.ecb.europa.eu/service/data/FM/B.U2.EUR.4F.BB.U_A10Y.HSTA?lastNObservations=1&format=csvdata"
+          t "Nasdaq Data Link (Quandl) ML HY OAS" "https://data.nasdaq.com/api/v3/datasets/ML/HYOAS.json?rows=2"
