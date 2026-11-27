@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T08:14:42.534Z",
+ "updated": "2026-11-27T08:26:11.680Z",
  "rates": {
   "source": "US Treasury daily par and real yield curves (fallback FRED)",
   "y2": {
@@ -29,11 +29,92 @@
  },
  "inflation": {
   "source": "FRED (BLS CPI and PPI, BEA PCE), seasonally adjusted monthly index",
-  "cpi": null,
-  "ccpi": null,
-  "pce": null,
-  "cpce": null,
-  "ppi": null
+  "cpi": {
+   "id": "CPIAUCSL",
+   "via": "BLS CUSR0000SA0",
+   "date": "2026-10-01",
+   "month": "Oct 2026",
+   "mom": 0.35,
+   "prev_mom": 0.65,
+   "yoy": null,
+   "ann3m": 5.72
+  },
+  "ccpi": {
+   "id": "CPILFESL",
+   "via": "BLS CUSR0000SA0L1E",
+   "date": "2026-10-01",
+   "month": "Oct 2026",
+   "mom": 0.3,
+   "prev_mom": 0.33,
+   "yoy": null,
+   "ann3m": 3.75
+  },
+  "pce": {
+   "id": "PCEPI",
+   "via": "DBnomics BEA/NIPA-T20804/DPCERG-M",
+   "date": "2026-10-01",
+   "month": "Oct 2026",
+   "mom": 0.32,
+   "prev_mom": 0.5,
+   "yoy": 3.84,
+   "ann3m": 4.71
+  },
+  "cpce": {
+   "id": "PCEPILFE",
+   "via": "DBnomics BEA/NIPA-T20804/DPCCRG-M",
+   "date": "2026-10-01",
+   "month": "Oct 2026",
+   "mom": 0.29,
+   "prev_mom": 0.32,
+   "yoy": 3.26,
+   "ann3m": 3.63
+  },
+  "ppi": {
+   "id": "PPIFIS",
+   "via": "BLS WPSFD4",
+   "date": "2026-10-01",
+   "month": "Oct 2026",
+   "mom": 0.35,
+   "prev_mom": 1.41,
+   "yoy": 6.52,
+   "ann3m": 9.01
+  }
  },
- "previous": null
+ "previous": {
+  "updated": "2026-11-27T08:14:42.534Z",
+  "rates": {
+   "y2": {
+    "value": 4.61,
+    "date": "2026-11-25",
+    "chg_1w": -0.19,
+    "chg_4w": -0.09,
+    "pct_3y": 81,
+    "source": "US Treasury"
+   },
+   "y10": {
+    "value": 4.85,
+    "date": "2026-11-25",
+    "chg_1w": -0.22,
+    "chg_4w": -0.14,
+    "pct_3y": 93,
+    "source": "US Treasury"
+   },
+   "real10": {
+    "value": 2.73,
+    "date": "2026-11-25",
+    "chg_1w": -0.15,
+    "chg_4w": 0.09,
+    "pct_3y": 96,
+    "source": "US Treasury"
+   }
+  },
+  "inflation": {
+   "source": "FRED (BLS CPI and PPI, BEA PCE), seasonally adjusted monthly index",
+   "cpi": null,
+   "ccpi": null,
+   "pce": null,
+   "cpce": null,
+   "ppi": null
+  }
+ }
 }
