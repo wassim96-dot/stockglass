@@ -30,6 +30,7 @@ input.btn{font-weight:500;flex:1 1 140px;min-width:0}
 .tile b{display:block;font-size:11px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
 .tile span{font-size:15px;font-weight:700}
 .tile small{display:block;color:var(--ink3);font-size:11.5px}
+.tile .ts{display:block;margin-top:6px;font-style:normal;font-size:10.5px;color:var(--ink3);opacity:.85}
 .chg{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:10px 12px;font-size:13px}
 .chg p{margin:3px 0}
 .list{display:flex;flex-direction:column;gap:8px}
@@ -118,13 +119,19 @@ function row(x,isNew){const col=x.icon==="🟢"?"var(--good)":x.icon==="🔴"?"v
  <p class="muted" style="margin:6px 0 2px">Context (not counted)</p><ul>${ctxLines(x).map(l=>`<li>${l}</li>`).join("")}</ul>
  <p><a href="index.html?s=${encodeURIComponent(x.t)}">Open the full StockGlass report →</a> <span class="muted">(prices of ${esc(x.last_bar||"")}, ${esc(x.via||"")})</span></p></div></details>`}
 function render(){if(!CUR)return;const D=CUR,q=$("q").value.trim().toLowerCase(),ch=D.changes||{};
- $("dt").textContent=`market date ${D.date}`;$("vs").textContent=D.previous?`(${D.date} vs ${D.previous})`:"(first run)";
+ const dW=d=>new Date(d+"T12:00:00Z").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"}),
+  tW=t=>new Date(t).toLocaleString(undefined,{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});   // header: full date
+ $("dt").textContent=`market date ${D.date}`+(D.generated?` · computed ${tW(D.generated)}`:"");$("vs").textContent=D.previous?`(${D.date} vs ${D.previous})`:"(first run)";
  const F=D.market_fear,M=D.markets||{},mk=Object.values(M).filter(Boolean);
  $("sum").innerHTML=[["🟢 Meets template",D.counts.green,"a setup filter, not a buy signal"],["🟡 Partial or stress",D.counts.yellow,"1–2 blocks missing, or market stress"],["🔴 Not stage 2",D.counts.red,"several blocks missing or 200-day falling"],
-  ["Market fear",F?F.phase_label:"∅",F?`${F.score}/10 ${F.label} · VIX ${F.vix} (${F.date})`:"reading too old"],...(()=>{const CR=creditRead(F&&F.credit_check);return CR?[["Credit markets",CR.status,(CR.lines.find(l=>l[2]==="neg")||CR.lines[0]||[,""])[1]+" · not scored, short and long term",CR.col]]:[]})(),...(()=>{if(!window.SGRegime)return[];const z=[],fz=F?SGRegime.fearZone(F):null,cz=SGRegime.creditZone(F&&F.credit_check);
-   if(fz)z.push(["Fear vs history",fz.tag,fz.txt,fz.col]);if(cz)z.push(["Credit vs history",cz.tag,cz.txt,cz.col]);return z})(),
-  ["Market regimes",mk.length?"":"∅",mk.map(m=>m.name.replace(/ \(.*\)/,"").replace("S&P/TSX Composite","S&P/TSX").replace("STOXX Europe 600","STOXX 600")+": "+m.label).join(" · ")]]
-  .map(([b,s,sm,c])=>`<div class="tile"><b>${esc(b)}</b><span${c?` style="color:${c}"`:""}>${esc(s)}</span><small>${esc(sm)}</small></div>`).join("");
+  /* 5th item: when the reading was measured (27 Nov 2026) */
+  ...(()=>{const cc=F&&F.credit_check,hy=cc&&cc.spreads&&cc.spreads.hy,fT=F?`close ${dW(F.date)}`:"",cT=hy?`spreads ${dW(hy.date)} (FRED)${hy.stale?", last value":""}`:cc&&cc.date?`close ${dW(cc.date)}`:"";
+   const T=[["Market fear",F?F.phase_label:"∅",F?`${F.score}/10 ${F.label} · VIX ${F.vix}`:"reading too old",null,fT]];
+   const CR=creditRead(cc);if(CR)T.push(["Credit markets",CR.status,(CR.lines.find(l=>l[2]==="neg")||CR.lines[0]||[,""])[1]+" · not scored, short and long term",CR.col,cT]);
+   if(window.SGRegime){const fz=F?SGRegime.fearZone(F):null,cz=SGRegime.creditZone(cc);if(fz)T.push(["Fear vs history",fz.tag,fz.txt,fz.col,fT]);if(cz)T.push(["Credit vs history",cz.tag,cz.txt,cz.col,cT])}
+   const ml=mk.map(m=>m.last).filter(Boolean).sort().pop();
+   T.push(["Market regimes",mk.length?"":"∅",mk.map(m=>m.name.replace(/ \(.*\)/,"").replace("S&P/TSX Composite","S&P/TSX").replace("STOXX Europe 600","STOXX 600")+": "+m.label).join(" · "),null,ml?`closes to ${dW(ml)}`:""]);return T})()]
+  .map(([b,s,sm,c,ts])=>`<div class="tile"><b>${esc(b)}</b><span${c?` style="color:${c}"`:""}>${esc(s)}</span><small>${esc(sm)}</small>${ts?`<em class="ts">🕒 ${esc(ts)}</em>`:""}</div>`).join("");
  const L=(lab,arr)=>arr&&arr.length?`<p><b>${lab}</b>: ${arr.map(t=>`<a href="#" data-t="${esc(t)}">${esc(t)}</a>`).join(", ")}</p>`:"";
  $("chg").innerHTML=(L("🟢 Newly meet the template",ch.new_green)+L("No longer meet it",ch.lost_green)+L("🟡 Met, but under market stress",ch.new_met)+L("No longer met (was under stress)",ch.lost_met)+L("200-day average turned down",ch.new_falling_200))||(D.previous?`<p class="empty">No stock newly met or lost the template.</p>`:`<p class="empty">Changes appear from the second run.</p>`);
  const nw=new Map();(ch.new_green||[]).forEach(t=>nw.set(t,"new"));(ch.new_met||[]).forEach(t=>nw.set(t,"new"));

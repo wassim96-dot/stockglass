@@ -38,6 +38,9 @@ so that step still runs). A push that fails 3 times fails the step. Optional sec
 - `scripts/lib/net.mjs`: all job network code: `fetchText` (timeout covers the body), `Routes` (direct + relays, a route
   failing 4× is dropped for the run, the working one moves first), `yahooChart`, `fred` (API key or CSV via relays; after
   one series fails on every route the rest are skipped for the run). New fetches in scripts go through it.
+- Time tags: every reading shows when it was measured (grey "🕒" after the line title): `tsTag`, `tClose`, `tLive`,
+  `tComp`, `fearWhen`, `credWhen` in index.html; `lineHTML` and context-window sections take the tag as an extra item.
+  A new reading on a page → give it a tag (saved: the close/date it describes + "computed" time; live: the quote time).
 - `data/glossary.json`: tap-to-explain texts. `data/regime.json`: rates/inflation. `data/market*.json`: fear + credit.
 
 ## Rules copied in several places: change all copies together
