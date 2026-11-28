@@ -137,7 +137,7 @@
       s.textContent = `.fold-c{position:relative}.fold-c>.fold-h{padding-right:34px}
 .fold-b{position:absolute;top:4px;right:4px;width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:10px;background:transparent;color:var(--ink3,#8199ba);cursor:pointer;font-size:15px;line-height:1;z-index:2}
 .fold-b:hover,.fold-b:focus-visible{background:color-mix(in srgb,currentColor 14%,transparent);outline:none}.fold-b span{transition:transform .15s}
-.folded .fold-b span{transform:rotate(-90deg)}.folded{min-height:0!important;align-self:start;padding-bottom:10px!important}.folded>.fold-h{margin-bottom:0!important}.folded>*:not(.fold-h):not(.fold-b):not(.fold-keep){display:none!important}
+.folded .fold-b span{transform:rotate(-90deg)}.fold-c{min-width:0;max-width:100%;box-sizing:border-box}.fold-c>.fold-h{min-width:0;flex-wrap:wrap}.folded{min-height:0!important;padding-bottom:10px!important}.folded>.fold-h{margin-bottom:0!important}.folded>*:not(.fold-h):not(.fold-b):not(.fold-keep){display:none!important}
 .fold-all{border:1px solid var(--ln,rgba(150,190,240,.2));background:transparent;color:var(--ink2,#b7c9e2);border-radius:999px;padding:3px 10px;font:inherit;font-size:11.5px;cursor:pointer}`;
       D.head.appendChild(s); }
     // the card's name: the title's own text, else its first element (a title wrapped in a span), never the status chips
