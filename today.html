@@ -126,9 +126,11 @@ function render(){if(!CUR)return;const D=CUR,q=$("q").value.trim().toLowerCase()
  $("sum").innerHTML=[["🟢 Meets template",D.counts.green,"a setup filter, not a buy signal"],["🟡 Partial or stress",D.counts.yellow,"1–2 blocks missing, or market stress"],["🔴 Not stage 2",D.counts.red,"several blocks missing or 200-day falling"],
   /* 5th item: when the reading was measured (27 Nov 2026) */
   ...(()=>{const cc=F&&F.credit_check,hy=cc&&cc.spreads&&cc.spreads.hy,fT=F?(F.intraday?`intraday ${tW(F.intraday)} (manual run)`:`close ${dW(F.date)}`):"",cT=hy?`spreads ${dW(hy.date)} (FRED)${hy.stale?", last value":""}`:cc&&cc.date?`close ${dW(cc.date)}`:"";
-   const T=[["Market fear",F?F.phase_label:"∅",F?`${F.score}/10 ${F.label} · VIX ${F.vix}`:"reading too old",null,fT]];
-   const CR=creditRead(cc);if(CR)T.push(["Credit markets",CR.status,(CR.lines.find(l=>l[2]==="neg")||CR.lines[0]||[,""])[1]+" · not scored, short and long term",CR.col,cT]);
-   if(window.SGRegime){const fz=F?SGRegime.fearZone(F):null,cz=SGRegime.creditZone(cc);if(fz)T.push(["Fear vs history",fz.tag,fz.txt,fz.col,fT]);if(cz)T.push(["Credit vs history",cz.tag,cz.txt,cz.col,cT])}
+   /* one tile for fear and credit (28 Nov 2026): phase and credit status, then each reading and its history zone */
+   const CR=creditRead(cc),fz=F&&window.SGRegime?SGRegime.fearZone(F):null,cz=window.SGRegime?SGRegime.creditZone(cc):null;
+   const T=[["Market fear & credit",[F?F.phase_label:"fear ∅",CR?"credit "+CR.status.toLowerCase():null].filter(Boolean).join(" · "),
+    [F?`Fear ${F.score}/10 ${F.label}, VIX ${F.vix}${fz?` (${fz.tag})`:""}.`:"Fear reading too old.",CR?`Credit: ${(CR.lines.find(l=>l[2]==="neg")||CR.lines[0]||[,""])[1]}${cz?` (${cz.tag})`:""}.`:null,"Context, not scored."].filter(Boolean).join(" "),
+    (cz&&/bear|stress/i.test(cz.tag))||(F&&F.score<=4.5)?"var(--bad)":(F&&F.score>=6.5)?"var(--good)":null,[fT,cT].filter(Boolean).join(" · ")]];
    const ml=mk.map(m=>m.last).filter(Boolean).sort().pop();
    T.push(["Market regimes",mk.length?"":"∅",mk.map(m=>m.name.replace(/ \(.*\)/,"").replace("S&P/TSX Composite","S&P/TSX").replace("STOXX Europe 600","STOXX 600")+": "+m.label).join(" · "),null,ml?`closes to ${dW(ml)}`:""]);return T})()]
   .map(([b,s,sm,c,ts])=>`<div class="tile"><b>${esc(b)}</b><span${c?` style="color:${c}"`:""}>${esc(s)}</span><small${s?"":` class="k"`}>${esc(sm)}</small>${ts?`<em class="ts">🕒 ${esc(ts)}</em>`:""}</div>`).join("");
