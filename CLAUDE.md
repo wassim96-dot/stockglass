@@ -35,7 +35,7 @@ so that step still runs). A push that fails 3 times fails the step. Optional sec
 ## Architecture
 - `index.html`: the whole app (single file): fetch quotes, compute indicators and the two scores (long-term; short-term setup =
   0.5 × Minervini full check + 0.5 × technicals, `setupScore`; fear, valuation and EPS surprise are context since 28 Nov 2026),
-  context windows (Next earnings, Expectations & filings), one "Market backdrop" card (`renderRegime`: Fear, Credit, Trend, Rates,
+  context windows (Next earnings; Expectations, sales & filings = reverse DCF + `fwdSecs()` analysts/contracted sales/guidance + filing check), one "Market backdrop" card (`renderRegime`: Fear, Credit, Trend, Rates,
   Inflation, every reading once), BTC Cycle, the indicator groups plus the Minervini card (`minerviniCard`, one tappable row per
   check, glossary keys `tt_*`), and "Sources & method" at the end of the left column (all source/method notes live there). `today.html`: daily Minervini page. `history.html`: watchlist history.
 - `regime.js`: shared module for both pages: `liveFear` (today's quotes on the saved history, same rules as

@@ -1209,6 +1209,20 @@ function minerviniCard(T){if(!T)return "";const X=T.X,M=T.ma||{},sg=v=>(v>=0?"+"
   ${ep.length?`<h4 class="gsub">Entry points</h4><div class="rows">${ep.join("")}</div>`:""}
   ${st||dir?`<h4 class="gsub">Risk and direction</h4><div class="rows">${st}${dir}</div>`:""}
   <div class="src">${m!=null?"Full check = half of the short-term setup score · ":""}${esc(ft.read)}</div></section>`}
+/* future expectations & sales (equities, 28 Nov 2026): sections of the "Expectations, sales & filings" card: [title, html] */
+function fwdSecs(){const fdt=t=>t?new Date(t+"T00:00:00Z").toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}):"",parts=[],bn=v=>Math.abs(v)>=1e9?(v/1e9).toFixed(1)+" bn":(v/1e6).toFixed(0)+" m";
+  const eq=S.estQ&&S.estQ[0],ey=(S.est||[]).slice(0,2);
+  if(eq||ey.length){let t="";if(eq)t+=`Next quarter (${esc(eq.p)}): EPS ${eq.eps.toFixed(2)}${isN(eq.n)?` (${eq.n} analysts)`:""}. `;
+   if(ey.length)t+=ey.map(r=>`FY${r.y}: EPS ${r.eps.toFixed(2)}`).join(" · ")+(ey.length===2&&ey[0].eps>0?` (${((ey[1].eps/ey[0].eps-1)*100).toFixed(0)}% growth expected)`:"")+".";
+   const gx=ey.length===2&&ey[0].eps>0?(ey[1].eps/ey[0].eps-1)*100:null;
+   t+=gx==null?(ey.length&&ey[0].eps<=0?RD("neg","losses expected"):RD("na","no two-year comparison")):gx>=10?RD("pos","double-digit earnings growth expected"):gx<0?RD("neg","earnings expected to fall"):RD("neu","modest earnings growth expected");
+   parts.push(["What analysts expect",`<p>${t}</p><p class="muted">Nasdaq consensus EPS.</p>`])}
+  const rp=S.sec&&S.sec.rpo;
+  if(rp)parts.push(["Future sales already contracted",`<p>Remaining performance obligations: ${S.cur==="USD"?"$":""}${bn(rp.v)} at ${esc(fdt(rp.end))}${isN(rp.yoy)?` (${rp.yoy>=0?"+":""}${rp.yoy.toFixed(0)}% vs a year earlier)`:""}: revenue under signed contracts not yet booked.${!isN(rp.yoy)?RD("na","no year-earlier figure"):rp.yoy>=10?RD("pos","contracted future sales are growing"):rp.yoy<=-10?RD("neg","contracted future sales are shrinking"):RD("neu","contracted sales roughly stable")}</p><p class="muted">SEC XBRL (10-Q/10-K).</p>`]);
+  else if(S.sec)parts.push(["Future sales already contracted",`<p>Not reported in SEC data (many companies don't disclose backlog or RPO).</p>`]);
+  const lr=S.fil&&S.fil.lastRes;
+  parts.push(["Company guidance",`<p>${lr?`In the outlook section of the latest results release: <a href="${esc(lr.url)}" target="_blank" rel="noopener">8-K of ${esc(fdt(lr.date))}</a> (exhibit 99.1).`:"In the outlook section of the company's latest results release (investor-relations site)."}${RD("na","guidance figures are not read automatically here; open the release, or run the stock-verdict skill, which rates guidance against analysts' expectations")}</p>`]);
+  return parts}
 function render(){try{renderRegime()}catch(e){}
  $("cname").textContent=S.name||S.sym;$("ctk").textContent=S.sym;$("lg").style.background=logoG(S.sym);$("lg").textContent=S.sym.replace(/[^A-Z0-9]/g,"").slice(0,4);
  $("csec").textContent=S.sector||"sector ∅";$("cex").textContent=S.ex||"listed";{const ci=$("cind"),ind=S.industry&&S.industry!==S.sector?S.industry:"";ci.textContent=ind;ci.hidden=!ind}
@@ -1256,28 +1270,18 @@ function render(){try{renderRegime()}catch(e){}
     +`<li>${FL.lab==="OK"?RD("pos","reports filed on time, no warning sign").slice(3):FL.lab==="Warning"?RD("neg","a late report or a hard warning sign").slice(3):RD("mix","a report later than usual; worth watching").slice(3)}</li>`;
    add("Filing check",FL.lab,null,[["Filings: last three reports vs their deadline",`<ul class="fcl">${li}</ul>`+(FL.foreign?mu("Interim reports of foreign issuers (6-K) have no deadline."):"")]],FL.lab==="OK"?"":FL.lab==="Warning"?"bad":"in","L")}
   /* one "Expectations & filings" card (28 Nov 2026): the two long-term checks share a card, the worse status shows */
-  {const part=CW.splice(xfStart);if(part.length){const rk={Warning:3,Watch:2,OK:1},w=part.reduce((a,c)=>(rk[c.st]||0)>(rk[a.st]||0)?c:a);
-   CW.push({t:"Expectations & filings",st:w.st,sc:w.sc,secs:part.flatMap(c=>c.secs),cls:part.map(c=>c.cls).find(Boolean)||"",hz:"L"})}}
+  /* one "Expectations, sales & filings" card (28 Nov 2026): what the price assumes, future expectations & sales (analysts,
+     contracted sales, guidance) and the filing check; the worse status of the two checks shows */
+  {const part=CW.splice(xfStart),fw=(!S.kind||S.kind==="equity")?fwdSecs():[];if(part.length||fw.length){const rk={Warning:3,Watch:2,OK:1},w=part.length?part.reduce((a,c)=>(rk[c.st]||0)>(rk[a.st]||0)?c:a):{st:"n/a",sc:"var(--ink3)"};
+   const xs=part.filter(c=>c.t==="Expectations check").flatMap(c=>c.secs),fs=part.filter(c=>c.t!=="Expectations check").flatMap(c=>c.secs);
+   CW.push({t:"Expectations, sales & filings",st:w.st,sc:w.sc,secs:[...xs,...fw.map(([h,b])=>[h,b]),...fs],cls:part.map(c=>c.cls).find(Boolean)||"",hz:"L"})}}
   $("ctxc").innerHTML=CW.map(c=>`<div class="card glass cw${c.cls?" "+c.cls:""}"><h3>${esc(c.t)}${c.st?` <span class="chip" style="color:${c.sc};border-color:color-mix(in srgb,${c.sc} 45%,transparent)">${esc(c.st)}</span>`:""}${c.hz?`<span class="hzl">${HZ[c.hz]}</span>`:""}</h3><div class="fw">${c.secs.map(([h,b,ts])=>`<div><h4>${esc(h)}${ts||""}</h4>${b}</div>`).join("")}</div></div>`).join("")}
  {const nm=k=>(GR.find(x=>x[0]===k)||[,k])[1];
   $("tparts").textContent=S.mchk!=null?`Minervini full check ${S.mchk.toFixed(1)} (50%) · Technicals ${S.tech.toFixed(1)} (50%) · rule-based: in our 2012–2026 test higher scores had smaller dips, not higher returns`
    :Object.keys(TIMING).map(k=>`${nm(k)} ${gp(k)} (${TIMING[k]}%)`).join(" · ")}
  {const fh=$("fwc").querySelector("h3"),nh=$("finc").querySelector("h3");if(fh&&fh.firstChild)fh.firstChild.textContent=S.kind==="fund"?"Fund facts ":S.kind&&S.kind!=="equity"?"About this "+(S.kind==="index"?"index ":"asset "):"Future expectations & sales ";
   if(nh&&nh.firstChild)nh.firstChild.textContent=S.kind&&S.kind!=="equity"?"Returns & risk ":"Revenue, net income & margin ";const lg=$("finc").querySelector(".lgd");if(lg)lg.hidden=!!(S.kind&&S.kind!=="equity")}
- if(S.kind&&S.kind!=="equity")fundFacts();else{const el=$("fwd"),parts=[],bn=v=>Math.abs(v)>=1e9?(v/1e9).toFixed(1)+" bn":(v/1e6).toFixed(0)+" m";
-  const eq=S.estQ&&S.estQ[0],ey=(S.est||[]).slice(0,2);
-  if(eq||ey.length){let t="";if(eq)t+=`Next quarter (${esc(eq.p)}): EPS ${eq.eps.toFixed(2)}${isN(eq.n)?` (${eq.n} analysts)`:""}. `;
-   if(ey.length)t+=ey.map(r=>`FY${r.y}: EPS ${r.eps.toFixed(2)}`).join(" · ")+(ey.length===2&&ey[0].eps>0?` (${((ey[1].eps/ey[0].eps-1)*100).toFixed(0)}% growth expected)`:"")+".";
-   const gx=ey.length===2&&ey[0].eps>0?(ey[1].eps/ey[0].eps-1)*100:null;
-   t+=gx==null?(ey.length&&ey[0].eps<=0?RD("neg","losses expected"):RD("na","no two-year comparison")):gx>=10?RD("pos","double-digit earnings growth expected"):gx<0?RD("neg","earnings expected to fall"):RD("neu","modest earnings growth expected");
-   parts.push(`<div><h4>What analysts expect</h4><p>${t}</p><p class="muted">Nasdaq consensus EPS.</p></div>`)}
-  const rp=S.sec&&S.sec.rpo;
-  if(rp)parts.push(`<div><h4>Future sales already contracted</h4><p>Remaining performance obligations: ${S.cur==="USD"?"$":""}${bn(rp.v)} at ${esc(fdt(rp.end))}${isN(rp.yoy)?` (${rp.yoy>=0?"+":""}${rp.yoy.toFixed(0)}% vs a year earlier)`:""}: revenue under signed contracts not yet booked.${!isN(rp.yoy)?RD("na","no year-earlier figure"):rp.yoy>=10?RD("pos","contracted future sales are growing"):rp.yoy<=-10?RD("neg","contracted future sales are shrinking"):RD("neu","contracted sales roughly stable")}</p><p class="muted">SEC XBRL (10-Q/10-K).</p></div>`);
-  else if(S.sec)parts.push(`<div><h4>Future sales already contracted</h4><p>Not reported in SEC data (many companies don't disclose backlog or RPO).</p></div>`);
-  const lr=S.fil&&S.fil.lastRes;
-  parts.push(`<div><h4>Company guidance</h4><p>${lr?`In the outlook section of the latest results release: <a href="${esc(lr.url)}" target="_blank" rel="noopener">8-K of ${esc(fdt(lr.date))}</a> (exhibit 99.1).`:"In the outlook section of the company's latest results release (investor-relations site)."}${RD("na","guidance figures are not read automatically here; open the release, or run the stock-verdict skill, which rates guidance against analysts' expectations")}</p></div>`);
-  parts.push(`<p class="muted">Positive / negative = a plain reading of each line, not a score.</p>`);
-  el.className="fw";el.innerHTML=parts.join("")}
+ $("fwc").hidden=!(S.kind&&S.kind!=="equity");if(S.kind&&S.kind!=="equity")fundFacts();
  $("cov").textContent=`${S.cov.ok}/${REG.length} indicators scored · ${S.cov.nf} missing · ${S.cov.na} n/a${S.isFin?" · bank/insurer ratios excluded":""}`;
  const V=S.v,gates=S.kind==="fund"?[["TER ≤0.30%",V.ter,v=>v<=.3],["AUM ≥100 M",V.aum,v=>v>=100],["Age ≥3 y",V.age,v=>v>=3],["Top-10 ≤50%",V.top10,v=>v<=50],["Max DD 3y > −35%",V.mdd,v=>v>-35]]
   :S.kind&&S.kind!=="equity"?[["Above 200-day",V.e200,v=>v>0],["Max DD 3y > −35%",V.mdd,v=>v>-35],["Sharpe 3y >0.3",V.sharpe,v=>v>.3],["Return 3y >0",V.cagr3,v=>v>0]]
