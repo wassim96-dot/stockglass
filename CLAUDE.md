@@ -25,7 +25,8 @@ gh workflow run market-fear.yml --ref <branch>       # test a job on a branch (i
 ```
 Jobs (cron in UTC; GitHub starts them 6–10 hours late, so each has backups and a once-per-period guard):
 `market-fear.yml` (weekdays after the US close, then regime step), `crypto-data.yml` (daily), `daily-minervini.yml`
-(starts when market-fear finishes, via `workflow_run`, plus one backup cron), `weekly-watchlist.yml` (Friday/Saturday).
+(starts when market-fear finishes, via `workflow_run`, plus one backup cron), `weekly-watchlist.yml` (Friday/Saturday), `cleanup-branches.yml` (manual or monthly: deletes branches fully merged into main;
+Claude Code sessions cannot delete branches or change repo settings).
 Phase alerts go through `scripts/send-alerts.sh` (5 retries; never blocks the save; a new alert closes the older open
 issue of the same kind, the title up to the first ":"; "Job failed" issues are closed by hand). A failed or timed-out job opens one
 issue per job per day (`scripts/job-failed.sh`, last step `if: failure()`; script steps have their own `timeout-minutes`

@@ -1,0 +1,35 @@
+# Deletes branches whose changes are already in main (28 Nov 2026). Claude Code sessions cannot delete branches, so this job
+# does it: run it by hand (Actions → Clean up merged branches → Run workflow); it also runs on the 1st of each month.
+# Kept: main, backtest-timing (research branch, never merged), any branch with an open pull request, and any branch with a
+# commit that is not in main (ahead_by > 0). Prints what it deleted and what it kept.
+name: Clean up merged branches
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 1 * *"
+permissions:
+  contents: write
+  pull-requests: read
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Delete merged branches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          R: ${{ github.repository }}
+        run: |
+          set -u
+          open=$(gh api "repos/$R/pulls?state=open&per_page=100" --jq '.[].head.ref')
+          deleted=0; kept=""
+          for b in $(gh api "repos/$R/branches?per_page=100" --paginate --jq '.[].name'); do
+            case "$b" in main|backtest-timing) continue;; esac
+            if printf '%s\n' "$open" | grep -qxF "$b"; then kept="$kept $b(open PR)"; continue; fi
+            ahead=$(gh api "repos/$R/compare/main...$b" --jq .ahead_by 2>/dev/null || echo "?")
+            if [ "$ahead" = "0" ]; then
+              gh api -X DELETE "repos/$R/git/refs/heads/$b" && { echo "deleted $b"; deleted=$((deleted + 1)); }
+            else kept="$kept $b(+$ahead)"; fi
+          done
+          echo "Deleted $deleted merged branches."
+          echo "Kept (not fully in main):$kept"

@@ -28,6 +28,7 @@ The site is static (GitHub Pages, no build step). Quotes come from Yahoo Finance
 | Daily Minervini | when Market fear finishes, plus one backup | `data/daily/` |
 | Crypto data | daily | `data/crypto.json`, `data/crypto-history.json` |
 | Weekly watchlist | Friday after the close, Saturday backup | `data/runs/`, `data/latest.json` |
+| Clean up merged branches | by hand, and on the 1st of each month | deletes branches already merged into main |
 
 Alerts reach the phone as GitHub issues (no e-mail): a fear-phase change, a stock that starts or stops meeting the Minervini template, or a job that failed. A new alert closes the previous open one of the same kind. Any job can also be started by hand from the Actions tab ("Run workflow").
 
