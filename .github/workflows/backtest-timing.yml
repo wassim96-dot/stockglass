@@ -1,0 +1,44 @@
+name: Backtest timing score (draft PR only)
+
+# Runs only on the backtest-timing draft pull request: downloads prices for backtest/universe.json, scores every stock
+# at every month-end with the skill's own score.py (backtest/sv), and commits backtest/results.csv and the summaries to
+# the branch. Never merged; main is untouched.
+on:
+  pull_request:
+    paths: ["backtest/**", ".github/workflows/backtest-timing.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  backtest:
+    if: github.head_ref == 'backtest-timing'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - name: Download prices (Yahoo through the shared relays)
+        timeout-minutes: 35
+        run: node backtest/fetch.mjs
+      - name: Score every stock at every month-end
+        timeout-minutes: 15
+        run: python3 backtest/run.py
+      - name: Keep the price cache as a run artifact (not committed)
+        uses: actions/upload-artifact@v4
+        with:
+          name: price-cache
+          path: backtest/cache
+          retention-days: 14
+      - name: Commit the results to the branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backtest/results.csv backtest/port_check.json backtest/run_summary.json
+          git diff --cached --quiet && { echo "No changes"; exit 0; }
+          git commit -m "Backtest results $(date -u +%F)"
+          git push origin "HEAD:${{ github.head_ref }}"

@@ -1,0 +1,406 @@
+{
+ "seed": 20261128,
+ "n": 100,
+ "stocks": [
+  {
+   "ticker": "AAPL",
+   "sector": "Information Technology"
+  },
+  {
+   "ticker": "ACN",
+   "sector": "Information Technology"
+  },
+  {
+   "ticker": "ADBE",
+   "sector": "Information Technology"
+  },
+  {
+   "ticker": "AKAM",
+   "sector": "Information Technology"
+  },
+  {
+   "ticker": "CSCO",
+   "sector": "Information Technology"
+  },
+  {
+   "ticker": "CTSH",
+   "sector": "Information Technology"
+  },
+  {
+   "ticker": "IBM",
+   "sector": "Information Technology"
+  },
+  {
+   "ticker": "KLAC",
+   "sector": "Information Technology"
+  },
+  {
+   "ticker": "MU",
+   "sector": "Information Technology"
+  },
+  {
+   "ticker": "TXN",
+   "sector": "Information Technology"
+  },
+  {
+   "ticker": "ABT",
+   "sector": "Health Care"
+  },
+  {
+   "ticker": "AMGN",
+   "sector": "Health Care"
+  },
+  {
+   "ticker": "BDX",
+   "sector": "Health Care"
+  },
+  {
+   "ticker": "BIIB",
+   "sector": "Health Care"
+  },
+  {
+   "ticker": "BMY",
+   "sector": "Health Care"
+  },
+  {
+   "ticker": "GILD",
+   "sector": "Health Care"
+  },
+  {
+   "ticker": "HUM",
+   "sector": "Health Care"
+  },
+  {
+   "ticker": "LLY",
+   "sector": "Health Care"
+  },
+  {
+   "ticker": "REGN",
+   "sector": "Health Care"
+  },
+  {
+   "ticker": "ALL",
+   "sector": "Financials"
+  },
+  {
+   "ticker": "AXP",
+   "sector": "Financials"
+  },
+  {
+   "ticker": "BAC",
+   "sector": "Financials"
+  },
+  {
+   "ticker": "BLK",
+   "sector": "Financials"
+  },
+  {
+   "ticker": "C",
+   "sector": "Financials"
+  },
+  {
+   "ticker": "CB",
+   "sector": "Financials"
+  },
+  {
+   "ticker": "PRU",
+   "sector": "Financials"
+  },
+  {
+   "ticker": "SCHW",
+   "sector": "Financials"
+  },
+  {
+   "ticker": "USB",
+   "sector": "Financials"
+  },
+  {
+   "ticker": "DHI",
+   "sector": "Consumer Discretionary"
+  },
+  {
+   "ticker": "EBAY",
+   "sector": "Consumer Discretionary"
+  },
+  {
+   "ticker": "HD",
+   "sector": "Consumer Discretionary"
+  },
+  {
+   "ticker": "LEN",
+   "sector": "Consumer Discretionary"
+  },
+  {
+   "ticker": "LOW",
+   "sector": "Consumer Discretionary"
+  },
+  {
+   "ticker": "NKE",
+   "sector": "Consumer Discretionary"
+  },
+  {
+   "ticker": "ORLY",
+   "sector": "Consumer Discretionary"
+  },
+  {
+   "ticker": "ROST",
+   "sector": "Consumer Discretionary"
+  },
+  {
+   "ticker": "YUM",
+   "sector": "Consumer Discretionary"
+  },
+  {
+   "ticker": "ADM",
+   "sector": "Consumer Staples"
+  },
+  {
+   "ticker": "CAG",
+   "sector": "Consumer Staples"
+  },
+  {
+   "ticker": "CLX",
+   "sector": "Consumer Staples"
+  },
+  {
+   "ticker": "COST",
+   "sector": "Consumer Staples"
+  },
+  {
+   "ticker": "HRL",
+   "sector": "Consumer Staples"
+  },
+  {
+   "ticker": "MKC",
+   "sector": "Consumer Staples"
+  },
+  {
+   "ticker": "MO",
+   "sector": "Consumer Staples"
+  },
+  {
+   "ticker": "PG",
+   "sector": "Consumer Staples"
+  },
+  {
+   "ticker": "PM",
+   "sector": "Consumer Staples"
+  },
+  {
+   "ticker": "BA",
+   "sector": "Industrials"
+  },
+  {
+   "ticker": "EMR",
+   "sector": "Industrials"
+  },
+  {
+   "ticker": "GD",
+   "sector": "Industrials"
+  },
+  {
+   "ticker": "LMT",
+   "sector": "Industrials"
+  },
+  {
+   "ticker": "NOC",
+   "sector": "Industrials"
+  },
+  {
+   "ticker": "NSC",
+   "sector": "Industrials"
+  },
+  {
+   "ticker": "RTX",
+   "sector": "Industrials"
+  },
+  {
+   "ticker": "UPS",
+   "sector": "Industrials"
+  },
+  {
+   "ticker": "WM",
+   "sector": "Industrials"
+  },
+  {
+   "ticker": "APA",
+   "sector": "Energy"
+  },
+  {
+   "ticker": "CTRA",
+   "sector": "Energy"
+  },
+  {
+   "ticker": "CVX",
+   "sector": "Energy"
+  },
+  {
+   "ticker": "DVN",
+   "sector": "Energy"
+  },
+  {
+   "ticker": "EOG",
+   "sector": "Energy"
+  },
+  {
+   "ticker": "EQT",
+   "sector": "Energy"
+  },
+  {
+   "ticker": "VLO",
+   "sector": "Energy"
+  },
+  {
+   "ticker": "WMB",
+   "sector": "Energy"
+  },
+  {
+   "ticker": "XOM",
+   "sector": "Energy"
+  },
+  {
+   "ticker": "ALB",
+   "sector": "Materials"
+  },
+  {
+   "ticker": "APD",
+   "sector": "Materials"
+  },
+  {
+   "ticker": "AVY",
+   "sector": "Materials"
+  },
+  {
+   "ticker": "CF",
+   "sector": "Materials"
+  },
+  {
+   "ticker": "FCX",
+   "sector": "Materials"
+  },
+  {
+   "ticker": "IFF",
+   "sector": "Materials"
+  },
+  {
+   "ticker": "IP",
+   "sector": "Materials"
+  },
+  {
+   "ticker": "NEM",
+   "sector": "Materials"
+  },
+  {
+   "ticker": "VMC",
+   "sector": "Materials"
+  },
+  {
+   "ticker": "AEE",
+   "sector": "Utilities"
+  },
+  {
+   "ticker": "D",
+   "sector": "Utilities"
+  },
+  {
+   "ticker": "DUK",
+   "sector": "Utilities"
+  },
+  {
+   "ticker": "EIX",
+   "sector": "Utilities"
+  },
+  {
+   "ticker": "ES",
+   "sector": "Utilities"
+  },
+  {
+   "ticker": "NEE",
+   "sector": "Utilities"
+  },
+  {
+   "ticker": "PPL",
+   "sector": "Utilities"
+  },
+  {
+   "ticker": "SO",
+   "sector": "Utilities"
+  },
+  {
+   "ticker": "WEC",
+   "sector": "Utilities"
+  },
+  {
+   "ticker": "ARE",
+   "sector": "Real Estate"
+  },
+  {
+   "ticker": "DLR",
+   "sector": "Real Estate"
+  },
+  {
+   "ticker": "EQIX",
+   "sector": "Real Estate"
+  },
+  {
+   "ticker": "EQR",
+   "sector": "Real Estate"
+  },
+  {
+   "ticker": "ESS",
+   "sector": "Real Estate"
+  },
+  {
+   "ticker": "MAA",
+   "sector": "Real Estate"
+  },
+  {
+   "ticker": "PSA",
+   "sector": "Real Estate"
+  },
+  {
+   "ticker": "VTR",
+   "sector": "Real Estate"
+  },
+  {
+   "ticker": "WELL",
+   "sector": "Real Estate"
+  },
+  {
+   "ticker": "CHTR",
+   "sector": "Communication Services"
+  },
+  {
+   "ticker": "CMCSA",
+   "sector": "Communication Services"
+  },
+  {
+   "ticker": "DIS",
+   "sector": "Communication Services"
+  },
+  {
+   "ticker": "GOOGL",
+   "sector": "Communication Services"
+  },
+  {
+   "ticker": "LUMN",
+   "sector": "Communication Services"
+  },
+  {
+   "ticker": "NFLX",
+   "sector": "Communication Services"
+  },
+  {
+   "ticker": "OMC",
+   "sector": "Communication Services"
+  },
+  {
+   "ticker": "TMUS",
+   "sector": "Communication Services"
+  },
+  {
+   "ticker": "TTWO",
+   "sector": "Communication Services"
+  }
+ ]
+}
