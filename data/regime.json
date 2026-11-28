@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-28T04:07:20.600Z",
+ "updated": "2026-11-28T10:17:40.033Z",
  "rates": {
   "source": "US Treasury daily par and real yield curves (fallback FRED)",
   "y2": {
@@ -81,30 +81,30 @@
   }
  },
  "previous": {
-  "updated": "2026-11-27T15:32:17.617Z",
+  "updated": "2026-11-28T04:07:20.600Z",
   "rates": {
    "y2": {
-    "value": 4.61,
-    "date": "2026-11-25",
-    "chg_1w": -0.19,
-    "chg_4w": -0.09,
-    "pct_3y": 81,
+    "value": 4.69,
+    "date": "2026-11-27",
+    "chg_1w": -0.07,
+    "chg_4w": 0.02,
+    "pct_3y": 85,
     "source": "US Treasury"
    },
    "y10": {
-    "value": 4.85,
-    "date": "2026-11-25",
-    "chg_1w": -0.22,
-    "chg_4w": -0.14,
-    "pct_3y": 93,
+    "value": 4.94,
+    "date": "2026-11-27",
+    "chg_1w": -0.1,
+    "chg_4w": -0.11,
+    "pct_3y": 94,
     "source": "US Treasury"
    },
    "real10": {
-    "value": 2.73,
-    "date": "2026-11-25",
-    "chg_1w": -0.15,
-    "chg_4w": 0.09,
-    "pct_3y": 96,
+    "value": 2.79,
+    "date": "2026-11-27",
+    "chg_1w": -0.09,
+    "chg_4w": 0.12,
+    "pct_3y": 97,
     "source": "US Treasury"
    }
   },
