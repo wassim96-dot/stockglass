@@ -31,8 +31,9 @@ issue per job per day (`scripts/job-failed.sh`, last step `if: failure()`; scrip
 so that step still runs). A push that fails 3 times fails the step. Optional secret `FRED_API_KEY` (free) → FRED's API.
 
 ## Architecture
-- `index.html`: the whole app (single file): fetch quotes, compute indicators and the three scores, context windows,
-  Market Regime and BTC Cycle cards. `today.html`: daily Minervini page. `history.html`: watchlist history.
+- `index.html`: the whole app (single file): fetch quotes, compute indicators and the two scores (long-term; short-term setup =
+  0.5 × Minervini full check + 0.5 × technicals, `setupScore`; fear, valuation and EPS surprise are context since 28 Nov 2026),
+  context windows, one "Market fear & credit" card (`renderFC`, every fear and credit reading), Market Regime and BTC Cycle cards. `today.html`: daily Minervini page. `history.html`: watchlist history.
 - `regime.js`: shared module for both pages: `liveFear` (today's quotes on the saved history, same rules as
   market-fear.mjs), `fearAt`, `fearZone`/`creditZone` (history phrases), `creditLive`, `ratesRead`, `inflationRead`, `btcCycle`, `glossInit`.
 - `scripts/lib/net.mjs`: all job network code: `fetchText` (timeout covers the body), `Routes` (direct + relays, a route
@@ -54,15 +55,19 @@ so that step still runs). A push that fails 3 times fails the step. Optional sec
 | glossary | `data/glossary.json` = skill `assets/glossary.json`; popover code `regime.js glossInit` = skill `assets/gloss.js` |
 | folding cards | `regime.js foldInit` = skill `assets/fold.js` (cards start folded, arrow top right, state in localStorage) |
 | weights (`WI_S`, `LW_S`), scoring bands | `index.html` ↔ skill `scripts/score.py` (`WI`, `LENS`) |
+| short-term setup score (`setupScore`, `SETUP_W`, labels `TM_T_S`/`TM_T_F`) | `index.html` ↔ skill `scripts/score.py` (`setup_score`, `TM_TIERS`/`TM_TIERS_ETF`; rounding = JS `Math.round`) |
 | Minervini v2 | `index.html` between `/* @tt-begin` and `/* @tt-end */`; reused by `daily-minervini.mjs` |
 
 `tests/check-copies.mjs` runs every copy on the same inputs (saved data + values on both sides of each threshold) and must
 show no difference; `tests/run.mjs` also replays the nightly job (`build()` on the saved history: every phase and bear
 state since 2009) and the live page (`liveFear` on the last 60 days). Two differences are by design and documented in the
-checker: StockGlass has two scores, so `WI_S.surprise` keeps a timing weight the skill moves to its third score; the page
+checker: `WI_S.surprise` keeps a timing weight the skill moves to its third score (unused since 28 Nov 2026: the mkt group is not in `TIMING_S`); the page
 names the 200-day indicator `e200`, the skill `s200`. A new rule copy → add its inputs to `fixtures()`.
 
 ## Gotchas
+- Backtests (branch `backtest-timing`, draft PR #59, never merge): no score predicted 2–12 week returns in 2012–2026; the setup
+  score is shown as trend quality (smaller dips), never as a forecast. Minervini's full check also differs slightly by data: the
+  page uses daily bars for the RS line and the sector ETF, the skill weekly bars.
 - Yahoo refuses GitHub's servers and browsers' CORS: always go through the relays (`race`/`yCh` in index.html; jina,
   allorigins, codetabs, corsproxy in the scripts).
 - FRED (credit spreads, CCC) often times out or refuses from GitHub (jina 401, codetabs 522, allorigins 403/500): one

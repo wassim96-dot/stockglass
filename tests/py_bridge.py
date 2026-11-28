@@ -5,7 +5,8 @@ stdin: JSON list of calls [{"fn": "regime.fear_zone", "args": [...]}, ...]; stdo
 {"err": message}). Modules: regime = scripts/regime.py (or the one given with --regime, e.g. the skill's copy);
 weekly.credit_read = credit_read() taken from scripts/weekly_review.py (that file is a script, so only the function is loaded);
 skill_render.credit_read = credit_read() from the skill's scripts/render.py when --render is given;
-skill_score.consts = the WI, LENS, LENS_ETF and LENS_CRYPTO literals of the skill's scripts/score.py when --score is given.
+skill_score.consts = the WI, LENS, LENS_ETF, LENS_CRYPTO, TM_TIERS, TM_TIERS_ETF and SETUP_W literals of the skill's scripts/score.py
+when --score is given; skill_score.setup_score = its setup_score() (short-term setup score, 28 Nov 2026).
 """
 import ast, importlib.util, json, os, sys
 
@@ -17,10 +18,10 @@ def load_module(path, name):
     m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); return m
 
 
-def load_function(path, fn):
-    """Exec only the named top-level function of a script file (plus the imports it needs)."""
+def load_function(path, fn, consts=None):
+    """Exec only the named top-level function of a script file (plus the imports it needs and the constants given)."""
     src = open(path, encoding="utf-8").read(); tree = ast.parse(src)
-    ns = {}
+    ns = dict(consts or {})
     for node in tree.body:
         if isinstance(node, (ast.Import, ast.ImportFrom)): exec(compile(ast.Module([node], []), path, "exec"), ns)
     for node in tree.body:
@@ -42,7 +43,10 @@ def main():
     args = sys.argv[1:]; opt = lambda k: args[args.index(k) + 1] if k in args else None
     mods = {"regime": load_module(opt("--regime") or os.path.join(ROOT, "scripts", "regime.py"), "regime_under_test")}
     fns = {"weekly.credit_read": lambda: load_function(os.path.join(ROOT, "scripts", "weekly_review.py"), "credit_read")}
-    if opt("--score"): fns["skill_score.consts"] = lambda: (lambda: load_consts(opt("--score"), {"WI", "LENS", "LENS_ETF", "LENS_CRYPTO"}))
+    if opt("--score"):
+        sys.path.insert(0, os.path.dirname(os.path.abspath(opt("--score"))))   # its imports (catalyst, ownership, flows) resolve from the skill folder
+        fns["skill_score.consts"] = lambda: (lambda: load_consts(opt("--score"), {"WI", "LENS", "LENS_ETF", "LENS_CRYPTO", "TM_TIERS", "TM_TIERS_ETF", "SETUP_W"}))
+        fns["skill_score.setup_score"] = lambda: load_function(opt("--score"), "setup_score", load_consts(opt("--score"), {"SETUP_W"}))
     if opt("--render"): fns["skill_render.credit_read"] = lambda: load_function(opt("--render"), "credit_read")
     cache, out = {}, []
     for call in json.load(sys.stdin):

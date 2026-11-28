@@ -178,6 +178,18 @@ export function checkCopies({ skill = null, log = console.log } = {}) {
       const d = same(norm(z(o)), norm(z(py)), js);
       log(`${d ? "FAIL" : "ok  "} index.html ${js} = skill score.py`); if (d) problems.push(`weights ${d}`);
     }
+    // short-term setup score (28 Nov 2026): index.html setupScore = skill setup_score on technicals x full-check fixtures, and the same labels
+    const html = fs.readFileSync(P("index.html"), "utf8"), sw = +(/SETUP_W=([\d.]+)/.exec(html) || [])[1];
+    const SSf = vm.runInNewContext(`(${extract(html, "function setupScore(")})`, { SETUP_W: sw });
+    const techs = [null, 0, 2.3, 4.1, 5.0, 6.04, 7.6, 10], fulls = [null, { passed: 0, total: 0 }, { passed: 0, total: 10 }, { passed: 4, total: 9 }, { passed: 5, total: 10 }, { passed: 7, total: 11 }, { passed: 9, total: 11 }, { passed: 11, total: 11 }];
+    const ss = []; techs.forEach(t => fulls.forEach(f => { for (const d of [0, .01, .05, .11]) { const tt = t == null ? null : Math.round((t + d) * 100) / 100; ss.push([`setupScore #${ss.length}`, SSf(tt, f), { fn: "skill_score.setup_score", args: [tt, f] }]); } }));
+    compare("index.html ↔ skill score.py", ss, python(ss.map(c => c[2]), ["--score", S("scripts/score.py")]));
+    if (!K.err) for (const [js, py] of [["TM_T_S", K.ok.TM_TIERS], ["TM_T_F", K.ok.TM_TIERS_ETF]]) {
+      const m = new RegExp(`const ${js}=`).exec(html), seg = m ? html.slice(m.index + m[0].length, html.indexOf(";", html.indexOf("]]", m.index)) ) : null;
+      let arr = null; try { arr = vm.runInNewContext(`(()=>{const tiers=a=>a.map(([l,m],i)=>[[7.5,6.2,4.5,3,-1][i],l,m]);return ${seg}})()`, {}); } catch (e) { arr = null; }
+      const d = arr ? same(arr.map(x => [x[0], x[1], x[2]]), (py || []).map(x => [x[0], x[1], x[2]]), js) : `${js} not found in index.html`;
+      log(`${d ? "FAIL" : "ok  "} index.html ${js} labels = skill score.py`); if (d) problems.push(`labels ${d}`);
+    }
   } else log("     (skill copies not checked: run with --skill <stock-verdict folder>)");
   return problems;
 }
