@@ -1,0 +1,56 @@
+[
+ {
+  "ticker": "AKAM",
+  "date": "2021-10-31",
+  "tech_inprocess": 5.4,
+  "tech_score_py": 5.4,
+  "final": 5.4,
+  "final_expected": 5.4,
+  "match": true
+ },
+ {
+  "ticker": "CSCO",
+  "date": "2013-02-01",
+  "tech_inprocess": 4.7,
+  "tech_score_py": 4.7,
+  "final": 4.7,
+  "final_expected": 4.7,
+  "match": true
+ },
+ {
+  "ticker": "CSCO",
+  "date": "2015-08-31",
+  "tech_inprocess": 5.3,
+  "tech_score_py": 5.3,
+  "final": 5.3,
+  "final_expected": 5.3,
+  "match": true
+ },
+ {
+  "ticker": "CSCO",
+  "date": "2018-05-31",
+  "tech_inprocess": 6.3,
+  "tech_score_py": 6.3,
+  "final": 6.2,
+  "final_expected": 6.2,
+  "match": true
+ },
+ {
+  "ticker": "CSCO",
+  "date": "2021-02-01",
+  "tech_inprocess": 5.6,
+  "tech_score_py": 5.6,
+  "final": 5.6,
+  "final_expected": 5.6,
+  "match": true
+ },
+ {
+  "ticker": "CSCO",
+  "date": "2021-10-31",
+  "tech_inprocess": 5.9,
+  "tech_score_py": 5.9,
+  "final": 5.8,
+  "final_expected": 5.8,
+  "match": true
+ }
+]
