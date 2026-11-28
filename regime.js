@@ -123,6 +123,48 @@
     return any ? out : null;
   }
 
+  /* ---------- fold cards (28 Nov 2026): an arrow in each card's top-right corner folds it to its title ----------
+     Cards start folded unless listed in `open`; what the viewer chooses is remembered in this browser (localStorage, per
+     card title). The title itself keeps opening its glossary explanation, so only the arrow folds. Cards that are drawn
+     again (live updates) keep their state: new cards are picked up automatically.
+     groups: [{ sel, head, keep }] — sel = the card, head = its title element (kept visible), keep = also kept when folded.
+     Copy: skill assets/fold.js (same function; tests/check-copies.mjs compares them). */
+  function foldInit({ groups, open = [], ns = "page" }) {
+    const KEY = "sg_fold_" + ns, D = document;
+    let st = {}; try { st = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { st = {}; }
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* private mode: not remembered */ } };
+    if (!D.getElementById("fold-css")) { const s = D.createElement("style"); s.id = "fold-css";
+      s.textContent = `.fold-c{position:relative}.fold-c>.fold-h{padding-right:34px}
+.fold-b{position:absolute;top:4px;right:4px;width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:10px;background:transparent;color:var(--ink3,#8199ba);cursor:pointer;font-size:15px;line-height:1;z-index:2}
+.fold-b:hover,.fold-b:focus-visible{background:color-mix(in srgb,currentColor 14%,transparent);outline:none}.fold-b span{transition:transform .15s}
+.folded .fold-b span{transform:rotate(-90deg)}.folded{min-height:0!important;align-self:start;padding-bottom:10px!important}.folded>.fold-h{margin-bottom:0!important}.folded>*:not(.fold-h):not(.fold-b):not(.fold-keep){display:none!important}
+.fold-all{border:1px solid var(--ln,rgba(150,190,240,.2));background:transparent;color:var(--ink2,#b7c9e2);border-radius:999px;padding:3px 10px;font:inherit;font-size:11.5px;cursor:pointer}`;
+      D.head.appendChild(s); }
+    // the card's name: the title's own text, else its first element (a title wrapped in a span), never the status chips
+    const title = h => ([...h.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join(" ").trim() || (h.firstElementChild || h).textContent.trim()).replace(/\s+/g, " ").slice(0, 60);
+    const set = (el, closed) => { el.classList.toggle("folded", closed); const b = el.querySelector(":scope>.fold-b");
+      if (b) { b.setAttribute("aria-expanded", String(!closed)); b.setAttribute("aria-label", (closed ? "Expand " : "Fold ") + el.dataset.fk); b.title = closed ? "Expand" : "Fold"; } };
+    function apply(el, g) {
+      const h = el.querySelector(g.head); if (!h) return; const k = title(h); if (!k) return;
+      h.classList.add("fold-h"); el.classList.add("fold-c"); el.dataset.fk = k;
+      if (g.keep) el.querySelectorAll(g.keep).forEach(x => { if (x.parentElement === el) x.classList.add("fold-keep"); });
+      if (!el.querySelector(":scope>.fold-b")) { const b = D.createElement("button"); b.type = "button"; b.className = "fold-b"; b.innerHTML = "<span>▾</span>";
+        b.addEventListener("click", ev => { ev.stopPropagation(); ev.preventDefault(); const c = !el.classList.contains("folded"); st[el.dataset.fk] = c; save(); set(el, c); label(); });
+        el.appendChild(b); }
+      set(el, el.dataset.fk in st ? !!st[el.dataset.fk] : !open.includes(el.dataset.fk));
+    }
+    const label = () => { const all = [...D.querySelectorAll(".fold-c")], c = all.length && all.every(el => el.classList.contains("folded"));
+      D.querySelectorAll("[data-fold-all]").forEach(a => { const t = c ? "Expand all" : "Fold all"; if (a.textContent !== t) a.textContent = t; }); };   // unchanged text: no DOM write (the observer would loop)
+    const scan = () => { groups.forEach(g => D.querySelectorAll(g.sel).forEach(el => apply(el, g))); label(); };
+    let t = null; new MutationObserver(() => { clearTimeout(t); t = setTimeout(scan, 30); }).observe(D.body, { childList: true, subtree: true });
+    scan();
+    // expand / fold everything at once: any element with data-fold-all (a button the page provides)
+    D.addEventListener("click", ev => { const a = ev.target.closest("[data-fold-all]"); if (!a) return; ev.preventDefault();
+      const all = [...D.querySelectorAll(".fold-c")], c = !all.every(el => el.classList.contains("folded"));
+      all.forEach(el => { st[el.dataset.fk] = c; set(el, c); }); save(); label(); });
+    return { scan };
+  }
+
   /* ---------- rates and inflation (data/regime.json) ---------- */
   const pt = v => !isN(v) ? "∅" : (v >= 0 ? "+" : "") + v.toFixed(2) + " pt", pc = (v, d = 1) => !isN(v) ? "∅" : (v >= 0 ? "+" : "") + v.toFixed(d) + "%";
   function ratesRead(rg, live) {
@@ -219,6 +261,6 @@
     mark(); new MutationObserver(() => { clearTimeout(W.__gm); W.__gm = setTimeout(mark, 120); }).observe(document.body, { childList: true, subtree: true });
   }
 
-  W.SGRegime = { liveFear, fearAt, fearZone, creditZone, creditLive, ratesRead, inflationRead, btcCycle, glossInit, PH };
+  W.SGRegime = { liveFear, fearAt, fearZone, creditZone, creditLive, foldInit, ratesRead, inflationRead, btcCycle, glossInit, PH };
   if (typeof module !== "undefined") module.exports = W.SGRegime;
 })(typeof window !== "undefined" ? window : globalThis);

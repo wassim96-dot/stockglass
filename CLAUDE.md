@@ -41,6 +41,9 @@ so that step still runs). A push that fails 3 times fails the step. Optional sec
 - Time tags: every reading shows when it was measured (grey "🕒" after the line title): `tsTag`, `tClose`, `tLive`,
   `tComp`, `fearWhen`, `credWhen` in index.html; `lineHTML` and context-window sections take the tag as an extra item.
   A new reading on a page → give it a tag (saved: the close/date it describes + "computed" time; live: the quote time).
+- Cards fold to their title (`foldInit`, arrow top right; the title keeps opening the glossary). Folded by default except
+  the score cards and "Score by group"; the viewer's choices are kept per card title. A new card with an `h3` title
+  folds automatically; "Expand all" is any element with `data-fold-all`.
 - `data/glossary.json`: tap-to-explain texts. `data/regime.json`: rates/inflation. `data/market*.json`: fear + credit.
 
 ## Rules copied in several places: change all copies together
@@ -49,6 +52,7 @@ so that step still runs). A push that fails 3 times fails the step. Optional sec
 | `creditRead` (credit window) | `index.html`, `today.html`, `scripts/weekly_review.py` (`credit_read`), skill `scripts/render.py` |
 | fear / zones / rates / inflation / BTC cycle | `regime.js` ↔ `scripts/regime.py` (copy of skill `scripts/regime.py`) |
 | glossary | `data/glossary.json` = skill `assets/glossary.json`; popover code `regime.js glossInit` = skill `assets/gloss.js` |
+| folding cards | `regime.js foldInit` = skill `assets/fold.js` (cards start folded, arrow top right, state in localStorage) |
 | weights (`WI_S`, `LW_S`), scoring bands | `index.html` ↔ skill `scripts/score.py` (`WI`, `LENS`) |
 | Minervini v2 | `index.html` between `/* @tt-begin` and `/* @tt-end */`; reused by `daily-minervini.mjs` |
 

@@ -161,6 +161,10 @@ export function checkCopies({ skill = null, log = console.log } = {}) {
       return i < 0 || j < i ? "" : t.slice(i, j + 1).replace(/\s+/g, " ").trim(); };
     const gl = body(P("regime.js"), "W.SGRegime") === body(S("assets/gloss.js"), "W.glossInit") && body(P("regime.js"), "W.SGRegime");
     log(`${gl ? "ok  " : "FAIL"} glossInit in regime.js = skill assets/gloss.js`); if (!gl) problems.push("glossInit: regime.js and skill assets/gloss.js differ");
+    const fb = (f, end) => { const t = fs.existsSync(f) ? fs.readFileSync(f, "utf8") : "", i = t.indexOf("function foldInit("), j = t.lastIndexOf("}", t.indexOf(end, i));
+      return i < 0 || j < i ? "" : t.slice(i, j + 1).replace(/\s+/g, " ").trim(); };
+    const fo = fb(P("regime.js"), "/* ---------- rates and inflation") === fb(S("assets/fold.js"), "W.foldInit") && fb(P("regime.js"), "/* ---------- rates and inflation");
+    log(`${fo ? "ok  " : "FAIL"} foldInit in regime.js = skill assets/fold.js`); if (!fo) problems.push("foldInit: regime.js and skill assets/fold.js differ");
     compare("creditRead index.html ↔ skill render.py", cr, python(X.CC.map(cc => ({ fn: "skill_render.credit_read", args: [cc] })), ["--render", S("scripts/render.py")]));
     const K = python([{ fn: "skill_score.consts", args: [] }], ["--score", S("scripts/score.py")])[0];
     if (K.err) problems.push(`skill score.py constants: ${K.err}`);
