@@ -1,0 +1,59 @@
+name: Backtest timing score (draft PR only)
+
+# Runs only on the backtest-timing draft pull request: downloads prices for backtest/universe.json, scores every stock
+# at every month-end with the skill's own score.py (backtest/sv), and commits backtest/results.csv and the summaries to
+# the branch. Never merged; main is untouched.
+on:
+  pull_request:
+    paths: ["backtest/**", ".github/workflows/backtest-timing.yml"]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  backtest:
+    if: github.head_ref == 'backtest-timing'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - name: Reuse the price cache of the first run (same prices for both tests)
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: price-cache
+          path: backtest/cache
+          run-id: 46127374399
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download prices (Yahoo through the shared relays; skips cached tickers)
+        timeout-minutes: 35
+        run: node backtest/fetch.mjs
+      - name: Score every stock at every month-end (only when results.csv is missing)
+        timeout-minutes: 15
+        run: test -f backtest/results.csv || python3 backtest/run.py
+      - name: Minervini setup-score test (HYPOTHESES2.md)
+        timeout-minutes: 10
+        run: |
+          pip install --quiet numpy pandas scipy
+          python3 -W ignore backtest/setup.py
+          python3 -W ignore backtest/setup3.py
+      - name: Keep the price cache as a run artifact (not committed)
+        uses: actions/upload-artifact@v4
+        with:
+          name: price-cache
+          path: backtest/cache
+          retention-days: 14
+      - name: Commit the results to the branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backtest/results.csv backtest/port_check.json backtest/run_summary.json backtest/setup_features.csv backtest/stats2.json backtest/setup3_features.csv backtest/stats3.json backtest/charts
+          git diff --cached --quiet && { echo "No changes"; exit 0; }
+          git commit -m "Backtest results $(date -u +%F) [skip ci]"
+          git push origin "HEAD:${{ github.head_ref }}"

@@ -1,0 +1,227 @@
+[
+ {
+  "ticker": "AAPL",
+  "date": "2013-01-31",
+  "tech_inprocess": 4.2,
+  "tech_score_py": 4.2,
+  "final": 4.2,
+  "final_expected": 4.2,
+  "match": true
+ },
+ {
+  "ticker": "AAPL",
+  "date": "2015-05-29",
+  "tech_inprocess": 8.1,
+  "tech_score_py": 8.1,
+  "final": 7.8,
+  "final_expected": 7.8,
+  "match": true
+ },
+ {
+  "ticker": "AAPL",
+  "date": "2017-11-30",
+  "tech_inprocess": 8.1,
+  "tech_score_py": 8.1,
+  "final": 7.8,
+  "final_expected": 7.8,
+  "match": true
+ },
+ {
+  "ticker": "AAPL",
+  "date": "2020-05-29",
+  "tech_inprocess": 7.8,
+  "tech_score_py": 7.8,
+  "final": 7.6,
+  "final_expected": 7.6,
+  "match": true
+ },
+ {
+  "ticker": "AAPL",
+  "date": "2026-07-31",
+  "tech_inprocess": 7.1,
+  "tech_score_py": 7.1,
+  "final": 6.9,
+  "final_expected": 6.9,
+  "match": true
+ },
+ {
+  "ticker": "ACN",
+  "date": "2013-01-31",
+  "tech_inprocess": 7.5,
+  "tech_score_py": 7.5,
+  "final": 7.2,
+  "final_expected": 7.2,
+  "match": true
+ },
+ {
+  "ticker": "ACN",
+  "date": "2015-05-29",
+  "tech_inprocess": 8.0,
+  "tech_score_py": 8.0,
+  "final": 7.7,
+  "final_expected": 7.7,
+  "match": true
+ },
+ {
+  "ticker": "ACN",
+  "date": "2017-11-30",
+  "tech_inprocess": 7.8,
+  "tech_score_py": 7.8,
+  "final": 7.5,
+  "final_expected": 7.5,
+  "match": true
+ },
+ {
+  "ticker": "ACN",
+  "date": "2020-05-29",
+  "tech_inprocess": 5.8,
+  "tech_score_py": 5.8,
+  "final": 5.8,
+  "final_expected": 5.8,
+  "match": true
+ },
+ {
+  "ticker": "ACN",
+  "date": "2026-07-31",
+  "tech_inprocess": 2.5,
+  "tech_score_py": 2.5,
+  "final": 2.7,
+  "final_expected": 2.7,
+  "match": true
+ },
+ {
+  "ticker": "ADBE",
+  "date": "2013-01-31",
+  "tech_inprocess": 8.0,
+  "tech_score_py": 8.0,
+  "final": 7.7,
+  "final_expected": 7.7,
+  "match": true
+ },
+ {
+  "ticker": "ADBE",
+  "date": "2015-05-29",
+  "tech_inprocess": 7.8,
+  "tech_score_py": 7.8,
+  "final": 7.5,
+  "final_expected": 7.5,
+  "match": true
+ },
+ {
+  "ticker": "ADBE",
+  "date": "2017-11-30",
+  "tech_inprocess": 7.9,
+  "tech_score_py": 7.9,
+  "final": 7.6,
+  "final_expected": 7.6,
+  "match": true
+ },
+ {
+  "ticker": "ADBE",
+  "date": "2020-05-29",
+  "tech_inprocess": 7.4,
+  "tech_score_py": 7.4,
+  "final": 7.2,
+  "final_expected": 7.2,
+  "match": true
+ },
+ {
+  "ticker": "ADBE",
+  "date": "2026-07-31",
+  "tech_inprocess": 3.1,
+  "tech_score_py": 3.1,
+  "final": 3.3,
+  "final_expected": 3.3,
+  "match": true
+ },
+ {
+  "ticker": "AKAM",
+  "date": "2013-01-31",
+  "tech_inprocess": 7.9,
+  "tech_score_py": 7.9,
+  "final": 7.6,
+  "final_expected": 7.6,
+  "match": true
+ },
+ {
+  "ticker": "AKAM",
+  "date": "2015-05-29",
+  "tech_inprocess": 8.3,
+  "tech_score_py": 8.3,
+  "final": 8.0,
+  "final_expected": 8.0,
+  "match": true
+ },
+ {
+  "ticker": "AKAM",
+  "date": "2017-11-30",
+  "tech_inprocess": 4.6,
+  "tech_score_py": 4.6,
+  "final": 4.6,
+  "final_expected": 4.6,
+  "match": true
+ },
+ {
+  "ticker": "AKAM",
+  "date": "2020-05-29",
+  "tech_inprocess": 7.3,
+  "tech_score_py": 7.3,
+  "final": 7.1,
+  "final_expected": 7.1,
+  "match": true
+ },
+ {
+  "ticker": "AKAM",
+  "date": "2026-07-31",
+  "tech_inprocess": 6.1,
+  "tech_score_py": 6.1,
+  "final": 6.0,
+  "final_expected": 6.0,
+  "match": true
+ },
+ {
+  "ticker": "CSCO",
+  "date": "2013-01-31",
+  "tech_inprocess": 6.9,
+  "tech_score_py": 6.9,
+  "final": 6.7,
+  "final_expected": 6.7,
+  "match": true
+ },
+ {
+  "ticker": "CSCO",
+  "date": "2015-05-29",
+  "tech_inprocess": 8.0,
+  "tech_score_py": 8.0,
+  "final": 7.7,
+  "final_expected": 7.7,
+  "match": true
+ },
+ {
+  "ticker": "CSCO",
+  "date": "2017-11-30",
+  "tech_inprocess": 6.9,
+  "tech_score_py": 6.9,
+  "final": 6.7,
+  "final_expected": 6.7,
+  "match": true
+ },
+ {
+  "ticker": "CSCO",
+  "date": "2020-05-29",
+  "tech_inprocess": 4.5,
+  "tech_score_py": 4.5,
+  "final": 4.6,
+  "final_expected": 4.6,
+  "match": true
+ },
+ {
+  "ticker": "CSCO",
+  "date": "2026-07-31",
+  "tech_inprocess": 7.7,
+  "tech_score_py": 7.7,
+  "final": 7.4,
+  "final_expected": 7.4,
+  "match": true
+ }
+]

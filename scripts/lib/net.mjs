@@ -69,8 +69,10 @@ export class Routes {
 // Yahoo daily chart: direct (query1, query2) then the relays. Returns the chart result object, null for an unknown symbol,
 // undefined when every route failed.
 const yRoutes = new Routes(["query1", "query2", "allorigins", "codetabs", "corsproxy", "jina"]);
-export async function yahooChart(sym, range = "2y", { timeout } = {}) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=${range}&interval=1d`;
+export async function yahooChart(sym, range = "2y", { timeout, period1 } = {}) {
+  // period1 (unix seconds): daily bars from that date to now (range=max returns monthly bars for long histories)
+  const span = period1 ? `period1=${period1}&period2=${Math.floor(Date.now() / 1000)}` : `range=${range}`;
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?${span}&interval=1d`;
   return yRoutes.get(url, t => { const j = parseLoose(t), res = j?.chart?.result?.[0];
     if (res?.timestamp?.length) return res; if (j?.chart?.error?.code === "Not Found") return null; return undefined; },
   { wrap: (n, u) => n === "query1" ? u : n === "query2" ? u.replace("query1", "query2") : RELAYS[n](u), timeout });
