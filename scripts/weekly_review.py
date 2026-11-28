@@ -464,27 +464,30 @@ page = f"""<title>Watchlist Review</title>
 body{{margin:0;font:13.5px/1.5 Inter,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);background-image:linear-gradient(160deg,#10203a 0%,#152a49 55%,#183153 100%);background-attachment:fixed;min-height:100vh;font-variant-numeric:tabular-nums}}
 .w{{max-width:900px;margin:0 auto;padding-block:18px 36px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}}
 h1{{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}}h2{{font-size:17px;font-weight:800;letter-spacing:-.01em;margin:24px 0 10px;text-wrap:balance}}
-h3{{font-size:11px;font-weight:700;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}}
-.sub{{color:var(--ink3);font-size:12px;font-weight:500}}.top{{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;margin-bottom:10px}}
-.nav{{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}}.nav a{{text-decoration:none;color:var(--ink);background:rgba(255,255,255,.08);border:1px solid var(--ln);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:600}}
+h3{{font-size:13px;font-weight:700;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}}
+.sub{{color:var(--ink3);font-size:14px;font-weight:500}}.top{{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;margin-bottom:10px}}
+.nav{{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}}.nav a{{text-decoration:none;color:var(--ink);background:rgba(255,255,255,.08);border:1px solid var(--ln);border-radius:99px;padding:4px 12px;font-size:14px;font-weight:600}}
 .c{{background:linear-gradient(150deg,rgba(84,120,172,.42),rgba(38,66,110,.34));border:1px solid rgba(160,200,245,.22);border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 12px 34px rgba(3,10,30,.4);padding:14px 16px;margin-bottom:12px;min-width:0}}
-.c p{{margin:.3em 0 .6em;max-width:72ch;color:var(--ink)}}.c p.sub{{color:var(--ink3);font-size:11.5px}}
+.c p{{margin:.3em 0 .6em;max-width:72ch;color:var(--ink)}}.c p.sub{{color:var(--ink3);font-size:13px}}
 .g2{{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:12px}}.g2 .c{{margin:0}}
 ul{{list-style:none;margin:0;padding:0}}li{{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--ln)}}li:last-child{{border:0}}
-li b{{font-weight:800}}.nm{{color:var(--ink3);font-size:12px;min-width:0}}.r{{margin-left:auto;white-space:nowrap}}.r i{{font-style:normal;font-weight:800;margin-left:6px}}.mt{{color:var(--ink3)}}
-.k{{font-size:10px;padding:0 7px;border-radius:99px;border:1px solid var(--ln);color:var(--ink3);font-weight:600}}
-.d{{font-size:11px;font-weight:800;margin-left:5px}}.d.u{{color:var(--good)}}.d.n{{color:var(--bad)}}
+li b{{font-weight:800}}.nm{{color:var(--ink3);font-size:14px;min-width:0}}.r{{margin-left:auto;white-space:nowrap}}.r i{{font-style:normal;font-weight:800;margin-left:6px}}.mt{{color:var(--ink3)}}
+.k{{font-size:12.5px;padding:0 7px;border-radius:99px;border:1px solid var(--ln);color:var(--ink3);font-weight:600}}
+.d{{font-size:13px;font-weight:800;margin-left:5px}}.d.u{{color:var(--good)}}.d.n{{color:var(--bad)}}
 .tw{{overflow-x:auto}}table{{width:100%;border-collapse:collapse;font-size:12.5px}}td,th{{padding:5px 6px;border-bottom:1px solid var(--ln);text-align:right;white-space:nowrap}}td{{color:var(--ink2)}}
-td:first-child,th:first-child{{text-align:left;white-space:normal}}th{{color:var(--ink3);font-size:10.5px;font-weight:600}}td b{{color:var(--ink);font-weight:800}}
-td small{{display:block;color:var(--ink3);font-size:11px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+td:first-child,th:first-child{{text-align:left;white-space:normal}}th{{color:var(--ink3);font-size:12.5px;font-weight:600}}td b{{color:var(--ink);font-weight:800}}
+td small{{display:block;color:var(--ink3);font-size:13px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 svg.sp{{width:100%;height:64px;display:block;margin-top:8px}}
 .kh{{margin:16px 0 8px}}.tg{{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));gap:12px}}
 .tc{{background:linear-gradient(150deg,rgba(84,120,172,.42),rgba(38,66,110,.34));border:1px solid rgba(160,200,245,.22);border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 12px 34px rgba(3,10,30,.4);padding:12px 14px;min-width:0}}
-.th{{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}}.tn{{min-width:0}}.tn b{{font-size:16px;font-weight:800}}.tn small{{display:block;color:var(--ink3);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
-.ts{{display:flex;gap:12px;white-space:nowrap}}.ts span{{display:flex;flex-direction:column;align-items:flex-end}}.ts i{{font-style:normal;font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em}}.ts b{{font-size:19px;font-weight:800;line-height:1.1}}
+.th{{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}}.tn{{min-width:0}}.tn b{{font-size:16px;font-weight:800}}.tn small{{display:block;color:var(--ink3);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.ts{{display:flex;gap:12px;white-space:nowrap}}.ts span{{display:flex;flex-direction:column;align-items:flex-end}}.ts i{{font-style:normal;font-size:12.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em}}.ts b{{font-size:19px;font-weight:800;line-height:1.1}}
 .tc p{{margin:6px 0 0;font-size:12.5px;color:var(--ink2)}}.tc p.tl{{color:var(--ink);font-weight:600}}.tc p.it{{color:var(--ink);background:rgba(255,255,255,.06);border-left:3px solid var(--tm);border-radius:6px;padding:6px 9px}}
-.tc em{{font-style:normal;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-right:4px}}
-.hz2{{display:inline-block;margin-right:12px}}.tc p.pl b{{color:var(--ink);font-weight:700}}svg.ps{{width:100%;height:34px;display:block;margin-top:6px}}.tc p.ps2{{margin-top:2px;font-size:11px}}.tc .u{{color:var(--good)}}.tc .n{{color:var(--bad)}}.tc p.gl b,.tc p.kl b{{color:var(--ink);font-weight:700}}.mws{{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}}.mw{{background:rgba(255,255,255,.05);border:1px solid var(--ln);border-radius:10px;padding:6px 9px;min-width:0}}.mw i{{display:block;font-style:normal;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}}.mw b{{display:block;font-size:12px;font-weight:700;line-height:1.3}}.mw small{{display:block;font-size:10px;color:var(--ink3)}}.mw em{{display:block;font-size:9.5px;color:var(--ink3);opacity:.85}}a{{color:var(--acc)}}.ft{{color:var(--ink3);font-size:11px;margin-top:16px}}
+.tc em{{font-style:normal;font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-right:4px}}
+.hz2{{display:inline-block;margin-right:12px}}.tc p.pl b{{color:var(--ink);font-weight:700}}svg.ps{{width:100%;height:34px;display:block;margin-top:6px}}.tc p.ps2{{margin-top:2px;font-size:13px}}.tc .u{{color:var(--good)}}.tc .n{{color:var(--bad)}}.tc p.gl b,.tc p.kl b{{color:var(--ink);font-weight:700}}.mws{{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}}.mw{{background:rgba(255,255,255,.05);border:1px solid var(--ln);border-radius:10px;padding:6px 9px;min-width:0}}.mw i{{display:block;font-style:normal;font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}}.mw b{{display:block;font-size:14px;font-weight:700;line-height:1.3}}.mw small{{display:block;font-size:12.5px;color:var(--ink3)}}.mw em{{display:block;font-size:12.5px;color:var(--ink3);opacity:.85}}a{{color:var(--acc)}}.ft{{color:var(--ink3);font-size:13px;margin-top:16px}}
+
+/* layout v2 (28 Nov 2026): same type scale as StockGlass — nothing under 12.5 px, body 15 px */
+body{{font-size:15px;line-height:1.5}}
 </style>
 <div class="w">
 <div class="top"><h1>Watchlist review</h1><span class="sub">{fd(cur_d)} · {len(CUR)} tickers · {len(RUNS)} weekly run{"s" if len(RUNS) != 1 else ""} since {fd(RUNS[0])}</span></div>

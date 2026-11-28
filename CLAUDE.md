@@ -33,7 +33,9 @@ so that step still runs). A push that fails 3 times fails the step. Optional sec
 ## Architecture
 - `index.html`: the whole app (single file): fetch quotes, compute indicators and the two scores (long-term; short-term setup =
   0.5 × Minervini full check + 0.5 × technicals, `setupScore`; fear, valuation and EPS surprise are context since 28 Nov 2026),
-  context windows, one "Market fear & credit" card (`renderFC`, every fear and credit reading), Market Regime and BTC Cycle cards. `today.html`: daily Minervini page. `history.html`: watchlist history.
+  context windows (Next earnings, Expectations & filings), one "Market backdrop" card (`renderRegime`: Fear, Credit, Trend, Rates,
+  Inflation, every reading once), BTC Cycle, the indicator groups plus the Minervini card (`minerviniCard`, one tappable row per
+  check, glossary keys `tt_*`), and "Sources & method" at the end of the left column (all source/method notes live there). `today.html`: daily Minervini page. `history.html`: watchlist history.
 - `regime.js`: shared module for both pages: `liveFear` (today's quotes on the saved history, same rules as
   market-fear.mjs), `fearAt`, `fearZone`/`creditZone` (history phrases), `creditLive`, `ratesRead`, `inflationRead`, `btcCycle`, `glossInit`.
 - `scripts/lib/net.mjs`: all job network code: `fetchText` (timeout covers the body), `Routes` (direct + relays, a route
@@ -42,9 +44,12 @@ so that step still runs). A push that fails 3 times fails the step. Optional sec
 - Time tags: every reading shows when it was measured (grey "🕒" after the line title): `tsTag`, `tClose`, `tLive`,
   `tComp`, `fearWhen`, `credWhen` in index.html; `lineHTML` and context-window sections take the tag as an extra item.
   A new reading on a page → give it a tag (saved: the close/date it describes + "computed" time; live: the quote time).
-- Cards fold to their title (`foldInit`, arrow top right; the title keeps opening the glossary). Folded by default except
-  the score cards and "Score by group"; the viewer's choices are kept per card title. A new card with an `h3` title
-  folds automatically; "Expand all" is any element with `data-fold-all`.
+- Cards fold to their title (`foldInit`, arrow top right; the title keeps opening the glossary). Open by default (28 Nov 2026;
+  `folded:[...]` lists exceptions); the viewer's choices are kept per card title (storage ns `sg2`/`today2`, skill `sv2`). A new
+  card with an `h3` title gets the arrow automatically; "Fold all / Expand all" is any element with `data-fold-all`.
+- Layout v2 type scale (same in the skill's render.py): 12.5 px tags · 13 notes · 15 body and rows · 17 card titles; nothing under
+  12.5 px; one status chip per header, the horizon as `.hzl` under the title; grey text ≥ 5:1 contrast. Every new row or line needs a
+  glossary entry (tap-to-explain): `.m[data-k]` rows use the key, `h4`/titles match the `a` aliases.
 - `data/glossary.json`: tap-to-explain texts. `data/regime.json`: rates/inflation. `data/market*.json`: fear + credit.
 
 ## Rules copied in several places: change all copies together
@@ -53,7 +58,7 @@ so that step still runs). A push that fails 3 times fails the step. Optional sec
 | `creditRead` (credit window) | `index.html`, `today.html`, `scripts/weekly_review.py` (`credit_read`), skill `scripts/render.py` |
 | fear / zones / rates / inflation / BTC cycle | `regime.js` ↔ `scripts/regime.py` (copy of skill `scripts/regime.py`) |
 | glossary | `data/glossary.json` = skill `assets/glossary.json`; popover code `regime.js glossInit` = skill `assets/gloss.js` |
-| folding cards | `regime.js foldInit` = skill `assets/fold.js` (cards start folded, arrow top right, state in localStorage) |
+| folding cards | `regime.js foldInit` = skill `assets/fold.js` (cards start open, arrow top right, state in localStorage) |
 | weights (`WI_S`, `LW_S`), scoring bands | `index.html` ↔ skill `scripts/score.py` (`WI`, `LENS`) |
 | short-term setup score (`setupScore`, `SETUP_W`, labels `TM_T_S`/`TM_T_F`) | `index.html` ↔ skill `scripts/score.py` (`setup_score`, `TM_TIERS`/`TM_TIERS_ETF`; rounding = JS `Math.round`) |
 | Minervini v2 | `index.html` between `/* @tt-begin` and `/* @tt-end */`; reused by `daily-minervini.mjs` |
