@@ -15,7 +15,7 @@
   color-scheme:dark;
   --bg1:#10203a; --bg2:#152a49; --bg3:#183153;
   --g1:rgba(120,170,235,.07); --g2:rgba(90,140,210,.05);
-  --ink:#eef5ff; --ink2:#b7c9e2; --ink3:#8199ba;
+  --ink:#eef5ff; --ink2:#c9d7ea; --ink3:#a3b6d0;   /* 28 Nov 2026: grey text ≥ 5:1 on the cards */
   --ln:rgba(150,190,240,.2);
 
   --glass-a:rgba(84,120,172,.44);
@@ -38,7 +38,7 @@ html[data-theme="light"]{
   color-scheme:light;
   --bg1:#e8f1fc; --bg2:#dce9f9; --bg3:#cfe0f5;
   --g1:rgba(255,255,255,.7); --g2:rgba(255,255,255,.4);
-  --ink:#0f2440; --ink2:#3d5878; --ink3:#6a83a3;
+  --ink:#0f2440; --ink2:#3d5878; --ink3:#566f8f;
   --ln:rgba(30,70,130,.14);
 
   --glass-a:rgba(255,255,255,.82);
@@ -194,6 +194,36 @@ ol.hl{margin:4px 0 8px;padding-left:18px;font-size:12px}ol.hl li{display:flex;ga
   .pr{text-align:left;flex:1 1 100%;margin-top:10px}
   #grid{grid-template-columns:1fr}
 }
+
+/* ---------- Layout v2 (28 Nov 2026): bigger type, calmer cards, one chip per header ----------
+   Type scale: 12.5 (tags) · 13 (notes) · 15 (body, rows) · 17 (card titles) · 30 (score). Same tokens in the skill infographic. */
+body{font-size:15px;line-height:1.5}
+.card{padding:16px 18px}.grp{padding:16px 16px 12px}
+.card h3,.snm,.gh h3{font-size:17px;font-weight:650;letter-spacing:-.01em}
+.chip{font-size:12.5px;padding:3px 10px}.hz{font-size:12.5px;font-weight:500}
+.hzl{flex-basis:100%;order:9;font-size:12.5px;font-weight:400;color:var(--ink3);margin-top:-2px}
+.ts{font-size:12.5px}
+.btn{font-size:13px}button#esttog{font-size:12.5px}
+.gs{font-size:14px;padding:2px 10px}
+.m{padding:7px 4px}.m .mr span{font-size:15px;color:var(--ink)}.m .mr b{font-size:15px}.md{font-size:13px;line-height:1.45;margin-left:15px}
+.cmp{font-size:12.5px;padding:1px 8px}.src{font-size:12.5px;font-weight:500}
+.rows{gap:2px}
+.mean{font-size:15px;line-height:1.5}.parts{font-size:13px;line-height:1.45}.tevt{font-size:13px}.tevt .muted{font-size:12.5px}
+.fw{gap:14px}.fw h4{font-size:14px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink2);margin:0 0 3px}
+.fw p{font-size:15px;line-height:1.5}.fw .muted,.muted{font-size:13px}.cw .fcl li{font-size:15px;line-height:1.5}
+.fw h3.sub{font-size:15px;font-weight:650;color:var(--ink);margin:6px 0 -4px;padding-top:12px;border-top:1px solid var(--ln);display:flex;align-items:center;gap:4px}
+.fw h3.sub:first-child{border-top:0;padding-top:0;margin-top:0}
+.key{font-size:15px;line-height:1.5;color:var(--ink2);margin:2px 0 10px}
+.grp .key{margin:8px 4px 6px}.grp h4.gsub{font-size:14px;font-weight:600;color:var(--ink2);margin:12px 4px 2px;padding-top:10px;border-top:1px solid var(--ln)}
+.mreg{font-size:13px}.ring small{font-size:12px}#sent,#tsent{font-size:15px}#cov{font-size:13px}.gate{font-size:12.5px}.gr{font-size:14px}#note{font-size:15px}
+.br{font-size:14px}#finc h3{font-size:17px}#finc h3 .chip{font-size:12px}.empty{font-size:14px}.lgd{font-size:12.5px}.lgd button{font-size:12px}#estnote{font-size:12.5px}
+.st{font-size:12.5px}#disc{font-size:13px;padding:4px 6px 16px}.seg button{font-size:13px}#asof{font-size:12.5px}#chg{font-size:14px}#ctk{font-size:13px}
+.sr span{font-size:13px}.sr i{font-size:12px}.foot{font-size:12.5px}table.ff{font-size:14px}ol.hl{font-size:14px}
+.zl p{font-size:14px!important}.btnl{font-size:13px;padding:6px 14px;min-height:36px}
+.m .mr span{white-space:normal;overflow:visible}.m .mr{align-items:flex-start}.m .mr i{margin-top:6px}
+@media(min-width:1181px){#grid{grid-template-columns:repeat(2,minmax(0,1fr))}#main{grid-template-columns:minmax(0,1fr) 420px}}
+html[data-theme="light"] .cmp{color:var(--info);border-color:color-mix(in srgb,var(--info) 45%,transparent)}
+#srcs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}#srcm ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink2)}
 </style>
 </head>
 <body>
@@ -212,22 +242,28 @@ ol.hl{margin:4px 0 8px;padding-left:18px;font-size:12px}ol.hl li{display:flex;ga
  </section>
  <div class="foldbar"><button type="button" class="fold-all" data-fold-all>Expand all</button></div>
  <main id="main">
-  <div id="left"><div id="grid"></div></div>
+  <div id="left"><div id="grid"></div>
+   <div class="card glass" id="srcm"><h3>Sources &amp; method</h3><div id="srcs"></div><ul>
+    <li>Prices: Yahoo Finance through public relays. Statements: SEC EDGAR (US listings); consensus estimates: Nasdaq.</li>
+    <li>Market backdrop: VIX, VIX3M and S&amp;P 500 from Yahoo; credit spreads: ICE BofA option-adjusted spreads (FRED, end of day, 1–2 days late), estimated live from the HYG and LQD bond funds vs Treasuries (IEF) with durations ≈ 3.2, 8.3 and 7 years; rates: US Treasury; inflation: BLS and BEA (BLS API, DBnomics or FRED; monthly changes from the index can differ by 0.05 pt from the rounded headline).</li>
+    <li>Fear score = 0.3 × variance risk premium (HAR model) + 0.7 × fear phase. It does not enter any score.</li>
+    <li>Short-term setup score = 0.5 × Minervini full check + 0.5 × technicals. In our 2012–2026 test on 98 large US stocks, higher scores had smaller dips, not higher 2–12 week returns.</li>
+    <li>Minervini: <i>Trade Like a Stock Market Wizard</i> (2013) and <i>Think &amp; Trade Like a Champion</i> (2017); each ingredient has academic support, the full template has no peer-reviewed test.</li>
+    <li>Colours and "Positive / Negative" after a line are a plain reading of that line, not a score. ∅ = missing: excluded, never guessed. Tap any title or line marked ⓘ for a plain explanation of the measure and its levels.</li></ul></div>
+   <p id="disc">Rule-based screen on public data, not investment advice.</p>
+  </div>
   <aside id="side">
    <div class="card glass sc" id="vc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="rg" x1="0" y1="1" x2="1" y2="0"><stop id="r1" offset="0" stop-color="#0c9f6a"/><stop id="r2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="rfg" cx="46" cy="46" r="38" fill="none" stroke="url(#rg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="snum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm">Long-term score <i class="hz">1–3 years</i></span><span id="sent">…</span><p class="mean" id="lmean"></p><div id="cov"></div></div></div>
    <div class="card glass sc" id="tc"><div class="ring"><svg viewBox="0 0 92 92"><defs><linearGradient id="tg" x1="0" y1="1" x2="1" y2="0"><stop id="t1" offset="0" stop-color="#0c9f6a"/><stop id="t2" offset="1" stop-color="#19b6e6"/></linearGradient></defs><circle cx="46" cy="46" r="38" fill="none" stroke="var(--track)" stroke-width="9"/><circle id="tfg" cx="46" cy="46" r="38" fill="none" stroke="url(#tg)" stroke-width="9" stroke-linecap="round" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)"/></svg><div><b id="tnum">–</b><small>/ 10</small></div></div><div class="sct"><span class="snm" data-g="score_t">Short-term setup score <i class="hz">2–12 weeks</i></span><span id="tsent">…</span><p class="mean" id="tmean"></p><div class="parts" id="tparts"></div></div></div>
    <!-- Score by group (long-term weights), right under the two scores -->
    <div class="card glass"><h3>Score by group <span class="chip">long-term weights</span></h3><div class="bars" id="bars"></div></div>
    <div id="ctxc" class="ctxc"></div>
-   <div class="card glass cw" id="fcp" hidden></div>
-   <div class="card glass" id="mrp"><h3 data-g="p_regime">Market Regime <span class="chip">context · never scored</span></h3><p class="muted">Loading…</p></div>
-   <div class="card glass" id="btcp"><h3 data-g="p_btc">BTC Cycle <span class="chip">context · never scored</span></h3><p class="muted">Loading…</p></div>
+   <div class="card glass" id="mrp"><h3 data-g="p_regime">Market backdrop</h3><p class="muted">Loading…</p></div>
+   <div class="card glass" id="btcp"><h3 data-g="p_btc">BTC Cycle </h3><p class="muted">Loading…</p></div>
    
-   <div class="card glass" id="fwc"><h3>Future expectations &amp; sales <span class="chip">not scored</span><span class="chip hzc">long term · 1–3 y</span></h3><div id="fwd"></div></div>
-   <div class="card glass"><h3>Verdict note <span class="chip">not scored</span><span class="chip hzc">long term · 1–3 y</span></h3><div id="gates"></div><p id="note"></p></div>
+   <div class="card glass" id="fwc"><h3>Future expectations &amp; sales <span class="hzl">long term · 1–3 years</span></h3><div id="fwd"></div></div>
+   <div class="card glass"><h3>Verdict note <span class="hzl">long term · 1–3 years</span></h3><div id="gates"></div><p id="note"></p></div>
    <div class="card glass" id="finc"><h3>Revenue, net income &amp; margin <span class="chip" id="funit"></span></h3><div id="fin"></div><div class="lgd"><span><i class="d rev"></i>Revenue</span><span><i class="d ni"></i>Net inc.</span><span><i class="d mar"></i>Margin</span><button id="esttog" title="Show or hide estimates"><i></i>Est.</button></div><div id="estnote"></div></div>
-   <div class="card glass"><h3>Sources</h3><div id="srcs"></div></div>
-   <p id="disc">Rule-based screen on public data, not investment advice. Missing values (∅) are excluded from the score, never guessed.</p>
   </aside>
  </main>
 </div>
@@ -957,35 +993,42 @@ function fearCompareHTML(F){if(!F||!F.saved)return "";const a=F.saved,w=F.week,d
  return `<p>Last saved close (${esc(d(a))}): <b>${esc(a.phase_label)}</b>, ${a.score.toFixed(1)}/10, VIX ${a.vix.toFixed(1)}${w?` · a week ago (${esc(d(w))}): ${esc(w.phase_label)}, ${w.score.toFixed(1)}/10, VIX ${w.vix.toFixed(1)}`:""}. Live vs last close ${arr(F.score,a.score)} ${F.score>a.score+.05?"improving":F.score<a.score-.05?"worsening":"unchanged"}${w?`; vs a week ago ${arr(F.score,w.score)}`:""}.</p>`}
 const zoneHTML=(z,lab,ts)=>z?`<div class="zl" style="--zc:${z.col}"><b>${esc(lab?lab+": ":"")}${esc(z.tag)}</b>${ts||""}<p>${esc(z.txt)}</p></div>`:"";
 function lineHTML([h,t,k,w,ts]){return`<div><h4>${esc(h)}${ts||""}</h4><p>${esc(t)}${RD(k,w)}</p></div>`}
-function renderRegime(){try{renderFC()}catch(e){console.log("fear card",e)}const el=$("mrp");if(!el||!window.SGRegime)return;const F=MF,cc=(MFS||MF||{}).credit_check,G=SGRegime;
- const ccL=ccLive(),fz=G.fearZone(F),cz=G.creditZone(ccL||cc),live=F&&F.live,tm=live&&F.t?new Date(F.t).toLocaleString(undefined,{weekday:"short",hour:"2-digit",minute:"2-digit"}):null;
- const R=RG?G.ratesRead(RG,{y10:LFT&&LFT.tnx}):[],I=RG?G.inflationRead(RG):[];
- const y10=RG&&RG.rates&&RG.rates.y10,tnx=LFT&&LFT.tnx;
+/* ---------- Market backdrop card (28 Nov 2026): fear, credit, market trend, rates and inflation in one card; context only.
+   Every reading of the former Market fear & credit and Market Regime cards is kept, each shown once, one time tag per line. */
+function renderRegime(){const el=$("mrp");if(!el||!window.SGRegime)return;const F=MF,cc=(MFS||MF||{}).credit_check,G=SGRegime,CR=creditRead(cc),L=ccLive();
+ const P=t=>`<p>${t}</p>`,k=F&&F.fading_checks,fz=F?G.fearZone(F):null,cz=G.creditZone(L||cc);
+ const R=RG?G.ratesRead(RG,{y10:LFT&&LFT.tnx}):[],I=RG?G.inflationRead(RG):[],y10=RG&&RG.rates&&RG.rates.y10,tnx=LFT&&LFT.tnx;
  const M_=S&&S.mkt,fm=F&&F.market,r24=fm&&isN(fm.ret_24m)?` · S&P 500 ${fm.ret_24m>=0?"+":""}${fm.ret_24m}% over 2 years`:"",bs=fm&&fm.bear_state?" · bear state":"";
  const regimeLine=M_?[[`Market trend · ${M_.n}`,`${M_.lab}: ${M_.iv>=0?"+":""}${M_.iv.toFixed(1)}% vs its 200-day average; 50-day ${M_.up?"above":"below"} the 200-day${r24}${bs}`,M_.lab==="Supportive"?"pos":M_.lab==="Hostile"?"neg":"neu",
    M_.lab==="Supportive"?"the index is in an uptrend: new positions tend to work better":M_.lab==="Hostile"?"the index is in a downtrend: breakouts fail more often and losses come faster":"index signals disagree: no tailwind or headwind (most stocks move with their market)"]]
   :fm?[["Market trend · S&P 500",`${fm.above_200d?"above":"below"} its 200-day average${r24.replace(" S&P 500","")}${bs}`,fm.above_200d?"pos":"neg",fm.above_200d?"uptrend: a supportive backdrop":"downtrend: a tougher backdrop"]]:[];
- el.innerHTML=`<h3 data-g="p_regime">Market Regime <span class="chip">context · never scored</span>${live?`<span class="chip" style="color:var(--good)">live ${esc(tm)}</span>`:F&&F.intraday?`<span class="chip">intraday ${esc(tWhen(F.intraday))}</span>`:F?`<span class="chip">close ${esc(fdClose(F.date))}</span>`:""}</h3><div class="fw">
-  ${regimeLine.map(l=>lineHTML([...l,M_?tsTag(S.mktC&&S.mktC.size?"to "+fdClose([...S.mktC.keys()].pop()):null,M_.n):tsTag(tClose(fm&&F.date))])).join("")}
-  ${R.length?R.map(l=>{const x=RG.rates[/^2-year/.test(l[0])?"y2":/real/.test(l[0])?"real10":"y10"];return lineHTML([...l,x?tsTag(tDay(x.date,/^FRED/.test(x.source||"")?"FRED":"Treasury")+(x.stale?" (last value)":""),tComp(RG.updated)):""])}).join("")+(isN(tnx)&&y10?`<p class="muted">Live 10-year yield ${tnx.toFixed(2)}% vs ${y10.value.toFixed(2)}% at the saved close (${esc(y10.date)}).</p>`:""):'<div><h4>Rates</h4><p class="muted">Waiting for the first nightly run with rates (data/regime.json).</p></div>'}
-  ${I.length?I.map(l=>{const x=Object.values(RG.inflation||{}).find(v=>v&&l[1].startsWith(v.month+":"));return lineHTML([...l,tsTag(x?x.month+" data (monthly)":null,x&&x.stale?"last value":null,tComp(RG.updated))])}).join(""):'<div><h4>Inflation</h4><p class="muted">Waiting for the first nightly run with inflation data.</p></div>'}
-  <p class="muted">Context for the whole market: it never changes a score. Fear and credit have their own card. Rates: US Treasury; inflation: official BLS and BEA data (BLS API, DBnomics or FRED; monthly changes from the index, so they can differ by 0.05 pt from the rounded headline)${RG&&RG.updated?`, saved ${esc(new Date(RG.updated).toLocaleDateString())}`:""}. Tap any line for a plain explanation.</p></div>`}
-/* ---------- Market fear & credit card (28 Nov 2026): every fear and credit reading in one card, context only ---------- */
-function renderFC(){const el=$("fcp");if(!el)return;const F=MF,cc=(MFS||MF||{}).credit_check,G=window.SGRegime,CR=creditRead(cc),L=ccLive();
- if(!F&&!(CR&&CR.lines.length)){el.hidden=true;return}el.hidden=false;
- const P=t=>`<p>${t}</p>`,mu=t=>`<p class="muted">${t}</p>`,k=F&&F.fading_checks,X=[],fz=F&&G?G.fearZone(F):null,cz=G?G.creditZone(L||cc):null;
- if(fz||cz)X.push(["Where we are (history)",zoneHTML(fz,"Fear",fearWhen(F))+zoneHTML(cz,"Credit"+(L?" (live estimate)":""),L?liveCredTag(L):credWhen(cc,"hy"))]);
- if(F){X.push([F.live?"Fear phase · live":"Fear phase",P(`<b>${esc(F.phase_label||"?")}</b> · ${F.score.toFixed(1)}/10 ${esc(F.label)}${F.risk_flag?", high-risk entry":""}`+({calm:RD("neu","no market stress"),early:RD("neg","fear has just begun; historically not the bottom"),peak:RD("mix","painful now, but stress peaks have preceded rebounds"),fading:RD("pos","fear fading with confirmation; historically good entry conditions"),fading_unconfirmed:RD("mix","fear easing, not confirmed yet"),after:RD("neu","after a stress episode; returns near normal")}[F.phase]||""))+(F.note&&!fz?P(esc(F.note)):""),fearWhen(F)]);
-  X.push([F.live?`VIX · live ${new Date(F.t).toLocaleString(undefined,{weekday:"short",hour:"2-digit",minute:"2-digit"})}`:`VIX · close of ${fdClose(F.date)}`,P(`${F.vix.toFixed(1)}, higher than ${F.vix_pct}% of the last ${Math.round(F.window_years||10)} years${F.vix_vix3m!=null?`; VIX/VIX3M ${F.vix_vix3m.toFixed(2)}${F.vix_vix3m>1?" (inverted: near-term stress)":""}`:""}.`+(F.vix_vix3m>1?RD("neg","inverted term structure, near-term stress"):F.vix_pct>=80?RD("mix","high fear: risky now, but high fear has preceded better long-run returns"):F.vix_pct<=20?RD("neu","calm, possibly complacent"):RD("neu","normal range")))]);
-  X.push(F.live?["Compared with saved readings",fearCompareHTML(F)]:["Live VIX",`<p id="lvix">${LV?lvHTML():"Loading the live quote…"}</p>`]);
-  X.push(["Variance risk premium",P(`${isN(F.premium_score)?F.premium_score.toFixed(1):"∅"}/10 (HAR model, percentile ${F.vrp_pct}): how much options price in beyond the volatility expected.`+(!isN(F.premium_score)?"":F.premium_score>=6?RD("pos","a high premium has preceded better returns (Bollerslev et al. 2009)"):F.premium_score<=4?RD("neg","a low premium: less reward priced for risk"):RD("neu","average premium"))),fearWhen(F)]);
-  if(k)X.push(["Fading checks",P(`Credit ${k.credit_easing===false?"still widening":k.credit_easing?"easing":"n/a"} · new 20-day low in 5 days: ${k.new_low_5d?"yes":"no"} · bear state: ${k.bear_state?"yes":"no"}${F.cnn_fear_greed?` · CNN Fear &amp; Greed ${F.cnn_fear_greed.score} (${esc(F.cnn_fear_greed.rating)})`:""}`+(k.bear_state?RD("neg","bear state"):k.credit_easing&&!k.new_low_5d?RD("pos","all checks confirm fading fear"):RD("mix","checks not all confirmed yet"))),fearWhen(F)])}
- if(CR&&CR.lines.length){if(L)X.push(["Live spread estimate",liveCredHTML(L),liveCredTag(L)]);
-  CR.lines.forEach(([h,t,kk,w])=>X.push([h,P(esc(t)+RD(kk,w)),/^High-yield credit spread/.test(h)?credWhen(cc,"hy"):/^Investment-grade credit spread/.test(h)?credWhen(cc,"ig"):/^CCC/.test(h)?credWhen(cc,"ccc"):tsTag(ccClose(cc))]));
-  X.push(["Live · today vs the last close",`<p id="lcred">${LC?lcHTML():"Loading live quotes…"}</p>`])}
- X.push(["What it means",(CR&&CR.lines.length?P(esc(CR.meaning)):"")+mu(`Fear score = 0.3 × variance risk premium + 0.7 × phase. Credit: ICE BofA spreads (FRED); bond-fund lines remove the rate effect (high-yield fund ≈ 3 years of duration, investment-grade ≈ 8, Treasuries ≈ 7). Neither enters a score since 28 Nov 2026: our 2012–2026 backtest found no effect.`)]);
- const fc=!F?null:F.score>=6.5?"var(--good)":F.score<=4.5?"var(--bad)":"var(--warn)",ch=(t,c)=>`<span class="chip"${c?` style="color:${c};border-color:color-mix(in srgb,${c} 45%,transparent)"`:""}>${t}</span>`;
- el.innerHTML=`<h3 data-g="p_fear">Market fear &amp; credit ${F?ch(`Fear: ${esc(F.label)} ${F.score.toFixed(1)}/10`,fc):""}${CR&&CR.lines.length?ch("Credit: "+esc(CR.status),CR.col):""}${ch("context · not scored")}${ch("short and long term")}</h3><div class="fw">${X.map(([h,b,ts])=>`<div><h4>${esc(h)}${ts||""}</h4>${b}</div>`).join("")}</div>`}
+ const sec=(t,g,ts)=>`<h3 class="sub"${g?` data-g="${g}"`:""}>${t}${ts||""}</h3>`,ln=([h,b,ts])=>`<div><h4>${esc(h)}${ts||""}</h4>${b}</div>`,H=[];
+ /* fear */
+ if(F){H.push(sec("Fear","w_fear",fearWhen(F)));
+  if(fz)H.push(ln(["Where we are (history)",zoneHTML(fz,"")]));
+  H.push(ln([F.live?"Fear phase · live":"Fear phase",P(`<b>${esc(F.phase_label||"?")}</b> · ${F.score.toFixed(1)}/10 ${esc(F.label)}${F.risk_flag?", high-risk entry":""}`+({calm:RD("neu","no market stress"),early:RD("neg","fear has just begun; historically not the bottom"),peak:RD("mix","painful now, but stress peaks have preceded rebounds"),fading:RD("pos","fear fading with confirmation; historically good entry conditions"),fading_unconfirmed:RD("mix","fear easing, not confirmed yet"),after:RD("neu","after a stress episode; returns near normal")}[F.phase]||""))+(F.note&&!fz?P(esc(F.note)):"")]));
+  H.push(ln([F.live?"VIX · live":"VIX",P(`${F.vix.toFixed(1)}, higher than ${F.vix_pct}% of the last ${Math.round(F.window_years||10)} years${F.vix_vix3m!=null?`; VIX/VIX3M ${F.vix_vix3m.toFixed(2)}${F.vix_vix3m>1?" (inverted: near-term stress)":""}`:""}.`+(F.vix_vix3m>1?RD("neg","inverted term structure, near-term stress"):F.vix_pct>=80?RD("mix","high fear: risky now, but high fear has preceded better long-run returns"):F.vix_pct<=20?RD("neu","calm, possibly complacent"):RD("neu","normal range")))]));
+  H.push(ln(F.live?["Compared with saved readings",fearCompareHTML(F)]:["Live VIX",`<p id="lvix">${LV?lvHTML():"Loading the live quote…"}</p>`]));
+  H.push(ln(["Variance risk premium",P(`${isN(F.premium_score)?F.premium_score.toFixed(1):"∅"}/10 (HAR model, percentile ${F.vrp_pct}): how much options price in beyond the volatility expected.`+(!isN(F.premium_score)?"":F.premium_score>=6?RD("pos","a high premium has preceded better returns (Bollerslev et al. 2009)"):F.premium_score<=4?RD("neg","a low premium: less reward priced for risk"):RD("neu","average premium")))]));
+  if(k)H.push(ln(["Fading checks",P(`Credit ${k.credit_easing===false?"still widening":k.credit_easing?"easing":"n/a"} · new 20-day low in 5 days: ${k.new_low_5d?"yes":"no"} · bear state: ${k.bear_state?"yes":"no"}${F.cnn_fear_greed?` · CNN Fear &amp; Greed ${F.cnn_fear_greed.score} (${esc(F.cnn_fear_greed.rating)})`:""}`+(k.bear_state?RD("neg","bear state"):k.credit_easing&&!k.new_low_5d?RD("pos","all checks confirm fading fear"):RD("mix","checks not all confirmed yet")))]))}
+ /* credit */
+ if(CR&&CR.lines.length){H.push(sec("Credit","w_credit"));
+  if(cz)H.push(ln([L?"Where we are (history) · live estimate":"Where we are (history)",zoneHTML(cz,""),L?liveCredTag(L):credWhen(cc,"hy")]));
+  if(L)H.push(ln(["Live spread estimate",liveCredHTML(L),liveCredTag(L)]));
+  CR.lines.forEach(([h,t,kk,w])=>H.push(ln([h,P(esc(t)+RD(kk,w)),/^High-yield credit spread/.test(h)?credWhen(cc,"hy"):/^Investment-grade credit spread/.test(h)?credWhen(cc,"ig"):/^CCC/.test(h)?credWhen(cc,"ccc"):tsTag(ccClose(cc))])));
+  H.push(ln(["Live · today vs the last close",`<p id="lcred">${LC?lcHTML():"Loading live quotes…"}</p>`]));
+  H.push(ln(["What credit says",P(esc(CR.meaning))]))}
+ /* market trend, rates, inflation */
+ if(regimeLine.length){H.push(sec("Trend","w_regime"));regimeLine.forEach(l=>H.push(lineHTML([...l,M_?tsTag(S.mktC&&S.mktC.size?"to "+fdClose([...S.mktC.keys()].pop()):null,M_.n):tsTag(tClose(fm&&F.date))])))}
+ H.push(sec("Rates"));
+ H.push(R.length?R.map(l=>{const x=RG.rates[/^2-year/.test(l[0])?"y2":/real/.test(l[0])?"real10":"y10"];return lineHTML([...l,x?tsTag(tDay(x.date,/^FRED/.test(x.source||"")?"FRED":"Treasury")+(x.stale?" (last value)":""),tComp(RG.updated)):""])}).join("")+(isN(tnx)&&y10?`<p class="muted">Live 10-year yield ${tnx.toFixed(2)}% vs ${y10.value.toFixed(2)}% at the saved close (${esc(y10.date)}).</p>`:""):'<p class="muted">Waiting for the first nightly run with rates.</p>');
+ H.push(sec("Inflation","inf_trend"));
+ H.push(I.length?I.map(l=>{const x=Object.values(RG.inflation||{}).find(v=>v&&l[1].startsWith(v.month+":"));return lineHTML([...l,tsTag(x?x.month+" data (monthly)":null,x&&x.stale?"last value":null,tComp(RG.updated))])}).join(""):'<p class="muted">Waiting for the first nightly run with inflation data.</p>');
+ /* one status chip and one summary line */
+ const bad=(F&&F.score<=4.5)||(CR&&/widen/i.test(CR.status))||(M_&&M_.lab==="Hostile"),good=F&&F.score>=6.5&&(!CR||/eas/i.test(CR.status))&&(!M_||M_.lab==="Supportive");
+ const st=bad&&good?"Mixed":bad?"Stress":good?"Calm":"Mixed",sc=st==="Stress"?"var(--bad)":st==="Calm"?"var(--good)":"var(--warn)";
+ const key=[F?`Fear: ${esc((F.phase_label||"").toLowerCase())}, ${F.score.toFixed(1)}/10`:null,CR&&CR.lines.length?`credit: ${esc(CR.status.toLowerCase())}`:null,M_?`trend: ${esc(M_.lab.toLowerCase())}`:fm?`S&P 500 ${fm.above_200d?"above":"below"} its 200-day`:null].filter(Boolean).join(" · ");
+ el.innerHTML=`<h3 data-g="p_regime">Market backdrop <span class="chip" style="color:${sc};border-color:color-mix(in srgb,${sc} 45%,transparent)">${st}</span><span class="hzl">Whole market · short and long term · not in any score</span></h3>${key?`<p class="key">${key.charAt(0).toUpperCase()+key.slice(1)}.</p>`:""}<div class="fw">${H.join("")}</div>`}
 /* ---------- BTC Cycle panel (unscored) ---------- */
 let CH=null,BL=null;
 async function btcTask(){try{if(!CH){const r=await fetch("data/crypto-history.json",{cache:"no-cache"});if(r.ok)CH=await r.json()}
@@ -993,10 +1036,10 @@ async function btcTask(){try{if(!CH){const r=await fetch("data/crypto-history.js
  renderBTC()}catch(e){console.log("btc",e)}}
 function liveAsset(A,L){if(!A||!L)return A;const c=A.columns.indexOf("PriceUSD"),mv=A.columns.indexOf("CapMVRVCur"),rows=A.rows.slice(),lr=rows[rows.length-1],d=new Date(L.t).toISOString().slice(0,10);
  const nr=lr.slice();nr[0]=d;nr[c]=L.p;if(lr[mv]!=null)nr[mv]=lr[mv]*L.p/lr[c];if(lr[0]>=d)rows[rows.length-1]=nr;else rows.push(nr);return{columns:A.columns,rows}}
-function renderBTC(){const el=$("btcp");if(!el||!window.SGRegime)return;if(!CH||!CH.assets||!CH.assets.btc){el.innerHTML='<h3 data-g="p_btc">BTC Cycle <span class="chip">context · never scored</span></h3><p class="muted">Crypto data unavailable.</p>';return}
+function renderBTC(){const el=$("btcp");if(!el||!window.SGRegime)return;if(!CH||!CH.assets||!CH.assets.btc){el.innerHTML='<h3 data-g="p_btc">BTC Cycle </h3><p class="muted">Crypto data unavailable.</p>';return}
  const A=CH.assets.btc,fng=CH.fng&&CH.fng.length?CH.fng[CH.fng.length-1][1]:null,sv=SGRegime.btcCycle(A,CH.funding&&CH.funding.btc,fng),lv=BL?SGRegime.btcCycle(liveAsset(A,BL),CH.funding&&CH.funding.btc,fng):null,B=lv||sv;if(!B)return;
  const eth=CH.assets.eth?SGRegime.btcCycle(liveAsset(CH.assets.eth,null),CH.funding&&CH.funding.eth,null):null,tm=BL?new Date(BL.t).toLocaleString(undefined,{weekday:"short",hour:"2-digit",minute:"2-digit"}):null;
- el.innerHTML=`<h3 data-g="p_btc">BTC Cycle <span class="chip" style="color:${B.col};border-color:color-mix(in srgb,${B.col} 45%,transparent)">${esc(B.state)}</span><span class="chip">context · never scored</span>${lv?`<span class="chip" style="color:var(--good)">live ${esc(tm)}</span>`:""}</h3><div class="fw">
+ el.innerHTML=`<h3 data-g="p_btc">BTC Cycle <span class="chip" style="color:${B.col};border-color:color-mix(in srgb,${B.col} 45%,transparent)">${esc(B.state)}</span>${lv?`<span class="chip" style="color:var(--good)">live ${esc(tm)}</span>`:""}</h3><div class="fw">
   <div><h4>BTC cycle state</h4>${zoneHTML({tag:B.state+" · "+B.type,col:B.col,txt:B.note})}${lv?`<p>Live price ${money(BL.p,"USD")} · saved close (${esc(sv.date)}): <b>${esc(sv.state)}</b> at ${money(sv.price,"USD")} (${BL.p>=sv.price?"+":""}${((BL.p/sv.price-1)*100).toFixed(1)}%).</p>`:""}</div>
   ${B.lines.map(l=>{const oc=/^MVRV|^Valuation/.test(l[0]),fs=/^Funding/.test(l[0]),fu=CH.funding&&CH.funding.btc,fl=fu&&fu.length?fu[fu.length-1][0]:null,fg=CH.fng&&CH.fng.length?CH.fng[CH.fng.length-1][0]:null;
     return lineHTML([...l,fs?tsTag(fl?"funding "+tWhen(fl):null,fg?"fear & greed "+fdClose(fg):null):oc?tsTag(lv?"live price × on-chain to "+fdClose(sv.date):"on-chain "+fdClose(sv.date),tComp(CH.updated)):tsTag(lv?tLive(BL.t):tClose(sv.date),lv?null:tComp(CH.updated))])}).join("")}
@@ -1007,7 +1050,7 @@ function renderBTC(){const el=$("btcp");if(!el||!window.SGRegime)return;if(!CH||
 (async()=>{await mfReady;MFS=MF;await Promise.allSettled([mhReady,rgReady]);renderRegime();liveFearTask();setTimeout(btcTask,800);
  try{const r=await fetch("data/glossary.json",{cache:"no-cache"});if(r.ok&&window.SGRegime)SGRegime.glossInit(await r.json())}catch(e){}})();
 /* cards start folded to their title (arrow top right); the three score cards stay open, "Score by group" starts open */
-if(window.SGRegime)SGRegime.foldInit({ns:"sg",open:["Score by group"],groups:[{sel:"#main .card.glass:not(.sc)",head:":scope>h3"},{sel:"#main .grp",head:":scope>.gh"}]});
+if(window.SGRegime)SGRegime.foldInit({ns:"sg2",groups:[{sel:"#main .card.glass:not(.sc)",head:":scope>h3"},{sel:"#main .grp",head:":scope>.gh"}]});
 liveVix();liveCredit();setInterval(()=>{if(!document.hidden){liveVix();liveCredit();liveFearTask();btcTask()}},5*60e3);
 /* Long / short setup note under the timing score (not a score; version 2, 21 Nov 2026). A trend counts only when the
    12-1 momentum is large relative to volatility (|12-1 return| > 0.5 × annual σ; mom is already risk-adjusted), as in the
@@ -1121,7 +1164,7 @@ function trendTemplate(){const d=S.closes||[];if((S.kind&&S.kind!=="equity")||d.
  const full={passed:fp,total:ft,ratio:ft?fp/ft:0,entry:FI,entryMissing:fNo,read:fRead};
 return{rules:R,blocks:B,passed:n,total:Bk.length,met,fall,missing:miss,rsW,rsParts:sw,verdict,why,full,
   stop:st!=null?{pct:st,level:p*(1-st/100),over:st>10,size:Math.min(100,1.25/Math.min(Math.max(st,.1),10)*100)}:null,
-  slope:{m1:sl1,m5:sl5},X}}
+  slope:{m1:sl1,m5:sl5},X,aL,bH,ma:{p,s50,s150,s200}}}
 /* @tt-end */
 function priceBeta(){const M=S.mktC;if(!M||!S.closes||S.closes.length<200)return null;
  const P=[];S.closes.forEach(x=>{const d=new Date(x.t).toISOString().slice(0,10);if(M.has(d))P.push([x.c,M.get(d)])});const z=P.slice(-261);if(z.length<160)return null;
@@ -1136,6 +1179,32 @@ const logoG=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;const l=is
 function perf(){const c=S.closes;if(S.price==null||c.length<2)return null;let b=null;
  if(S.per==="1D")b=c[c.length-2];else{const tg=last(c).t-PER[S.per]*864e5;for(const x of c){if(x.t<=tg)b=x;else break}}
  const short=!b;if(!b)b=c[0];return{pct:(S.price/b.c-1)*100,from:b.t,short}}
+/* Minervini card (28 Nov 2026): shown like the indicator groups, one row per check, each tappable (glossary keys tt_*) */
+function minerviniCard(T){if(!T)return "";const X=T.X,M=T.ma||{},sg=v=>(v>=0?"+":"")+v.toFixed(1),G="var(--good)",B="var(--bad)",N="var(--ink3)";
+ const row=(k,l,ok,v,d)=>`<div class="m ${ok==null?"nf":"ok"}" data-k="${k}" style="--c:${ok==null?N:ok?G:B}"><div class="mr"><i></i><span>${esc(l)}</span><b>${v}</b></div>${d?`<p class="md">${d}</p>`:""}</div>`;
+ const cmp=(a,b)=>a!=null&&b!=null?(a>b?"&gt;":"&lt;"):"?",R=T.rules;
+ const blocks=[row("tt_stack","Moving averages stacked",T.blocks[0][1],T.blocks[0][1]?"Yes":"No",`Price ${cmp(M.p,M.s50)} 50-day ${cmp(M.s50,M.s150)} 150-day ${cmp(M.s150,M.s200)} 200-day (wanted: price &gt; 50 &gt; 150 &gt; 200).`),
+  row("tt_rising","200-day average rising",T.blocks[1][1],T.slope.m1!=null?sg(T.slope.m1)+"%":"∅",`Over 1 month${T.slope.m5!=null?` (${sg(T.slope.m5)}% over 5 months; 4–5 months of rise preferred)`:""}.${T.fall?" A falling 200-day disqualifies the stock on its own.":""}`),
+  row("tt_low","At least 25% above the 52-week low",R[5][1],T.aL!=null?"+"+T.aL.toFixed(0)+"%":"∅","30% in his 2013 book; his best setups were 100–300% above the low."),
+  row("tt_high","Within 25% of the 52-week high",R[6][1],T.bH!=null?"−"+T.bH.toFixed(0)+"%":"∅","Distance below the 52-week high."),
+  row("tt_rs","Relative strength",R[7][1],T.rsW!=null?sg(T.rsW)+" pt":"∅",`IBD-weighted return (40% 3 months, 20% each 6/9/12 months) vs ${esc(S.mktN||"the market")}; stand-in for his RS rank ≥ 70.`)];
+ const ep=[];
+ if(X.rsHigh!=null)ep.push(row("tt_rsline","RS line at a 52-week high",X.rsHigh,X.rsHigh?"Yes":"No",X.rsLead?"Before the price: the leadership signal he looks for.":"Stock price divided by the market, over a year."));
+ if(X.ext!=null)ep.push(row("tt_ext","Not extended above the 50-day",X.extPct>=0&&X.ext<=4,sg(X.extPct)+"%",`${X.ext.toFixed(1)} × the daily range above the 50-day average; above 4 he avoids chasing.`));
+ if(X.max1d!=null)ep.push(row("tt_spike","No one-day spike",X.max1d<10,sg(X.max1d)+"%","Largest daily gain in the last month; 10%+ spikes have tended to lag afterwards (Bali et al. 2011)."));
+ if(X.upVol!=null||X.dry!=null){const vg=(X.upVol!=null&&X.upVol>=1.4)||(X.dry!=null&&X.dry<.75);
+  ep.push(row("tt_vol","Volume support",vg,X.upVol!=null&&X.upVol>=1.4?X.upVol.toFixed(1)+"×":X.dry!=null?X.dry.toFixed(2)+"×":X.upVol.toFixed(1)+"×",[X.upVol!=null?`Last up day ${esc(X.upDay)} on ${X.upVol.toFixed(1)} × the 50-day volume`:null,X.dry!=null?`10-day volume ${X.dry.toFixed(2)} × the 50-day`:null].filter(Boolean).join("; ")+`. Passes on a strong up day (≥ 1.4×) or a dry-up (&lt; 0.75×)${S.cur!=="USD"?"; outside the US volume is split across venues":""}.`))}
+ if(X.turn!=null)ep.push(row("tt_liq","Enough liquidity",X.turnEur!=null?X.turnEur>=1e6:null,X.turnEur!=null?"€"+(X.turnEur/1e6).toFixed(X.turnEur<1e7?1:0)+"M/day":money(X.turn,S.cur),"Median daily turnover over 50 days; under €1M spreads can cost more than the fee."));
+ if(X.sector)ep.push(row("tt_sector","Leading sector",X.sector.w>=0,sg(X.sector.w)+" pt",`${esc(X.sector.n)} vs ${esc(S.mktN||"the market")} on the same weighting.`));
+ const st=T.stop?row("tt_stop","Stop-loss guide",T.stop.over?false:null,`${money(T.stop.level,S.cur)} · −${T.stop.pct.toFixed(1)}%`,T.stop.over?"2 × the 20-day average daily range is above his 10% maximum loss: too volatile for his rules unless a tighter base gives a closer stop.":`2 × the 20-day average daily range, inside his 10% maximum (he aims for 7–8%). His 1.25% risk rule caps the position at ${T.stop.size.toFixed(0)}% of the portfolio.`):"";
+ const D_=S.dir,dir=D_?row("w_dir","Direction",/^Long/.test(D_.label)?true:/^Short setups|risky/.test(D_.label)?false:null,esc(D_.label),esc(D_.note)+" A trend counts when 12-1 momentum exceeds half its volatility; shorts only in a calm, rising market (Daniel &amp; Moskowitz 2016)."):"";
+ const ft=T.full,fc=ft.ratio>=.85?G:ft.ratio>=.6?"var(--warn)":B,m=S.mchk;
+ return`<section class="grp glass" id="ttc"><div class="gh"><h3 style="--gc:#a78bfa" data-g="w_tt">Minervini</h3><span class="gs" style="color:${fc};background:color-mix(in srgb,${fc} 12%,transparent)">${ft.passed}/${ft.total}${m!=null?" · "+m.toFixed(1):""}</span></div>
+  <p class="key" style="color:${T.verdict[1]}">${esc(T.verdict[0].replace(/^\S+\s/,""))}</p>
+  <h4 class="gsub">Trend template · ${T.passed}/${T.total} blocks</h4><div class="rows">${blocks.join("")}</div>
+  ${ep.length?`<h4 class="gsub">Entry points</h4><div class="rows">${ep.join("")}</div>`:""}
+  ${st||dir?`<h4 class="gsub">Risk and direction</h4><div class="rows">${st}${dir}</div>`:""}
+  <div class="src">${m!=null?"Full check = half of the short-term setup score · ":""}${esc(ft.read)}</div></section>`}
 function render(){try{renderRegime()}catch(e){}
  $("cname").textContent=S.name||S.sym;$("ctk").textContent=S.sym;$("lg").style.background=logoG(S.sym);$("lg").textContent=S.sym.replace(/[^A-Z0-9]/g,"").slice(0,4);
  $("csec").textContent=S.sector||"sector ∅";$("cex").textContent=S.ex||"listed";{const ci=$("cind"),ind=S.industry&&S.industry!==S.sector?S.industry:"";ci.textContent=ind;ci.hidden=!ind}
@@ -1148,11 +1217,12 @@ function render(){try{renderRegime()}catch(e){}
   const fresh=S.qt&&Date.now()-S.qt<20*6e4;
   $("asof").textContent=[S.qt?(fresh?"price live "+tClock(S.qt):"price of "+tWhen(S.qt)):null,"indicators computed "+tClock(Date.now()),
    fy?"statements: year to "+mo(fy)+(tt&&tt>fy?", last 12 months to "+mo(tt):""):null].filter(Boolean).join(" · ")}
+ S.tt=trendTemplate();
  $("grid").innerHTML=GR.map(([k,name,c])=>{const G=S.groups[k]||{},gc=G.s!=null?col(G.s):"var(--ink3)";
   const rows=REG.filter(m=>m.g===k).map(m=>{const v=S.v[m.k],wi=(S.WE||WI)[m.k],tw_=TIMING[m.g]?wi[1]:0,ctx=!wi[0]&&!tw_;const cc=v.s==="ok"&&!ctx?col(v.sc):"var(--ink3)";
    const tip=`${m.l}: ${m.tip}${v.src?" Source: "+v.src+".":""} ${ctx?"Shown for context, not scored.":(v.s==="ok"?"Score "+v.sc.toFixed(1)+"/10.":v.s==="na"?"Not applicable, excluded.":"Not found, excluded.")+` Weight: long-term ×${wi[0]}${tw_?", short-term ×"+tw_:""}.`}`;
    return`<div class="m ${v.s}${ctx?" ctx":""}" data-k="${m.k}" style="--c:${cc}" title="${esc(tip)}"><div class="mr"><i></i><span>${esc(m.l)}</span><b>${esc(v.d)}</b></div><p class="md">${esc(DESC[m.k]||m.tip)}${!ctx&&COMPOSITE[m.k]?' <em class="cmp">'+esc(COMPOSITE[m.k])+' composite</em>':ctx&&CTXW[m.k]?' <em class="cmp cx">Context: '+esc(CTXW[m.k])+'</em>':""}</p></div>`}).join("");
-  return`<section class="grp glass"><div class="gh"><h3 style="--gc:${c}">${name}</h3><span class="gs" style="color:${gc};background:color-mix(in srgb,${gc} 12%,transparent)">${G.s!=null?G.s.toFixed(1):"∅"}</span></div><div class="rows">${rows}</div><div class="src">${G.n||0}/${G.tot||0} scored</div></section>`}).join("");
+  return`<section class="grp glass"><div class="gh"><h3 style="--gc:${c}">${name}</h3><span class="gs" style="color:${gc};background:color-mix(in srgb,${gc} 12%,transparent)">${G.s!=null?G.s.toFixed(1):"∅"}</span></div><div class="rows">${rows}</div><div class="src">${G.n||0}/${G.tot||0} scored</div></section>`}).join("")+minerviniCard(S.tt);
  const C=2*Math.PI*38;
  const ringSet=(fgId,a,b,numId,sc)=>{const fg=$(fgId);fg.style.strokeDasharray=C;fg.style.strokeDashoffset=sc!=null?C*(1-sc/10):C;const p=ringPair(sc);$(a).setAttribute("stop-color",p[0]);$(b).setAttribute("stop-color",p[1]);$(numId).textContent=sc!=null?sc.toFixed(1):"∅"};
  const pill=(id,t)=>{const e=$(id);if(t){e.textContent=t[0];e.style.color=t[1];e.style.background=`color-mix(in srgb,${t[1]} 14%,transparent)`}else{e.textContent="not enough data";e.style.color="var(--ink3)";e.style.background="var(--field)"}};
@@ -1163,34 +1233,16 @@ function render(){try{renderRegime()}catch(e){}
  const fdt=t=>t?new Date(t+"T00:00:00Z").toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}):"";
  /* context windows under the short-term setup score: one card per subject */
  {const CW=[],P=t=>`<p>${t}</p>`,mu=t=>`<p class="muted">${t}</p>`,tone=l=>/^(Supportive|Long|OK|🟢)/.test(l)?"var(--good)":/^(Hostile|Unsupportive|Short setups|Warning|🔴)/.test(l)?"var(--bad)":/risky|Watch|Mixed|🟡/.test(l)?"var(--warn)":"var(--ink2)";
-  const HZ={S:"short term · 2–12 wk",L:"long term · 1–3 y",B:"short and long term"},add=(t,st,sc,secs,cls,hz,ns)=>CW.push({t,st,sc:sc||tone(st||""),secs:secs.filter(x=>x&&x[1]),cls,hz,ns});   /* a section may carry a time tag as its 3rd item */
+  const HZ={S:"short term · 2–12 weeks",L:"long term · 1–3 years",B:"short and long term"},add=(t,st,sc,secs,cls,hz,ns)=>CW.push({t,st,sc:sc||tone(st||""),secs:secs.filter(x=>x&&x[1]),cls,hz,ns});   /* a section may carry a time tag as its 3rd item */
   const E=S.nextEarn;
   if(E){const days=Math.round((E.t-Date.now())/864e5),ds=new Date(E.t).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}),cf=E.confirmed?"confirmed":"estimated";
    if(days>=0&&days<=EVENT_DAYS){const vs=S.groups.value.sT!=null&&S.groups.value.sT<VAL_T;add("Next earnings","inside the window","var(--warn)",[["Date",P(`⚠ ${ds} (${cf}), in ${days} days`)],["What it means",P("The report can move the price sharply and override the short-term score."+(vs?" With valuation this stretched, a disappointment usually costs more than a beat gains."+RD("neg","event risk with a rich price"):RD("mix","a big move either way is possible")))]],"in","S")}
    else if(days>EVENT_DAYS)add("Next earnings","after the window","var(--ink2)",[["Date",P(`${ds} (${cf}), after the 12-week window`+RD("neu","no report inside the timing window"))]],"","S")}
   const M_=S.mkt;
   /* the index trend (Supportive / Mixed / Hostile) now lives in the Market Regime card */
-  /* market fear and credit: one card of their own (#fcp, renderFC), context only since 28 Nov 2026 */
-  if(S.dir){const D_=S.dir;add("Direction",D_.label,null,[["Setup",P(esc(D_.note)+(/^Long/.test(D_.label)?RD("pos","trend and timing line up for long positions"):/^Short setups/.test(D_.label)?RD("neg","for a long position: the trend points down"):/risky/.test(D_.label)?RD("neg","for a long position: no long setup"):RD("neu","no clear edge either way")))],["How it is read",mu("A trend counts when 12-1 momentum exceeds half its volatility; shorts only in a calm, rising market because of momentum-crash risk (Daniel &amp; Moskowitz 2016).")]],"","S")}
-  const T=S.tt=trendTemplate();
-  if(T){const X=T.X,sg=v=>(v>=0?"+":"")+v.toFixed(1),ctx=[];
-    /* each context line ends with how Minervini would read it: [text, tone, reason] */
-    if(X.rsHigh!=null)ctx.push(X.rsHigh?(X.rsLead?["RS line at a 52-week high before the price","pos","the leadership signal he and O'Neil look for"]:["RS line at a 52-week high","pos","a sign of leadership"]):["RS line not at a 52-week high","neu","he prefers an RS line making new highs"]);
-    if(X.ext!=null)ctx.push([`${sg(X.extPct)}% from the 50-day average (${X.ext.toFixed(1)} × the daily range)`,...(X.extPct<0?["neg","he wants the price above the 50-day"]:X.ext>4?["neg","extended: he avoids chasing (rule of thumb, untested)"]:["pos","above the 50-day without being extended"])]);
-    if(X.max1d!=null)ctx.push([`Largest one-day gain in the last month: ${sg(X.max1d)}%`,...(X.max1d>=10?["mix","he likes powerful moves, but such lottery-like spikes have tended to lag afterwards (Bali et al. 2011)"]:["neu","no unusual spike"])]);
-    if(X.upVol!=null||X.dry!=null){const vg=(X.upVol!=null&&X.upVol>=1.4)||(X.dry!=null&&X.dry<.75);
-     ctx.push([[X.upVol!=null?`Last up day (${X.upDay}) on ${X.upVol.toFixed(1)} × the 50-day volume`:null,X.dry!=null?`10-day volume ${X.dry.toFixed(2)} × the 50-day`:null].filter(Boolean).join("; ")+(S.cur!=="USD"?" (outside the US, volume is split across venues, so these ratios are rough)":""),
-      ...(vg?["pos",X.upVol!=null&&X.upVol>=1.4?"buyers stepping in on strong volume, as he wants on breakouts":"volume drying up, as in his volatility contraction pattern"]:["neu","no volume signal either way"])])}
-    if(X.sector)ctx.push([`Sector (${esc(X.sector.n)}): ${sg(X.sector.w)} pt vs ${esc(S.mktN||"the market")} on the same weighting`,...(X.sector.w>=0?["pos","a leading group, which he favours"]:["neg","a lagging group; he favours leading groups"])]);
-    if(X.turn!=null)ctx.push([`Median daily turnover (50 days): ${X.turnEur!=null?"≈ €"+(X.turnEur/1e6).toFixed(X.turnEur<1e7?1:0)+"M":money(X.turn,S.cur)}`,...(X.turnEur!=null&&X.turnEur<1e6?["neg","thin trading: spreads can cost more than the fee"]:["neu","enough liquidity, no issue"])]);
-    const TN={pos:["Positive","var(--good)"],neg:["Negative","var(--bad)"],neu:["Neutral","var(--ink2)"],mix:["Mixed","var(--warn)"]};
-    add("Minervini trend template",`${T.passed}/${T.total}${T.met?" met":""} · full ${T.full.passed}/${T.full.total}`,T.fall?"var(--bad)":T.met&&!T.why.length?"var(--good)":T.verdict[0].startsWith("🟡")?"var(--warn)":"var(--bad)",[
-    ["His 8 criteria",`<ul class="fcl">${T.rules.map(r=>`<li${r[1]===false?' class="ff"':""}>${r[1]===null?"–":r[1]?"✓":"✗"} ${esc(r[0])}</li>`).join("")}</ul>`+mu(`Rules 1, 2, 4 and 5 form one moving-average stack, so the count uses ${T.total} blocks; a falling 200-day fails on its own.${T.rsW==null?" Relative strength not counted: no market data.":""}`)],
-    T.stop?["Stop-loss guide",P(T.stop.over?`2 × the 20-day average daily range is −${T.stop.pct.toFixed(1)}%, above his 10% maximum loss: too volatile for his rules unless a tighter base gives a closer stop.`:`${money(T.stop.level,S.cur)} (−${T.stop.pct.toFixed(1)}%): 2 × the 20-day average daily range, inside his 10% maximum (he aims for 7–8%).`)+mu(`His sizing rule: risk at most 1.25% of the portfolio per trade, so a −${Math.min(T.stop.pct,10).toFixed(1)}% stop means a position of at most ${T.stop.size.toFixed(0)}% of the portfolio.`)]:null,
-    ctx.length?["Entry points (full check)",`<ul class="fcl">${ctx.map(([t,k,w])=>`<li>· ${t} → <b style="color:${TN[k][1]}">${TN[k][0]}</b><span style="color:var(--ink3)">: ${w}.</span></li>`).join("")}</ul>`]:null,
-    ["Reading",`<p style="color:${T.verdict[1]};font-weight:700">Template ${T.passed}/${T.total}: ${esc(T.verdict[0])}</p>`
-     +`<p><b style="color:${T.full.ratio>=.85?"var(--good)":T.full.ratio>=.6?"var(--warn)":"var(--bad)"}">Full check ${T.full.passed}/${T.full.total}</b> (template blocks + entry points): ${esc(T.full.read)}</p>`
-     +mu("Rule-based description of Minervini's criteria (<i>Trade Like a Stock Market Wizard</i>, 2013; <i>Think &amp; Trade Like a Champion</i>, 2017), not investment advice. The full check is half of the short-term setup score.")]],"","S",S.mchk!=null?"scored: full check = 50% of the short-term score":"not scored")}
+  /* market fear, credit, trend, rates and inflation: one Market backdrop card (renderRegime), context only */
+  /* Minervini and Direction now live in the Minervini indicator card (minerviniCard) */
+  const xfStart=CW.length;
   if(S.xp){const x=S.xp;add("Expectations check",x.flag?"Watch":"OK",null,[["What the price assumes",P(esc(x.note)+(x.negF?RD("neg","the price rests on cash flows not visible yet"):x.slow?RD("neg","high expectations while growth slows"):x.flag?RD("neg","high expectations, little room for disappointment"):isN(x.ig)&&x.ig<=2?RD("pos","modest expectations: the price needs little growth"):RD("neu","expectations close to long-run growth")))]],x.flag?"in":"","L")}
   const FL=S.fil;
   if(FL&&FL.na)add("Filing check","n/a","var(--ink2)",[["Rules",P("Not on SEC EDGAR for this listing. European rules: annual report within 4 months of year end, half-year report within 3 months; check the company's financial calendar.")]],"","L");
@@ -1198,8 +1250,11 @@ function render(){try{renderRegime()}catch(e){}
      return`<li>${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(nm)}</a>`:esc(nm)}: <b>${esc(x.st)}</b>`+(x.filed?` · filed ${esc(fdt(x.filed))}`:"")+(isN(x.lag)?` (${x.lag} d after results)`:"")+(x.waited!=null?` · results ${esc(fdt(x.res))}, ${x.waited} d ago${FL.usual!=null?`, usually ${FL.usual} d`:""}`:"")+(!x.filed&&x.dl?` · deadline ${esc(fdt(x.dl))}`:"")+"</li>"}).join("")
     +FL.flags.map(f=>`<li class="ff"><a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.t)}</a> · ${esc(fdt(f.date))}</li>`).join("")
     +`<li>${FL.lab==="OK"?RD("pos","reports filed on time, no warning sign").slice(3):FL.lab==="Warning"?RD("neg","a late report or a hard warning sign").slice(3):RD("mix","a report later than usual; worth watching").slice(3)}</li>`;
-   add("Filing check",FL.lab,null,[["Last three reports vs their legal deadline (SEC EDGAR)",`<ul class="fcl">${li}</ul>`+(FL.foreign?mu("Interim reports of foreign issuers (6-K) have no deadline."):"")]],FL.lab==="OK"?"":FL.lab==="Warning"?"bad":"in","L")}
-  $("ctxc").innerHTML=CW.map(c=>`<div class="card glass cw${c.cls?" "+c.cls:""}"><h3>${esc(c.t)}${c.st?` <span class="chip" style="color:${c.sc};border-color:color-mix(in srgb,${c.sc} 45%,transparent)">${esc(c.st)}</span>`:""}<span class="chip">${esc(c.ns||"not scored")}</span>${c.hz?`<span class="chip hzc">${HZ[c.hz]}</span>`:""}</h3><div class="fw">${c.secs.map(([h,b,ts])=>`<div><h4>${esc(h)}${ts||""}</h4>${b}</div>`).join("")}</div></div>`).join("")+`<p style="margin:0 6px 12px;font-size:11px;color:var(--ink3)">Positive / negative after a line = a plain reading of that line, not a score.</p>`}
+   add("Filing check",FL.lab,null,[["Filings: last three reports vs their deadline",`<ul class="fcl">${li}</ul>`+(FL.foreign?mu("Interim reports of foreign issuers (6-K) have no deadline."):"")]],FL.lab==="OK"?"":FL.lab==="Warning"?"bad":"in","L")}
+  /* one "Expectations & filings" card (28 Nov 2026): the two long-term checks share a card, the worse status shows */
+  {const part=CW.splice(xfStart);if(part.length){const rk={Warning:3,Watch:2,OK:1},w=part.reduce((a,c)=>(rk[c.st]||0)>(rk[a.st]||0)?c:a);
+   CW.push({t:"Expectations & filings",st:w.st,sc:w.sc,secs:part.flatMap(c=>c.secs),cls:part.map(c=>c.cls).find(Boolean)||"",hz:"L"})}}
+  $("ctxc").innerHTML=CW.map(c=>`<div class="card glass cw${c.cls?" "+c.cls:""}"><h3>${esc(c.t)}${c.st?` <span class="chip" style="color:${c.sc};border-color:color-mix(in srgb,${c.sc} 45%,transparent)">${esc(c.st)}</span>`:""}${c.hz?`<span class="hzl">${HZ[c.hz]}</span>`:""}</h3><div class="fw">${c.secs.map(([h,b,ts])=>`<div><h4>${esc(h)}${ts||""}</h4>${b}</div>`).join("")}</div></div>`).join("")}
  {const nm=k=>(GR.find(x=>x[0]===k)||[,k])[1];
   $("tparts").textContent=S.mchk!=null?`Minervini full check ${S.mchk.toFixed(1)} (50%) · Technicals ${S.tech.toFixed(1)} (50%) · rule-based: in our 2012–2026 test higher scores had smaller dips, not higher returns`
    :Object.keys(TIMING).map(k=>`${nm(k)} ${gp(k)} (${TIMING[k]}%)`).join(" · ")}

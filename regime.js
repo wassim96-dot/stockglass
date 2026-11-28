@@ -124,12 +124,12 @@
   }
 
   /* ---------- fold cards (28 Nov 2026): an arrow in each card's top-right corner folds it to its title ----------
-     Cards start folded unless listed in `open`; what the viewer chooses is remembered in this browser (localStorage, per
+     Cards start open (28 Nov 2026) unless listed in `folded`; what the viewer chooses is remembered in this browser (localStorage, per
      card title). The title itself keeps opening its glossary explanation, so only the arrow folds. Cards that are drawn
      again (live updates) keep their state: new cards are picked up automatically.
      groups: [{ sel, head, keep }] — sel = the card, head = its title element (kept visible), keep = also kept when folded.
      Copy: skill assets/fold.js (same function; tests/check-copies.mjs compares them). */
-  function foldInit({ groups, open = [], ns = "page" }) {
+  function foldInit({ groups, folded = [], ns = "page" }) {
     const KEY = "sg_fold_" + ns, D = document;
     let st = {}; try { st = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { st = {}; }
     const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* private mode: not remembered */ } };
@@ -138,7 +138,7 @@
 .fold-b{position:absolute;top:4px;right:4px;width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:10px;background:transparent;color:var(--ink3,#8199ba);cursor:pointer;font-size:15px;line-height:1;z-index:2}
 .fold-b:hover,.fold-b:focus-visible{background:color-mix(in srgb,currentColor 14%,transparent);outline:none}.fold-b span{transition:transform .15s}
 .folded .fold-b span{transform:rotate(-90deg)}.fold-c{min-width:0;max-width:100%;box-sizing:border-box}.fold-c>.fold-h{min-width:0;flex-wrap:wrap}.folded{min-height:0!important;padding-bottom:10px!important}.folded>.fold-h{margin-bottom:0!important}.folded>*:not(.fold-h):not(.fold-b):not(.fold-keep){display:none!important}
-.fold-all{border:1px solid var(--ln,rgba(150,190,240,.2));background:transparent;color:var(--ink2,#b7c9e2);border-radius:999px;padding:3px 10px;font:inherit;font-size:11.5px;cursor:pointer}`;
+.fold-all{border:1px solid var(--ln,rgba(150,190,240,.2));background:transparent;color:var(--ink2,#b7c9e2);border-radius:999px;padding:6px 14px;font:inherit;font-size:13px;min-height:36px;cursor:pointer}`;
       D.head.appendChild(s); }
     // the card's name: the title's own text, else its first element (a title wrapped in a span), never the status chips
     const title = h => ([...h.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join(" ").trim() || (h.firstElementChild || h).textContent.trim()).replace(/\s+/g, " ").slice(0, 60);
@@ -151,7 +151,7 @@
       if (!el.querySelector(":scope>.fold-b")) { const b = D.createElement("button"); b.type = "button"; b.className = "fold-b"; b.innerHTML = "<span>▾</span>";
         b.addEventListener("click", ev => { ev.stopPropagation(); ev.preventDefault(); const c = !el.classList.contains("folded"); st[el.dataset.fk] = c; save(); set(el, c); label(); });
         el.appendChild(b); }
-      set(el, el.dataset.fk in st ? !!st[el.dataset.fk] : !open.includes(el.dataset.fk));
+      set(el, el.dataset.fk in st ? !!st[el.dataset.fk] : folded.includes(el.dataset.fk));   // 28 Nov 2026: open by default
     }
     const label = () => { const all = [...D.querySelectorAll(".fold-c")], c = all.length && all.every(el => el.classList.contains("folded"));
       D.querySelectorAll("[data-fold-all]").forEach(a => { const t = c ? "Expand all" : "Fold all"; if (a.textContent !== t) a.textContent = t; }); };   // unchanged text: no DOM write (the observer would loop)
@@ -236,9 +236,9 @@
     const find = t => { t = norm(t); for (const [a, k] of idx) if (t.startsWith(a)) return k; return null; };
     const st = document.createElement("style");
     st.textContent = `[data-g]{cursor:pointer}[data-g]:not(.m)::after,.m[data-g] .mr>span::after{content:"ⓘ";font-size:.8em;margin-left:4px;opacity:.5;font-weight:400}
-#gpop{position:fixed;inset:auto 12px 12px 12px;max-width:440px;margin:0 auto;z-index:9999;background:var(--bg3,var(--bg,#fff));color:var(--ink,#111);border:1px solid var(--ln,#ccd);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.25);padding:14px 16px 12px;font-size:13.5px;line-height:1.45;max-height:70vh;overflow:auto}
-#gpop h5{margin:0 26px 6px 0;font-size:15px}#gpop p{margin:6px 0}#gpop b{font-weight:650}#gpop .x{position:absolute;top:8px;right:10px;border:0;background:none;font-size:20px;cursor:pointer;color:inherit;opacity:.6}
-#gpop .lv{background:color-mix(in srgb,var(--warn,#c80) 10%,transparent);border-radius:8px;padding:6px 8px}#gpop .s{opacity:.7;font-size:12px}`;
+#gpop{position:fixed;inset:auto 12px 12px 12px;max-width:440px;margin:0 auto;z-index:9999;background:var(--bg3,var(--bg,#fff));color:var(--ink,#111);border:1px solid var(--ln,#ccd);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.25);padding:16px 18px 14px;font-size:15px;line-height:1.5;max-height:70vh;overflow:auto}
+#gpop h5{margin:0 26px 6px 0;font-size:17px}#gpop p{margin:6px 0}#gpop b{font-weight:650}#gpop .x{position:absolute;top:8px;right:10px;border:0;background:none;font-size:20px;cursor:pointer;color:inherit;opacity:.6}
+#gpop .lv{background:color-mix(in srgb,var(--warn,#c80) 10%,transparent);border-radius:8px;padding:6px 8px}#gpop .s{opacity:.7;font-size:12.5px}`;
     document.head.appendChild(st);
     const pop = document.createElement("div"); pop.id = "gpop"; pop.hidden = true; pop.setAttribute("role", "dialog"); document.body.appendChild(pop);
     const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));

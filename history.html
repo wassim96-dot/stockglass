@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{color-scheme:dark;--bg1:#10203a;--bg2:#183153;--card:linear-gradient(150deg,rgba(84,120,172,.40),rgba(38,66,110,.32));--card2:rgba(84,120,172,.22);--ink:#eef5ff;--ink2:#b7c9e2;--ink3:#8199ba;--ln:rgba(150,190,240,.2);--btn:rgba(150,190,240,.12);--up:#3ddc97;--dn:#ff6b81;--acc:#8fc4ff;--trk:rgba(150,190,240,.18)}
-:root[data-theme="light"]{color-scheme:light;--bg1:#e8f1fc;--bg2:#d6e6f8;--card:rgba(255,255,255,.8);--card2:rgba(255,255,255,.58);--ink:#0f2440;--ink2:#3d5878;--ink3:#6a83a3;--ln:rgba(30,70,130,.14);--btn:rgba(30,90,170,.06);--up:#0e8a57;--dn:#c4314b;--acc:#1f6fd1;--trk:rgba(30,70,130,.12)}
+:root{color-scheme:dark;--bg1:#10203a;--bg2:#183153;--card:linear-gradient(150deg,rgba(84,120,172,.40),rgba(38,66,110,.32));--card2:rgba(84,120,172,.22);--ink:#eef5ff;--ink2:#c9d7ea;--ink3:#a3b6d0;--ln:rgba(150,190,240,.2);--btn:rgba(150,190,240,.12);--up:#3ddc97;--dn:#ff6b81;--acc:#8fc4ff;--trk:rgba(150,190,240,.18)}
+:root[data-theme="light"]{color-scheme:light;--bg1:#e8f1fc;--bg2:#d6e6f8;--card:rgba(255,255,255,.8);--card2:rgba(255,255,255,.58);--ink:#0f2440;--ink2:#3d5878;--ink3:#566f8f;--ln:rgba(30,70,130,.14);--btn:rgba(30,90,170,.06);--up:#0e8a57;--dn:#c4314b;--acc:#1f6fd1;--trk:rgba(30,70,130,.12)}
 *{box-sizing:border-box}
 body{margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
 .wrap{max-width:980px;margin:0 auto;padding-block:max(14px,env(safe-area-inset-top)) 40px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
@@ -50,6 +50,13 @@ table.it td.cx{color:var(--ink3);font-style:italic}svg.mini{width:64px;height:16
 @media(max-width:520px){table.it .pv{display:none}svg.mini{width:48px}}
 .empty{background:var(--card2);border:1px dashed var(--ln);border-radius:14px;padding:18px;color:var(--ink2)}
 footer{color:var(--ink3);font-size:11.5px;margin-top:18px}
+
+/* layout v2 (28 Nov 2026): same type scale as index.html — 12.5 tags · 13 notes · 15 body · 17 titles; no all-caps labels */
+body{font-size:15px;line-height:1.5}h1{font-size:20px}.sub{font-size:13px}
+.tile b{font-size:13px;text-transform:none;letter-spacing:0;color:var(--ink2)}.tile span{font-size:15px}.nm b{font-size:16px}
+.pill i{font-size:12.5px;text-transform:none;letter-spacing:0}.pill strong{font-size:18px}.d{font-size:12.5px}.lab{font-size:13px}
+.g{font-size:14px;grid-template-columns:128px 1fr 38px}.meta{font-size:13px}.kind{font-size:12px;text-transform:none;letter-spacing:0}
+details.ind summary{font-size:14px}table.it{font-size:14px}table.it th{font-size:12.5px}footer{font-size:13px}.btn{font-size:14px;min-height:40px}
 </style>
 </head>
 <body>
