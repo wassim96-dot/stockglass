@@ -7,7 +7,7 @@ import { yahooChart, yahooStats, sleep } from "../scripts/lib/net.mjs";
 const HERE = path.dirname(new URL(import.meta.url).pathname), C = path.join(HERE, "cache");
 fs.mkdirSync(C, { recursive: true });
 const U = JSON.parse(fs.readFileSync(path.join(HERE, "universe.json"), "utf8"));
-const syms = ["SPY", ...U.stocks.map(s => s.ticker)];
+const syms = ["SPY", "XLK", "XLF", "XLV", "XLE", "XLI", "XLY", "XLP", "XLU", "XLB", "XLRE", "XLC", ...U.stocks.map(s => s.ticker)];   // sector ETFs: Minervini "leading sector" point (test 3)
 let ok = 0; const failed = [];
 for (const s of syms) {
   const f = path.join(C, s + ".json");
