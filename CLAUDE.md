@@ -46,7 +46,7 @@ so that step still runs). A push that fails 3 times fails the step. Optional sec
 - Time tags: every reading shows when it was measured (grey "🕒" after the line title): `tsTag`, `tClose`, `tLive`,
   `tComp`, `fearWhen`, `credWhen` in index.html; `lineHTML` and context-window sections take the tag as an extra item.
   A new reading on a page → give it a tag (saved: the close/date it describes + "computed" time; live: the quote time).
-- Cards fold to their title (`foldInit`, arrow top right; the title keeps opening the glossary). Open by default (28 Nov 2026;
+- Cards fold to their title (`foldInit`, 44 px chevron button top right; the title keeps opening the glossary). Open by default (28 Nov 2026;
   `folded:[...]` lists exceptions); the viewer's choices are kept per card title (storage ns `sg2`/`today2`, skill `sv2`). A new
   card with an `h3` title gets the arrow automatically; "Fold all / Expand all" is any element with `data-fold-all`.
 - Layout v2 type scale (same in the skill's render.py): 12.5 px tags · 13 notes · 15 body and rows · 17 card titles; nothing under

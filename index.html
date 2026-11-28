@@ -223,6 +223,10 @@ body{font-size:15px;line-height:1.5}
 .m .mr span{white-space:normal;overflow:visible}.m .mr{align-items:flex-start}.m .mr i{margin-top:6px}
 @media(min-width:1181px){#grid{grid-template-columns:repeat(2,minmax(0,1fr))}#main{grid-template-columns:minmax(0,1fr) 420px}}
 html[data-theme="light"] .cmp{color:var(--info);border-color:color-mix(in srgb,var(--info) 45%,transparent)}
+/* Score by group (28 Nov 2026): one row per group, label | bar | value, so 15 px labels never run into the bars */
+.bars{grid-template-columns:1fr;gap:4px}.br{display:grid;grid-template-columns:minmax(0,9.5em) 1fr 2.4em;gap:12px;align-items:center;font-size:15px;min-height:34px}
+.br span{width:auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.br b{width:auto;font-size:15px}.br u{height:8px}
+@media(min-width:700px) and (max-width:1180px){.bars{grid-template-columns:1fr 1fr;column-gap:28px}}
 #srcs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}#srcm ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink2)}
 </style>
 </head>

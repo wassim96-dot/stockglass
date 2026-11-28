@@ -134,11 +134,11 @@
     let st = {}; try { st = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { st = {}; }
     const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* private mode: not remembered */ } };
     if (!D.getElementById("fold-css")) { const s = D.createElement("style"); s.id = "fold-css";
-      s.textContent = `.fold-c{position:relative}.fold-c>.fold-h{padding-right:34px}
-.fold-b{position:absolute;top:4px;right:4px;width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:10px;background:transparent;color:var(--ink3,#8199ba);cursor:pointer;font-size:15px;line-height:1;z-index:2}
-.fold-b:hover,.fold-b:focus-visible{background:color-mix(in srgb,currentColor 14%,transparent);outline:none}.fold-b span{transition:transform .15s}
-.folded .fold-b span{transform:rotate(-90deg)}.fold-c{min-width:0;max-width:100%;box-sizing:border-box}.fold-c>.fold-h{min-width:0;flex-wrap:wrap}.folded{min-height:0!important;padding-bottom:10px!important}.folded>.fold-h{margin-bottom:0!important}.folded>*:not(.fold-h):not(.fold-b):not(.fold-keep){display:none!important}
-.fold-all{border:1px solid var(--ln,rgba(150,190,240,.2));background:transparent;color:var(--ink2,#b7c9e2);border-radius:999px;padding:6px 14px;font:inherit;font-size:13px;min-height:36px;cursor:pointer}`;
+      s.textContent = `.fold-c{position:relative}.fold-c>.fold-h{padding-right:54px}
+.fold-b{position:absolute;top:8px;right:8px;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:12px;background:color-mix(in srgb,var(--ink3,#8199ba) 13%,transparent);color:var(--ink2,#c9d7ea);cursor:pointer;line-height:0;z-index:2;-webkit-tap-highlight-color:transparent}
+.fold-b:hover,.fold-b:focus-visible{background:color-mix(in srgb,currentColor 22%,transparent);outline:none}.fold-b:focus-visible{box-shadow:0 0 0 2px currentColor}.fold-b span{display:grid;transition:transform .15s}
+.folded .fold-b span{transform:rotate(-90deg)}.fold-c{min-width:0;max-width:100%;box-sizing:border-box}.fold-c>.fold-h{min-width:0;flex-wrap:wrap}.folded{min-height:60px!important;padding-bottom:10px!important}.folded>.fold-h{margin-bottom:0!important}.folded>*:not(.fold-h):not(.fold-b):not(.fold-keep){display:none!important}
+.fold-all{border:1px solid var(--ln,rgba(150,190,240,.2));background:transparent;color:var(--ink2,#b7c9e2);border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;min-height:44px;cursor:pointer}`;
       D.head.appendChild(s); }
     // the card's name: the title's own text, else its first element (a title wrapped in a span), never the status chips
     const title = h => ([...h.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join(" ").trim() || (h.firstElementChild || h).textContent.trim()).replace(/\s+/g, " ").slice(0, 60);
@@ -148,7 +148,7 @@
       const h = el.querySelector(g.head); if (!h) return; const k = title(h); if (!k) return;
       h.classList.add("fold-h"); el.classList.add("fold-c"); el.dataset.fk = k;
       if (g.keep) el.querySelectorAll(g.keep).forEach(x => { if (x.parentElement === el) x.classList.add("fold-keep"); });
-      if (!el.querySelector(":scope>.fold-b")) { const b = D.createElement("button"); b.type = "button"; b.className = "fold-b"; b.innerHTML = "<span>▾</span>";
+      if (!el.querySelector(":scope>.fold-b")) { const b = D.createElement("button"); b.type = "button"; b.className = "fold-b"; b.innerHTML = '<span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>';   // 44 px tap target (28 Nov 2026)
         b.addEventListener("click", ev => { ev.stopPropagation(); ev.preventDefault(); const c = !el.classList.contains("folded"); st[el.dataset.fk] = c; save(); set(el, c); label(); });
         el.appendChild(b); }
       set(el, el.dataset.fk in st ? !!st[el.dataset.fk] : folded.includes(el.dataset.fk));   // 28 Nov 2026: open by default
