@@ -39,7 +39,9 @@ jobs:
         run: test -f backtest/results.csv || python3 backtest/run.py
       - name: Minervini setup-score test (HYPOTHESES2.md)
         timeout-minutes: 10
-        run: python3 -W ignore backtest/setup.py
+        run: |
+          pip install --quiet numpy pandas scipy
+          python3 -W ignore backtest/setup.py
       - name: Keep the price cache as a run artifact (not committed)
         uses: actions/upload-artifact@v4
         with:
