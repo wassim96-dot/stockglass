@@ -122,6 +122,7 @@ ol.hl{margin:4px 0 8px;padding-left:18px;font-size:12px}ol.hl li{display:flex;ga
 .src{font-size:9.5px;color:var(--ink3);font-weight:600;margin-top:3px}
 #side{display:flex;flex-direction:column;gap:9px;min-height:0;overflow:auto;padding-right:2px}
 .card{padding:12px 14px;flex:none}
+.foldbar{display:flex;justify-content:flex-end;max-width:var(--maxw,1600px);margin:6px auto 0;padding:0 max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
 .card h3{font-size:12px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px}.card h3 .chip{margin-left:auto}
 .sc{display:flex;align-items:center;gap:14px}
 .sct{min-width:0;flex:1}
@@ -209,6 +210,7 @@ ol.hl{margin:4px 0 8px;padding-left:18px;font-size:12px}ol.hl li{display:flex;ga
   <div class="idm"><div class="l1"><span id="cname">Loading…</span><span id="ctk"></span></div><div class="l2"><span class="chip" id="csec">—</span><span class="chip" id="cind" hidden></span><span class="chip" id="cex">—</span></div></div>
   <div class="pr"><div id="price">—</div><span id="chg">—</span><br><div class="seg" id="per" role="group" aria-label="Price change period"><button data-p="1D">1D</button><button data-p="1W">1W</button><button data-p="1M">1M</button><button data-p="6M">6M</button><button data-p="1Y">1Y</button></div><div id="asof"></div></div>
  </section>
+ <div class="foldbar"><button type="button" class="fold-all" data-fold-all>Expand all</button></div>
  <main id="main">
   <div id="left"><div id="grid"></div></div>
   <aside id="side">
@@ -984,6 +986,8 @@ function renderBTC(){const el=$("btcp");if(!el||!window.SGRegime)return;if(!CH||
  $("btcopen").onclick=()=>{$("q").value="BTC-USD";load("BTC-USD")};$("ethopen").onclick=()=>{$("q").value="ETH-USD";load("ETH-USD")}}
 (async()=>{await mfReady;MFS=MF;await Promise.allSettled([mhReady,rgReady]);renderRegime();liveFearTask();setTimeout(btcTask,800);
  try{const r=await fetch("data/glossary.json",{cache:"no-cache"});if(r.ok&&window.SGRegime)SGRegime.glossInit(await r.json())}catch(e){}})();
+/* cards start folded to their title (arrow top right); the three score cards stay open, "Score by group" starts open */
+if(window.SGRegime)SGRegime.foldInit({ns:"sg",open:["Score by group"],groups:[{sel:"#main .card.glass:not(.sc)",head:":scope>h3"},{sel:"#main .grp",head:":scope>.gh"}]});
 liveVix();liveCredit();setInterval(()=>{if(!document.hidden){liveVix();liveCredit();liveFearTask();btcTask()}},5*60e3);
 /* Long / short setup note under the timing score (not a score; version 2, 21 Nov 2026). A trend counts only when the
    12-1 momentum is large relative to volatility (|12-1 return| > 0.5 × annual σ; mom is already risk-adjusted), as in the

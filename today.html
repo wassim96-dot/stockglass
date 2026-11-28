@@ -60,7 +60,7 @@ footer{color:var(--ink3);font-size:11.5px;margin-top:18px}
  <h1>Minervini today</h1><span class="sub" id="dt"></span><span class="sp"></span>
  <a class="btn" href="index.html">StockGlass</a><a class="btn" href="history.html">Weekly history</a>
 </header>
-<div class="bar"><select class="btn" id="day" aria-label="Market date"></select><input class="btn" id="q" placeholder="Filter ticker or name" aria-label="Filter"></div>
+<div class="bar"><select class="btn" id="day" aria-label="Market date"></select><input class="btn" id="q" placeholder="Filter ticker or name" aria-label="Filter"><button type="button" class="btn" data-fold-all>Expand all</button></div>
 <div class="sum" id="sum"></div>
 <h2>Changes since the previous run <small id="vs"></small></h2>
 <div class="chg" id="chg"></div>
@@ -131,7 +131,7 @@ function render(){if(!CUR)return;const D=CUR,q=$("q").value.trim().toLowerCase()
    if(window.SGRegime){const fz=F?SGRegime.fearZone(F):null,cz=SGRegime.creditZone(cc);if(fz)T.push(["Fear vs history",fz.tag,fz.txt,fz.col,fT]);if(cz)T.push(["Credit vs history",cz.tag,cz.txt,cz.col,cT])}
    const ml=mk.map(m=>m.last).filter(Boolean).sort().pop();
    T.push(["Market regimes",mk.length?"":"∅",mk.map(m=>m.name.replace(/ \(.*\)/,"").replace("S&P/TSX Composite","S&P/TSX").replace("STOXX Europe 600","STOXX 600")+": "+m.label).join(" · "),null,ml?`closes to ${dW(ml)}`:""]);return T})()]
-  .map(([b,s,sm,c,ts])=>`<div class="tile"><b>${esc(b)}</b><span${c?` style="color:${c}"`:""}>${esc(s)}</span><small>${esc(sm)}</small>${ts?`<em class="ts">🕒 ${esc(ts)}</em>`:""}</div>`).join("");
+  .map(([b,s,sm,c,ts])=>`<div class="tile"><b>${esc(b)}</b><span${c?` style="color:${c}"`:""}>${esc(s)}</span><small${s?"":` class="k"`}>${esc(sm)}</small>${ts?`<em class="ts">🕒 ${esc(ts)}</em>`:""}</div>`).join("");
  const L=(lab,arr)=>arr&&arr.length?`<p><b>${lab}</b>: ${arr.map(t=>`<a href="#" data-t="${esc(t)}">${esc(t)}</a>`).join(", ")}</p>`:"";
  $("chg").innerHTML=(L("🟢 Newly meet the template",ch.new_green)+L("No longer meet it",ch.lost_green)+L("🟡 Met, but under market stress",ch.new_met)+L("No longer met (was under stress)",ch.lost_met)+L("200-day average turned down",ch.new_falling_200))||(D.previous?`<p class="empty">No stock newly met or lost the template.</p>`:`<p class="empty">Changes appear from the second run.</p>`);
  const nw=new Map();(ch.new_green||[]).forEach(t=>nw.set(t,"new"));(ch.new_met||[]).forEach(t=>nw.set(t,"new"));
@@ -145,6 +145,8 @@ async function load(day){try{CUR=await getJ(`data/daily/${day}.json`)}catch(e){$
 (async()=>{try{IDX=await getJ("data/daily/index.json")}catch(e){$("groups").innerHTML='<p class="empty">No daily run yet: the first one happens Monday to Friday after the US close (about 23:50 Paris).</p>';return}
  $("day").innerHTML=(IDX.files||[]).map(f=>`<option>${esc(f)}</option>`).join("");$("day").onchange=e=>load(e.target.value);$("q").oninput=render;load(IDX.latest||IDX.files[0])})();
 (async()=>{try{const r=await fetch("data/glossary.json",{cache:"no-cache"});if(r.ok&&window.SGRegime)SGRegime.glossInit(await r.json())}catch(e){}})();
+/* tiles start folded to their title and status (arrow top right); "Expand all" opens every tile */
+if(window.SGRegime)SGRegime.foldInit({ns:"today",groups:[{sel:".tile",head:":scope>b",keep:":scope>span, :scope>small.k"}]});   /* small.k: a tile with no status word keeps its summary */
 </script>
 </body>
 </html>
