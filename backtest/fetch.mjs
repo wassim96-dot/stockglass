@@ -12,12 +12,14 @@ let ok = 0; const failed = [];
 for (const s of syms) {
   const f = path.join(C, s + ".json");
   if (fs.existsSync(f)) { ok++; continue; }
-  let res; for (let k = 0; k < 3 && !res; k++) { res = await yahooChart(s, "max", { timeout: 45000 }); if (!res) await sleep(4000); }
+  let res; for (let k = 0; k < 3 && !res; k++) { res = await yahooChart(s, "max", { timeout: 45000, period1: 1230768000 }); if (!res) await sleep(4000); }   // daily bars from 2009-01-01
   if (!res) { failed.push(s); console.log("FAILED", s); continue; }
   const q = res.indicators.quote[0], adj = res.indicators.adjclose?.[0]?.adjclose || q.close, d = [], c = [], a = [], h = [], l = [], v = [];
   res.timestamp.forEach((t, i) => { if (q.close[i] == null || adj[i] == null) return;
     d.push(new Date((t + (res.meta.gmtoffset || 0)) * 1000).toISOString().slice(0, 10)); c.push(+q.close[i].toFixed(4)); a.push(+adj[i].toFixed(4));
     h.push(+(q.high[i] ?? q.close[i]).toFixed(4)); l.push(+(q.low[i] ?? q.close[i]).toFixed(4)); v.push(q.volume[i] ?? 0); });
+  const gap = d.slice(1).reduce((m, x, i) => Math.max(m, (Date.parse(x) - Date.parse(d[i])) / 864e5), 0);
+  if (gap > 10) { console.log(`${s}: not daily (largest gap ${gap} days), rejected`); failed.push(s); continue; }   // monthly bars must never pass as daily
   fs.writeFileSync(f, JSON.stringify({ s, d, c, a, h, l, v })); ok++;
   console.log(`${s}: ${d.length} days from ${d[0]}`);
   await sleep(600);
