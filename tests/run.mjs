@@ -46,6 +46,18 @@ section("data files");
 for (const f of fs.readdirSync(P("data")).filter(f => f.endsWith(".json"))) { let e = null; try { J("data/" + f); } catch (x) { e = x.message; } ok(!e, `data/${f} parses${e ? ": " + e : ""}`); }
 const GL = J("data/glossary.json"), badG = Object.entries(GL).filter(([, v]) => !v || !v.n || !v.w || !Array.isArray(v.a)).map(([k]) => k);
 ok(!badG.length, `glossary: ${Object.keys(GL).length} entries with a name, a "what" text and aliases${badG.length ? "; missing in " + badG.join(", ") : ""}`);
+// every tap-to-explain key the pages use exists in the glossary (28 Nov 2026): data-g="…" in the markup and code, Minervini
+// rows (row("tt_…") / row("w_dir")), and the same in the skill's render.py when --skill is given. A missing key shows no ⓘ, silently.
+{
+  const si = process.argv.indexOf("--skill"), sk = si > 0 ? path.resolve(process.argv[si + 1]) : null;
+  const files = ["index.html", "today.html", "history.html"].map(f => [f, fs.readFileSync(P(f), "utf8")]);
+  if (sk && fs.existsSync(path.join(sk, "scripts/render.py"))) files.push(["skill render.py", fs.readFileSync(path.join(sk, "scripts/render.py"), "utf8")]);
+  for (const [f, src] of files) {
+    const keys = new Set([...src.matchAll(/data-g=\\?"([a-z][a-z0-9_]*)\\?"/g)].map(m => m[1]).concat([...src.matchAll(/row\(\s*"((?:tt_|w_)[a-z0-9_]+)"/g)].map(m => m[1])));
+    const miss = [...keys].filter(k => !GL[k]);
+    ok(!miss.length, `${f}: ${keys.size} tap-to-explain keys all in the glossary${miss.length ? "; missing " + miss.join(", ") : ""}`);
+  }
+}
 const MH = J("data/market-history.json"), C = Object.fromEntries(MH.columns.map((k, i) => [k, i]));
 ok(MH.rows.length > 2500 && MH.rows.every((r, i) => i === 0 || r[C.date] > MH.rows[i - 1][C.date]), `market history: ${MH.rows.length} rows in date order`);
 
