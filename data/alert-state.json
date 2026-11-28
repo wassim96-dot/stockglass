@@ -1,8 +1,8 @@
 {
  "fear": {
-  "phase": "fading_unconfirmed",
-  "label": "Fading fear (unconfirmed)",
-  "date": "2026-11-25"
+  "phase": "after",
+  "label": "After fear",
+  "date": "2026-11-27"
  },
  "crypto": {
   "btc": {
