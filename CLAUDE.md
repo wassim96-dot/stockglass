@@ -11,7 +11,7 @@ Static GitHub Pages site (no build step) plus GitHub Actions jobs that save mark
 
 ## Commands
 ```bash
-node tests/run.mjs                     # offline tests, ~5 s: syntax, data files, replays, Minervini block, copies (CI runs it on PRs)
+node tests/run.mjs                     # offline tests, ~5 s: syntax, data files, glossary keys, replays, Minervini block, copies (CI on PRs)
 node tests/run.mjs --skill ../stock-verdict   # also the skill's copies (regime.py, glossary, gloss.js, render.py, weights)
 node tests/check-copies.mjs [--skill DIR]     # only the copy check, with the first differing input per function
 # serve and test the pages offline (outside requests aborted; mock Yahoo answers to test the live path)
@@ -26,7 +26,8 @@ gh workflow run market-fear.yml --ref <branch>       # test a job on a branch (i
 Jobs (cron in UTC; GitHub starts them 6–10 hours late, so each has backups and a once-per-period guard):
 `market-fear.yml` (weekdays after the US close, then regime step), `crypto-data.yml` (daily), `daily-minervini.yml`
 (starts when market-fear finishes, via `workflow_run`, plus one backup cron), `weekly-watchlist.yml` (Friday/Saturday).
-Phase alerts go through `scripts/send-alerts.sh` (5 retries; never blocks the save). A failed or timed-out job opens one
+Phase alerts go through `scripts/send-alerts.sh` (5 retries; never blocks the save; a new alert closes the older open
+issue of the same kind, the title up to the first ":"; "Job failed" issues are closed by hand). A failed or timed-out job opens one
 issue per job per day (`scripts/job-failed.sh`, last step `if: failure()`; script steps have their own `timeout-minutes`
 so that step still runs). A push that fails 3 times fails the step. Optional secret `FRED_API_KEY` (free) → FRED's API.
 
